@@ -1,5 +1,7 @@
-﻿fix: ajusta server.py, Procfile e requirements para deploy no Railway
+﻿feat: integra módulo de usuários + ajustes no server.py e base.html
 
-- Usa waitress como servidor WSGI
-- Adiciona porta dinâmica via variável PORT
-- Atualiza requirements.txt
+- Registra blueprint usuarios_bp no create_app()
+- Corrige ordem e estrutura da factory do Flask
+- Ajusta server.py para produção com Railway
+- Insere menu 'Usuários' no base.html visível apenas para admin/gerente
+- Organização geral do projeto para suportar cadastro e gestão de usuários
