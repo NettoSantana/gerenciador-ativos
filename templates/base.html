@@ -23,9 +23,9 @@
         {% if session.get('user_nome') %}
           <span class="chip">Olá, {{ session.get('user_nome') }}</span>
 
-          <!-- Botão para voltar ao painel principal -->
           {% if session.get('user_tipo') in ['admin', 'gerente'] %}
-            <a href="{{ url_for('dashboards.gerente') }}" class="btn-ghost">Painel</a>
+            <!-- Corrigido: endpoint dashboard_gerente -->
+            <a href="{{ url_for('dashboards.dashboard_gerente') }}" class="btn-ghost">Painel</a>
             <a href="{{ url_for('usuarios.lista') }}" class="btn-ghost">Usuários</a>
             <a href="{{ url_for('clientes.lista') }}" class="btn-ghost">Clientes</a>
           {% endif %}

@@ -1,7 +1,6 @@
-﻿feat: adiciona modelo Cliente e relacionamento com Usuario
+﻿feat: adiciona botão 'Painel' na topbar para navegação rápida
 
-- Criação da tabela clientes
-- Campos PF/PJ, razão social, CPF/CNPJ, endereço e observações
-- Soft delete (ativo/inativo)
-- Relacionamento cliente -> usuários
-- Ajuste do cliente_id para ForeignKey real
+- Atualiza base.html
+- Inclui botão 'Painel' visível para admin e gerente
+- Facilita retorno ao dashboard principal
+- Mantém padrão visual dark premium
