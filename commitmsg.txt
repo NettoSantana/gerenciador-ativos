@@ -1,7 +1,6 @@
-﻿fix: ajuste de layout na lista de usuários
+﻿feat: integra módulo de clientes e atualiza server.py e base.html
 
-- Atualiza template usuarios/lista.html
-- Corrige dimensionamento e largura da tabela
-- Ajusta card para largura total e espaçamento padrão
-- Melhora alinhamento do botão 'Novo Usuário'
-- Mantém consistência visual com o restante do sistema
+- Importa e registra blueprint clientes_bp
+- Adiciona menu 'Clientes' no topo (somente admin/gerente)
+- Organiza create_app() com todos os módulos ativos
+- Prepara estrutura para cadastro, edição e listagem de clientes
