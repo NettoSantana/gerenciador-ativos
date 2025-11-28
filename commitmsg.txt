@@ -1,5 +1,8 @@
-﻿fix: corrige endpoint do botão 'Painel' na topbar
+﻿feat: adiciona módulo de Ativos ao Gerenciador de Ativos
 
-- Ajusta url_for para usar dashboards.dashboard_gerente
-- Remove erro BuildError ao renderizar o layout base
-- Garante navegação correta de volta ao painel gerencial
+- Cria modelo Ativo com relacionamento a Cliente
+- Atualiza Cliente com relacionamentos para usuários e ativos
+- Registra blueprint ativos_bp no server.py
+- Adiciona botão 'Ativos' na topbar
+- Implementa rotas de lista, criação, edição, ativação e desativação de ativos
+- Cria templates de lista/novo/editar no padrão visual do sistema

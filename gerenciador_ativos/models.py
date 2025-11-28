@@ -4,7 +4,7 @@ from gerenciador_ativos.extensions import db
 
 
 # =========================================
-# MODELO: CLIENTE (NOVO)
+# MODELO: CLIENTE
 # =========================================
 class Cliente(db.Model):
     __tablename__ = "clientes"
@@ -37,9 +37,7 @@ class Cliente(db.Model):
         onupdate=datetime.utcnow
     )
 
-    # Relacionamento futuro:
-    # ativos = db.relationship("Ativo", backref="cliente", lazy=True)
-
+    # Relacionamentos
     usuarios = db.relationship(
         "Usuario",
         backref="cliente",
@@ -47,8 +45,57 @@ class Cliente(db.Model):
         foreign_keys="Usuario.cliente_id"
     )
 
+    ativos = db.relationship(
+        "Ativo",
+        backref="cliente",
+        lazy=True,
+        foreign_keys="Ativo.cliente_id"
+    )
+
     def __repr__(self):
         return f"<Cliente {self.nome} ({self.tipo})>"
+
+
+# =========================================
+# MODELO: ATIVO
+# =========================================
+class Ativo(db.Model):
+    __tablename__ = "ativos"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    cliente_id = db.Column(
+        db.Integer,
+        db.ForeignKey("clientes.id"),
+        nullable=False
+    )
+
+    nome = db.Column(db.String(255), nullable=False)
+    categoria = db.Column(db.String(50), nullable=False)  # Náutica, Industrial, Outros
+    tipo = db.Column(db.String(100), nullable=True)       # Motor, Compressor, Embarcação, etc.
+    modelo = db.Column(db.String(100), nullable=True)
+    numero_serie = db.Column(db.String(100), nullable=True)
+    codigo_interno = db.Column(db.String(100), nullable=True)
+    localizacao = db.Column(db.String(255), nullable=True)
+
+    status_operacional = db.Column(
+        db.String(50),
+        nullable=False,
+        default="Operando"   # Operando, Parado, Em manutenção
+    )
+
+    observacoes = db.Column(db.Text, nullable=True)
+    ativo = db.Column(db.Boolean, default=True)
+
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+    atualizado_em = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
+    )
+
+    def __repr__(self):
+        return f"<Ativo {self.nome} ({self.categoria})>"
 
 
 # =========================================
@@ -63,7 +110,6 @@ class Usuario(db.Model):
     senha_hash = db.Column(db.String(255), nullable=False)
     tipo = db.Column(db.String(50), nullable=False)  # admin, gerente, manutencao, financeiro, fiscal, cliente
 
-    # Agora o cliente_id é FOREIGN KEY real
     cliente_id = db.Column(
         db.Integer,
         db.ForeignKey("clientes.id"),
