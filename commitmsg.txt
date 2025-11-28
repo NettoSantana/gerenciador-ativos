@@ -1,6 +1,7 @@
-﻿feat: integra módulo de clientes e atualiza server.py e base.html
+﻿feat: adiciona modelo Cliente e relacionamento com Usuario
 
-- Importa e registra blueprint clientes_bp
-- Adiciona menu 'Clientes' no topo (somente admin/gerente)
-- Organiza create_app() com todos os módulos ativos
-- Prepara estrutura para cadastro, edição e listagem de clientes
+- Criação da tabela clientes
+- Campos PF/PJ, razão social, CPF/CNPJ, endereço e observações
+- Soft delete (ativo/inativo)
+- Relacionamento cliente -> usuários
+- Ajuste do cliente_id para ForeignKey real
