@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Editar Cliente{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header">
+    <h1>Editar Cliente</h1>
+  </div>
+
+  <div class="card">
+
+    <form method="post" class="form">
+
+      <div class="field">
+        <label>Tipo de Cliente</label>
+        <div style="display:flex; gap:20px;">
+          <label><input type="radio" name="tipo" value="PF" {% if cliente.tipo=='PF' %}checked{% endif %}> Pessoa Física</label>
+          <label><input type="radio" name="tipo" value="PJ" {% if cliente.tipo=='PJ' %}checked{% endif %}> Pessoa Jurídica</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Nome / Razão Social</label>
+        <input name="nome" value="{{ cliente.nome }}" required>
+      </div>
+
+      <div class="field">
+        <label>Nome Fantasia (somente PJ)</label>
+        <input name="nome_fantasia" value="{{ cliente.nome_fantasia }}">
+      </div>
+
+      <div class="field">
+        <label>CPF/CNPJ</label>
+        <input name="cpf_cnpj" value="{{ cliente.cpf_cnpj }}" required>
+      </div>
+
+      <div class="field">
+        <label>Telefone</label>
+        <input name="telefone" value="{{ cliente.telefone }}">
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input name="email" type="email" value="{{ cliente.email }}">
+      </div>
+
+      <div class="field">
+        <label>Endereço</label>
+        <input name="endereco" value="{{ cliente.endereco }}">
+      </div>
+
+      <div class="field">
+        <label>Observações</label>
+        <textarea name="observacoes" style="height:90px;">{{ cliente.observacoes }}</textarea>
+      </div>
+
+      <button class="btn-primary">Salvar</button>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

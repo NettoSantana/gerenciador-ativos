@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Novo Cliente{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header">
+    <h1>Novo Cliente</h1>
+  </div>
+
+  <div class="card">
+
+    <form method="post" class="form">
+
+      <div class="field">
+        <label>Tipo de Cliente</label>
+        <div style="display:flex; gap:20px;">
+          <label><input type="radio" name="tipo" value="PF" checked> Pessoa Física</label>
+          <label><input type="radio" name="tipo" value="PJ"> Pessoa Jurídica</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Nome / Razão Social</label>
+        <input name="nome" required>
+      </div>
+
+      <div class="field">
+        <label>Nome Fantasia (somente PJ)</label>
+        <input name="nome_fantasia">
+      </div>
+
+      <div class="field">
+        <label>CPF ou CNPJ</label>
+        <input name="cpf_cnpj" required>
+      </div>
+
+      <div class="field">
+        <label>Telefone</label>
+        <input name="telefone">
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input name="email" type="email">
+      </div>
+
+      <div class="field">
+        <label>Endereço</label>
+        <input name="endereco">
+      </div>
+
+      <div class="field">
+        <label>Observações</label>
+        <textarea name="observacoes" style="height:90px;"></textarea>
+      </div>
+
+      <button class="btn-primary">Salvar</button>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

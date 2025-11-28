@@ -24,7 +24,8 @@
           <span class="chip">Olá, {{ session.get('user_nome') }}</span>
 
           {% if session.get('user_tipo') in ['admin', 'gerente'] %}
-            <a href="{{ url_for('usuarios.lista') }}" class="btn-ghost">Usuários</a>
+            <a href="{{ url_for('usuarios.lista') }}" class="btn-ghost">Usuarios</a>
+            <a href="{{ url_for('clientes.lista') }}" class="btn-ghost">Clientes</a>  <!-- NOVO -->
           {% endif %}
 
           <a href="{{ url_for('auth.logout') }}" class="btn-ghost">Sair</a>

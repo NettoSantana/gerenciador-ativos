@@ -1,7 +1,7 @@
-﻿feat: integra módulo de usuários + ajustes no server.py e base.html
+﻿fix: ajuste de layout na lista de usuários
 
-- Registra blueprint usuarios_bp no create_app()
-- Corrige ordem e estrutura da factory do Flask
-- Ajusta server.py para produção com Railway
-- Insere menu 'Usuários' no base.html visível apenas para admin/gerente
-- Organização geral do projeto para suportar cadastro e gestão de usuários
+- Atualiza template usuarios/lista.html
+- Corrige dimensionamento e largura da tabela
+- Ajusta card para largura total e espaçamento padrão
+- Melhora alinhamento do botão 'Novo Usuário'
+- Mantém consistência visual com o restante do sistema
