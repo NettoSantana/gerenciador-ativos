@@ -1,8 +1,5 @@
-﻿feat: adiciona módulo de Ativos ao Gerenciador de Ativos
+﻿fix: adiciona modelo Ativo ao arquivo models
 
-- Cria modelo Ativo com relacionamento a Cliente
-- Atualiza Cliente com relacionamentos para usuários e ativos
-- Registra blueprint ativos_bp no server.py
-- Adiciona botão 'Ativos' na topbar
-- Implementa rotas de lista, criação, edição, ativação e desativação de ativos
-- Cria templates de lista/novo/editar no padrão visual do sistema
+- Garante definição da classe Ativo em models.py
+- Inclui relacionamento Cliente.ativos
+- Mantém modelos Cliente e Usuario funcionando

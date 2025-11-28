@@ -27,7 +27,7 @@
 
       <div class="field">
         <label>Tipo</label>
-        <select name="tipo" required>
+        <select name="tipo" id="tipo" required>
           <option value="admin">Admin</option>
           <option value="gerente">Gerente</option>
           <option value="manutencao">Manutenção</option>
@@ -37,8 +37,45 @@
         </select>
       </div>
 
+      <div class="field" id="cliente-field">
+        <label>Cliente</label>
+        <select name="cliente_id" id="cliente_id">
+          <option value="">Selecione um cliente</option>
+          {% for cliente in clientes %}
+            <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
       <button class="btn-primary">Salvar</button>
     </form>
   </div>
 </div>
+
+<script>
+  function toggleClienteField() {
+    const tipoSelect = document.getElementById("tipo");
+    const clienteField = document.getElementById("cliente-field");
+    const clienteSelect = document.getElementById("cliente_id");
+
+    if (!tipoSelect || !clienteField || !clienteSelect) return;
+
+    if (tipoSelect.value === "cliente") {
+      clienteField.style.display = "block";
+      clienteSelect.required = true;
+    } else {
+      clienteField.style.display = "none";
+      clienteSelect.required = false;
+      clienteSelect.value = "";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    toggleClienteField();
+    const tipoSelect = document.getElementById("tipo");
+    if (tipoSelect) {
+      tipoSelect.addEventListener("change", toggleClienteField);
+    }
+  });
+</script>
 {% endblock %}
