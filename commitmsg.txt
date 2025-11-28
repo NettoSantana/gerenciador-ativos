@@ -1,5 +1,5 @@
-﻿fix: adiciona modelo Ativo ao arquivo models
+﻿feat: vincula usuario cliente a cliente
 
-- Garante definição da classe Ativo em models.py
-- Inclui relacionamento Cliente.ativos
-- Mantém modelos Cliente e Usuario funcionando
+- adiciona select de Cliente em novo/editar usuário
+- exige cliente_id quando tipo = cliente
+- oculta vinculo para usuários internos

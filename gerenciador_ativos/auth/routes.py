@@ -26,7 +26,8 @@ def login():
         if usuario.is_interno():
             return redirect(url_for("dashboards.dashboard_gerente"))
         else:
-            return redirect(url_for("dashboards.dashboard_cliente"))
+            # tipo cliente → manda para o PORTAL DO CLIENTE NOVO
+            return redirect(url_for("portal.dashboard_cliente"))
 
     return render_template("auth/login.html")
 

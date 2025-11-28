@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Painel do Cliente{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header">
+    <h1>Painel do Cliente</h1>
+    <p class="muted">Bem-vindo, este é o painel exclusivo do seu contrato.</p>
+  </div>
+
+  <div class="cards-grid">
+    <div class="card">
+      <h2>Cliente</h2>
+      <p><strong>{{ cliente.nome }}</strong></p>
+      {% if cliente.cnpj %}
+        <p>CNPJ: {{ cliente.cnpj }}</p>
+      {% elif cliente.cpf %}
+        <p>CPF: {{ cliente.cpf }}</p>
+      {% endif %}
+      {% if cliente.cidade or cliente.uf %}
+        <p class="muted">
+          {{ cliente.cidade }}{% if cliente.uf %} / {{ cliente.uf }}{% endif %}
+        </p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h2>Ativos cadastrados</h2>
+      <p style="font-size: 2.5rem; font-weight: bold; margin: 0;">
+        {{ qtd_ativos }}
+      </p>
+      <p class="muted">Quantidade total de ativos monitorados.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <h2>Meus Ativos</h2>
+
+    {% if ativos %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Ativo</th>
+            <th>Código</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ativo in ativos %}
+            <tr>
+              <td>{{ ativo.nome }}</td>
+              <td>
+                {% if ativo.codigo %}
+                  {{ ativo.codigo }}
+                {% else %}
+                  &mdash;
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">Nenhum ativo cadastrado para este cliente ainda.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

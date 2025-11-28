@@ -7,6 +7,7 @@ from gerenciador_ativos.dashboards.routes import dashboards_bp
 from gerenciador_ativos.usuarios.routes import usuarios_bp
 from gerenciador_ativos.clientes.routes import clientes_bp
 from gerenciador_ativos.ativos.routes import ativos_bp  # NOVO
+from gerenciador_ativos.portal.routes import portal_bp
 import os
 
 
@@ -23,6 +24,8 @@ def create_app():
     app.register_blueprint(usuarios_bp)
     app.register_blueprint(clientes_bp)
     app.register_blueprint(ativos_bp)  # NOVO
+    app.register_blueprint(portal_bp)
+
 
     # cria o banco e um admin de teste se não existir nada
     with app.app_context():
