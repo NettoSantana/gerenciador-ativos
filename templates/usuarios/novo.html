@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Novo Usuário{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header">
+    <h1>Novo Usuário</h1>
+  </div>
+
+  <div class="card">
+    <form method="post" class="form">
+
+      <div class="field">
+        <label>Nome</label>
+        <input name="nome" required>
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input name="email" type="email" required>
+      </div>
+
+      <div class="field">
+        <label>Senha</label>
+        <input name="senha" type="password" required>
+      </div>
+
+      <div class="field">
+        <label>Tipo</label>
+        <select name="tipo" required>
+          <option value="admin">Admin</option>
+          <option value="gerente">Gerente</option>
+          <option value="manutencao">Manutenção</option>
+          <option value="financeiro">Financeiro</option>
+          <option value="fiscal">Fiscal</option>
+          <option value="cliente">Cliente</option>
+        </select>
+      </div>
+
+      <button class="btn-primary">Salvar</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

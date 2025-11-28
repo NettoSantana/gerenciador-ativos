@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Editar Usuário{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header">
+    <h1>Editar Usuário</h1>
+  </div>
+
+  <div class="card">
+    <form method="post" class="form">
+
+      <div class="field">
+        <label>Nome</label>
+        <input name="nome" required value="{{ usuario.nome }}">
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input name="email" type="email" required value="{{ usuario.email }}">
+      </div>
+
+      <div class="field">
+        <label>Tipo</label>
+        <select name="tipo" required>
+          <option value="admin" {% if usuario.tipo=='admin' %}selected{% endif %}>Admin</option>
+          <option value="gerente" {% if usuario.tipo=='gerente' %}selected{% endif %}>Gerente</option>
+          <option value="manutencao" {% if usuario.tipo=='manutencao' %}selected{% endif %}>Manutenção</option>
+          <option value="financeiro" {% if usuario.tipo=='financeiro' %}selected{% endif %}>Financeiro</option>
+          <option value="fiscal" {% if usuario.tipo=='fiscal' %}selected{% endif %}>Fiscal</option>
+          <option value="cliente" {% if usuario.tipo=='cliente' %}selected{% endif %}>Cliente</option>
+        </select>
+      </div>
+
+      <button class="btn-primary">Salvar</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

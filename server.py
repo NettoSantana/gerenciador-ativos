@@ -4,6 +4,8 @@ from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import Usuario
 from gerenciador_ativos.auth.routes import auth_bp
 from gerenciador_ativos.dashboards.routes import dashboards_bp
+from gerenciador_ativos.usuarios.routes import usuarios_bp
+import os
 
 
 def create_app():
@@ -16,6 +18,7 @@ def create_app():
     # blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboards_bp)
+    app.register_blueprint(usuarios_bp)
 
     # cria o banco e um admin de teste se não existir nada
     with app.app_context():
@@ -35,7 +38,6 @@ def create_app():
 
     return app
 
-import os
 
 app = create_app()
 

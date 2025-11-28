@@ -1,7 +1,5 @@
-﻿feat: versão inicial do Gerenciador de Ativos
+﻿fix: ajusta server.py, Procfile e requirements para deploy no Railway
 
-- Estrutura base do projeto em Flask
-- Módulo de autenticação (login/logout)
-- Modelo de usuário com tipos (admin, gerente, manutencao, financeiro, fiscal, cliente)
-- Dashboards iniciais para gerente e cliente
-- Layout dark padronizado com tela de login
+- Usa waitress como servidor WSGI
+- Adiciona porta dinâmica via variável PORT
+- Atualiza requirements.txt

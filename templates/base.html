@@ -17,13 +17,22 @@
           <span class="logo-sub">Monitoramento · Preventiva · Performance</span>
         </div>
       </div>
+
       <div class="topbar-right">
+
         {% if session.get('user_nome') %}
           <span class="chip">Olá, {{ session.get('user_nome') }}</span>
+
+          {% if session.get('user_tipo') in ['admin', 'gerente'] %}
+            <a href="{{ url_for('usuarios.lista') }}" class="btn-ghost">Usuários</a>
+          {% endif %}
+
           <a href="{{ url_for('auth.logout') }}" class="btn-ghost">Sair</a>
+
         {% else %}
           <a href="{{ url_for('auth.login') }}" class="btn-ghost">Login</a>
         {% endif %}
+
       </div>
     </header>
 
@@ -42,7 +51,7 @@
     </main>
 
     <footer class="footer">
-      <span>© {{ 2025 }} Gerenciador de Ativos • Versão 2</span>
+      <span>©️ {{ 2025 }} Gerenciador de Ativos • Versão 2</span>
     </footer>
 
   </div>

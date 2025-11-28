@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Usuários{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header">
+    <h1>Usuários</h1>
+    <a href="{{ url_for('usuarios.novo') }}" class="btn-primary">Novo Usuário</a>
+  </div>
+
+  <div class="card">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>Tipo</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in usuarios %}
+        <tr>
+          <td>{{ u.nome }}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.tipo }}</td>
+          <td>
+            {% if u.ativo %}
+              <span class="chip success">Ativo</span>
+            {% else %}
+              <span class="chip danger">Inativo</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('usuarios.editar', id=u.id) }}" class="btn-ghost">Editar</a>
+
+            {% if u.ativo %}
+            <a href="{{ url_for('usuarios.desativar', id=u.id) }}" class="btn-ghost">Desativar</a>
+            {% else %}
+            <a href="{{ url_for('usuarios.ativar', id=u.id) }}" class="btn-ghost">Ativar</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
