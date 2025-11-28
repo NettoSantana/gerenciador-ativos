@@ -1,6 +1,5 @@
-﻿feat: adiciona botão 'Painel' na topbar para navegação rápida
+﻿fix: corrige endpoint do botão 'Painel' na topbar
 
-- Atualiza base.html
-- Inclui botão 'Painel' visível para admin e gerente
-- Facilita retorno ao dashboard principal
-- Mantém padrão visual dark premium
+- Ajusta url_for para usar dashboards.dashboard_gerente
+- Remove erro BuildError ao renderizar o layout base
+- Garante navegação correta de volta ao painel gerencial

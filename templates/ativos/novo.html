@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Novo Ativo{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header">
+    <h1>Novo Ativo</h1>
+  </div>
+
+  <div class="card">
+    <form method="post" class="form">
+
+      <div class="field">
+        <label>Cliente</label>
+        <select name="cliente_id" required>
+          <option value="">Selecione um cliente</option>
+          {% for c in clientes %}
+            <option value="{{ c.id }}">{{ c.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Nome do Ativo</label>
+        <input name="nome" required>
+      </div>
+
+      <div class="field">
+        <label>Categoria</label>
+        <select name="categoria" required>
+          <option value="Náutica">Náutica</option>
+          <option value="Industrial">Industrial</option>
+          <option value="Outros">Outros</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Tipo</label>
+        <input name="tipo" placeholder="Motor, Compressor, Embarcação, etc.">
+      </div>
+
+      <div class="field">
+        <label>Modelo</label>
+        <input name="modelo">
+      </div>
+
+      <div class="field">
+        <label>Número de Série</label>
+        <input name="numero_serie">
+      </div>
+
+      <div class="field">
+        <label>Código Interno</label>
+        <input name="codigo_interno">
+      </div>
+
+      <div class="field">
+        <label>Localização</label>
+        <input name="localizacao" placeholder="Ex: Galpão 1, Sala de Máquinas, Pier 3">
+      </div>
+
+      <div class="field">
+        <label>Status Operacional</label>
+        <select name="status_operacional" required>
+          <option value="Operando">Operando</option>
+          <option value="Parado">Parado</option>
+          <option value="Em manutenção">Em manutenção</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Observações</label>
+        <textarea name="observacoes" style="height:90px;"></textarea>
+      </div>
+
+      <button class="btn-primary">Salvar</button>
+
+    </form>
+  </div>
+</div>
+{% endblock %}

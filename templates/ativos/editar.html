@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Editar Ativo{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header">
+    <h1>Editar Ativo</h1>
+  </div>
+
+  <div class="card">
+    <form method="post" class="form">
+
+      <div class="field">
+        <label>Cliente</label>
+        <select name="cliente_id" required>
+          {% for c in clientes %}
+            <option value="{{ c.id }}" {% if ativo.cliente_id == c.id %}selected{% endif %}>
+              {{ c.nome }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Nome do Ativo</label>
+        <input name="nome" required value="{{ ativo.nome }}">
+      </div>
+
+      <div class="field">
+        <label>Categoria</label>
+        <select name="categoria" required>
+          <option value="Náutica" {% if ativo.categoria == 'Náutica' %}selected{% endif %}>Náutica</option>
+          <option value="Industrial" {% if ativo.categoria == 'Industrial' %}selected{% endif %}>Industrial</option>
+          <option value="Outros" {% if ativo.categoria == 'Outros' %}selected{% endif %}>Outros</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Tipo</label>
+        <input name="tipo" value="{{ ativo.tipo or '' }}">
+      </div>
+
+      <div class="field">
+        <label>Modelo</label>
+        <input name="modelo" value="{{ ativo.modelo or '' }}">
+      </div>
+
+      <div class="field">
+        <label>Número de Série</label>
+        <input name="numero_serie" value="{{ ativo.numero_serie or '' }}">
+      </div>
+
+      <div class="field">
+        <label>Código Interno</label>
+        <input name="codigo_interno" value="{{ ativo.codigo_interno or '' }}">
+      </div>
+
+      <div class="field">
+        <label>Localização</label>
+        <input name="localizacao" value="{{ ativo.localizacao or '' }}">
+      </div>
+
+      <div class="field">
+        <label>Status Operacional</label>
+        <select name="status_operacional" required>
+          <option value="Operando" {% if ativo.status_operacional == 'Operando' %}selected{% endif %}>Operando</option>
+          <option value="Parado" {% if ativo.status_operacional == 'Parado' %}selected{% endif %}>Parado</option>
+          <option value="Em manutenção" {% if ativo.status_operacional == 'Em manutenção' %}selected{% endif %}>Em manutenção</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Observações</label>
+        <textarea name="observacoes" style="height:90px;">{{ ativo.observacoes or '' }}</textarea>
+      </div>
+
+      <button class="btn-primary">Salvar</button>
+
+    </form>
+  </div>
+</div>
+{% endblock %}
