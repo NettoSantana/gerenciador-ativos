@@ -1,0 +1,8 @@
+﻿feat: módulo de login e estrutura inicial do Gerenciador de Ativos
+
+- Cria server.py com factory create_app
+- Configura SQLAlchemy e modelo Usuario
+- Implementa autenticação com hash de senha
+- Adiciona blueprints de auth e dashboards
+- Cria tela de login mantendo o layout dark
+- Inclui dashboards básicos para gerente e cliente

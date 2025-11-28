@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>{% block title %}Gerenciador de Ativos{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="app-shell">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="logo-mark">GA</div>
+        <div class="logo-text">
+          <span class="logo-title">Gerenciador de Ativos</span>
+          <span class="logo-sub">Monitoramento · Preventiva · Performance</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        {% if session.get('user_nome') %}
+          <span class="chip">Olá, {{ session.get('user_nome') }}</span>
+          <a href="{{ url_for('auth.logout') }}" class="btn-ghost">Sair</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="btn-ghost">Login</a>
+        {% endif %}
+      </div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-area">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <main class="main-area">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+      <span>© {{ 2025 }} Gerenciador de Ativos • Versão 2</span>
+    </footer>
+
+  </div>
+</body>
+</html>
