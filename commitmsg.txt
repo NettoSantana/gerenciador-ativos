@@ -1,1 +1,7 @@
-﻿chore: adiciona requirements.txt e Procfile para deploy Railway
+﻿feat: versão inicial do Gerenciador de Ativos
+
+- Estrutura base do projeto em Flask
+- Módulo de autenticação (login/logout)
+- Modelo de usuário com tipos (admin, gerente, manutencao, financeiro, fiscal, cliente)
+- Dashboards iniciais para gerente e cliente
+- Layout dark padronizado com tela de login
