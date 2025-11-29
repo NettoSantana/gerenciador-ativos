@@ -1,6 +1,6 @@
-﻿feat: adiciona campos de monitoramento ao modelo Ativo
+﻿feat: adiciona módulo de integração BrasilSat
 
-- inclui imei para integração com BrasilSat
-- registra última atualização e status de monitoramento
-- armazena horas de motor e horas paradas
-- adiciona tensão de bateria e origem_dados (inicialmente 'brasilsat')
+- cria gerenciador_ativos/api/monitoramento/brasilsat.py
+- implementa autenticação com cache de token
+- adiciona função get_telemetria_por_imei(imei)
+- normaliza retorno de track (horas de motor, tensão, status)
