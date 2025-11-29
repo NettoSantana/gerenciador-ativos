@@ -1,6 +1,6 @@
-﻿feat: adiciona módulo de integração BrasilSat
+﻿feat: cria endpoint de monitoramento de ativo
 
-- cria gerenciador_ativos/api/monitoramento/brasilsat.py
-- implementa autenticação com cache de token
-- adiciona função get_telemetria_por_imei(imei)
-- normaliza retorno de track (horas de motor, tensão, status)
+- adiciona blueprint monitoramento_bp
+- implementa rota GET /api/ativos/<id>/monitoramento
+- integra com módulo BrasilSat para obter telemetria
+- atualiza campos de monitoramento do modelo Ativo e retorna JSON consolidado
