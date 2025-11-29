@@ -1,7 +1,6 @@
-﻿feat: menu dinâmico e portal do cliente
+﻿feat: adiciona campos de monitoramento ao modelo Ativo
 
-- Atualiza base.html para exibir menus diferentes conforme tipo de usuário
-- Tipo cliente agora acessa apenas o Painel do Cliente
-- Admin/Gerente continuam vendo Painel, Usuários, Clientes e Ativos
-- Ajusta redirecionamento pós-login para portal.dashboard_cliente
-- Estrutura pronta para navegação separada entre interno e cliente
+- inclui imei para integração com BrasilSat
+- registra última atualização e status de monitoramento
+- armazena horas de motor e horas paradas
+- adiciona tensão de bateria e origem_dados (inicialmente 'brasilsat')
