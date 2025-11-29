@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}{{ ativo.nome }} — Painel{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <!-- CABEÇALHO DO PORTAL DO CLIENTE -->
+  <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <h1 style="margin:0;">{{ ativo.nome }}</h1>
+      <p style="margin:4px 0 0; color:#94a3b8;">
+        Cliente: {{ cliente.nome }}
+      </p>
+    </div>
+
+    <a href="{{ url_for('portal.dashboard_cliente') }}" class="btn-ghost">← Voltar</a>
+  </div>
+
+  <!-- BOTÃO ATUALIZAR -->
+  <div style="margin-bottom:18px; display:flex; justify-content:flex-end;">
+    <button id="btn-atualizar" class="btn-primary" type="button">
+      Atualizar dados
+    </button>
+  </div>
+
+  <!-- GRID DE CARDS -->
+  <div class="cards-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin-bottom:20px;">
+
+    <!-- STATUS -->
+    <div class="card" style="padding:16px;">
+      <h2>Status</h2>
+      <p id="status-monitoramento-texto" style="margin:0; font-size:1.4rem;">
+        {{ ativo.status_monitoramento or '—' }}
+      </p>
+      <small style="color:#94a3b8;">Situação atual</small>
+    </div>
+
+    <!-- HORAS DE MOTOR -->
+    <div class="card" style="padding:16px;">
+      <h2>Horas de Motor</h2>
+      <p id="horas-motor-texto" style="margin:0; font-size:2rem; font-weight:600;">
+        {{ "%.1f"|format(ativo.horas_motor or 0.0) }} h
+      </p>
+      <small style="color:#94a3b8;">Total consolidado</small>
+    </div>
+
+    <!-- TENSÃO DE BATERIA -->
+    <div class="card" style="padding:16px;">
+      <h2>Tensão Bateria</h2>
+      <p id="tensao-bateria-texto" style="margin:0; font-size:2rem; font-weight:600;">
+        {% if ativo.tensao_bateria %}
+          {{ "%.1f"|format(ativo.tensao_bateria) }} V
+        {% else %}
+          —
+        {% endif %}
+      </p>
+      <small style="color:#94a3b8;">Última leitura</small>
+    </div>
+
+    <!-- MOTOR LIGADO -->
+    <div class="card" style="padding:16px;">
+      <h2>Motor</h2>
+      <p id="motor-ligado-texto" style="margin:0; font-size:1.6rem; font-weight:600;">
+        —
+      </p>
+      <small style="color:#94a3b8;">Ignition (ACC)</small>
+    </div>
+
+    <!-- HORAS PARADAS -->
+    <div class="card" style="padding:16px;">
+      <h2>Horas Paradas</h2>
+      <p id="horas-paradas-texto" style="margin:0; font-size:2rem; font-weight:600;">
+        {{ "%.1f"|format(ativo.horas_paradas or 0.0) }} h
+      </p>
+      <small style="color:#94a3b8;">Estimado</small>
+    </div>
+
+    <!-- ÚLTIMA ATUALIZAÇÃO -->
+    <div class="card" style="padding:16px;">
+      <h2>Última Atualização</h2>
+      <p id="ultima-atualizacao-texto" style="margin:0; font-size:1.2rem;">
+        {% if ativo.ultima_atualizacao %}
+          {{ ativo.ultima_atualizacao }}
+        {% else %}
+          nunca
+        {% endif %}
+      </p>
+      <small style="color:#94a3b8;">Horário do rastreador</small>
+    </div>
+
+  </div>
+
+  <!-- MENSAGEM / DEBUG -->
+  <div id="monitoramento-mensagem"
+       class="card"
+       style="padding:14px; display:none; font-size:0.9rem; color:#94a3b8;">
+  </div>
+
+</div>
+
+<script>
+(function () {
+
+  const ativoId = {{ ativo.id }};
+
+  const btn = document.getElementById("btn-atualizar");
+  const statusEl = document.getElementById("status-monitoramento-texto");
+  const horasEl = document.getElementById("horas-motor-texto");
+  const tensaoEl = document.getElementById("tensao-bateria-texto");
+  const motorEl = document.getElementById("motor-ligado-texto");
+  const ultimaEl = document.getElementById("ultima-atualizacao-texto");
+  const msgEl = document.getElementById("monitoramento-mensagem");
+
+  function msg(texto, tipo="info") {
+    msgEl.style.display = "block";
+    msgEl.textContent = texto;
+
+    if (tipo === "erro") msgEl.style.color = "#fca5a5";
+    else if (tipo === "ok") msgEl.style.color = "#6ee7b7";
+    else msgEl.style.color = "#94a3b8";
+  }
+
+  async function atualizar() {
+
+    msg("Atualizando dados...", "info");
+    btn.disabled = true;
+
+    try {
+      const req = await fetch(`/api/ativos/${ativoId}/monitoramento`);
+      const data = await req.json();
+
+      if (!req.ok) {
+        msg("Erro: " + (data.detalhe || data.erro || req.status), "erro");
+        btn.disabled = false;
+        return;
+      }
+
+      // atualizar status
+      statusEl.textContent = data.status_monitoramento || "—";
+
+      // horas
+      if (typeof data.horas_motor === "number") {
+        horasEl.textContent = data.horas_motor.toFixed(1) + " h";
+      }
+
+      // tensão
+      if (data.tensao_bateria != null) {
+        tensaoEl.textContent = Number(data.tensao_bateria).toFixed(1) + " V";
+      }
+
+      // motor ligado
+      if (data.telemetria) {
+        motorEl.textContent = data.telemetria.motor_ligado ? "Ligado" : "Desligado";
+      }
+
+      // última atualização
+      if (data.ultima_atualizacao) {
+        ultimaEl.textContent = data.ultima_atualizacao;
+      }
+
+      msg("Dados atualizados com sucesso!", "ok");
+
+    } catch (e) {
+      msg("Falha inesperada: " + e, "erro");
+    }
+
+    btn.disabled = false;
+  }
+
+  // Evento do botão
+  btn.addEventListener("click", atualizar);
+
+  // Atualiza automaticamente ao abrir
+  document.addEventListener("DOMContentLoaded", atualizar);
+
+})();
+</script>
+{% endblock %}
