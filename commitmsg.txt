@@ -1,5 +1,5 @@
-﻿feat: propaga IMEI dos formulários para criação e edição de ativos
+﻿feat: adiciona rota de painel de ativo no portal do cliente
 
-- atualiza ativos.routes.novo para ler e enviar imei ao criar_ativo
-- atualiza ativos.routes.editar para ler e enviar imei ao atualizar_ativo
-- garante que o painel de monitoramento use o IMEI configurado no ativo
+- mantém dashboard_cliente listando apenas os ativos do cliente logado
+- cria rota /portal/ativo/<id> protegida para user tipo 'cliente'
+- garante que o cliente só acessa ativos vinculados ao seu cliente_id
