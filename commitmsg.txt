@@ -1,4 +1,4 @@
-﻿feat: registra blueprint de monitoramento BrasilSat no server.py
+﻿fix: adiciona dependência 'requests' para integração com a BrasilSat
 
-- adiciona import do monitoramento_bp
-- registra o blueprint para ativar a rota /api/ativos/<id>/monitoramento
+- atualiza requirements.txt
+- corrige erro ModuleNotFoundError: No module named 'requests'

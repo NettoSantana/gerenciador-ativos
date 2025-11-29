@@ -118,3 +118,21 @@ def ativar(id):
     ativar_ativo(ativo)
     flash("Ativo ativado!", "success")
     return redirect(url_for("ativos.lista"))
+
+
+# -------------------------------
+# NOVO: Detalhe / painel do ativo
+# -------------------------------
+@ativos_bp.route("/<int:id>")
+@login_required
+@role_required(["admin", "gerente"])
+def detalhe(id):
+    """
+    Tela de detalhe/painel de um ativo específico.
+
+    Aqui depois vamos:
+    - consumir /api/ativos/<id>/monitoramento
+    - exibir horas de motor, tensão, status, etc.
+    """
+    ativo = Ativo.query.get_or_404(id)
+    return render_template("ativos/detalhe.html", ativo=ativo)
