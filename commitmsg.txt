@@ -1,5 +1,5 @@
-﻿feat: adiciona campo IMEI nos formulários de ativos
+﻿feat: adiciona suporte ao campo IMEI nos serviços de criação e atualização de ativos
 
-- atualiza templates/ativos/novo.html com campo IMEI (BrasilSat)
-- atualiza templates/ativos/editar.html com campo IMEI (BrasilSat)
-- prepara interface para vincular rastreador ao ativo
+- atualiza criar_ativo para aceitar e salvar imei
+- atualiza atualizar_ativo para atualizar imei
+- prepara backend para monitoramento BrasilSat

@@ -33,6 +33,7 @@ def novo():
         localizacao = request.form.get("localizacao")
         status_operacional = request.form.get("status_operacional")
         observacoes = request.form.get("observacoes")
+        imei = request.form.get("imei")  # NOVO
 
         if not cliente_id:
             flash("Selecione um cliente.", "danger")
@@ -48,7 +49,8 @@ def novo():
             codigo_interno=codigo_interno,
             localizacao=localizacao,
             status_operacional=status_operacional,
-            observacoes=observacoes
+            observacoes=observacoes,
+            imei=imei or None,  # garante None se vier vazio
         )
 
         flash("Ativo criado com sucesso!", "success")
@@ -75,6 +77,7 @@ def editar(id):
         localizacao = request.form.get("localizacao")
         status_operacional = request.form.get("status_operacional")
         observacoes = request.form.get("observacoes")
+        imei = request.form.get("imei")  # NOVO
 
         if not cliente_id:
             flash("Selecione um cliente.", "danger")
@@ -91,7 +94,8 @@ def editar(id):
             codigo_interno=codigo_interno,
             localizacao=localizacao,
             status_operacional=status_operacional,
-            observacoes=observacoes
+            observacoes=observacoes,
+            imei=imei or None,  # garante None se vier vazio
         )
 
         flash("Ativo atualizado!", "success")
@@ -121,7 +125,7 @@ def ativar(id):
 
 
 # -------------------------------
-# NOVO: Detalhe / painel do ativo
+# Detalhe / painel do ativo
 # -------------------------------
 @ativos_bp.route("/<int:id>")
 @login_required
@@ -130,9 +134,8 @@ def detalhe(id):
     """
     Tela de detalhe/painel de um ativo específico.
 
-    Aqui depois vamos:
-    - consumir /api/ativos/<id>/monitoramento
-    - exibir horas de motor, tensão, status, etc.
+    Aqui consumimos /api/ativos/<id>/monitoramento via JS
+    para exibir horas de motor, tensão, status, etc.
     """
     ativo = Ativo.query.get_or_404(id)
     return render_template("ativos/detalhe.html", ativo=ativo)
