@@ -55,6 +55,15 @@
         <input name="codigo_interno" value="{{ ativo.codigo_interno or '' }}">
       </div>
 
+      <!-- NOVO: IMEI BrasilSat -->
+      <div class="field">
+        <label>IMEI (BrasilSat)</label>
+        <input name="imei" value="{{ ativo.imei or '' }}" placeholder="Ex: 355468593059041">
+        <small style="color:#94a3b8; font-size:0.8rem;">
+          Opcional. Necessário para monitoramento via rastreador BrasilSat.
+        </small>
+      </div>
+
       <div class="field">
         <label>Localização</label>
         <input name="localizacao" value="{{ ativo.localizacao or '' }}">

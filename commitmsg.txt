@@ -1,4 +1,6 @@
-﻿feat: adiciona link 'Painel' na tabela de ativos
+﻿feat: cria painel de detalhe do ativo com monitoramento BrasilSat
 
-- atualiza templates/ativos/lista.html
-- inclui ação para abrir detalhes do ativo via rota /ativos/<id>
+- adiciona templates/ativos/detalhe.html
+- exibe informações do ativo (cliente, nome, status)
+- consome /api/ativos/<id>/monitoramento via fetch
+- mostra horas de motor, tensão de bateria, status e motor ligado/desligado
