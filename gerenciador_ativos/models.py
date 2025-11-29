@@ -70,6 +70,7 @@ class Ativo(db.Model):
         nullable=False
     )
 
+    # Dados básicos de identificação
     nome = db.Column(db.String(255), nullable=False)
     categoria = db.Column(db.String(50), nullable=False)  # Náutica, Industrial, Outros
     tipo = db.Column(db.String(100), nullable=True)       # Motor, Compressor, Embarcação, etc.
@@ -92,6 +93,40 @@ class Ativo(db.Model):
         db.DateTime,
         default=datetime.utcnow,
         onupdate=datetime.utcnow
+    )
+
+    # -------------------------------
+    # CAMPOS DE MONITORAMENTO (NÁUTICA / BRASILSAT)
+    # -------------------------------
+
+    # IMEI do rastreador BrasilSat vinculado à embarcação
+    imei = db.Column(db.String(32), nullable=True)
+
+    # Última atualização de telemetria bem-sucedida
+    ultima_atualizacao = db.Column(db.DateTime, nullable=True)
+
+    # Status calculado do monitoramento:
+    # instalacao_pendente, online, offline, critico, bloqueado, etc.
+    status_monitoramento = db.Column(
+        db.String(32),
+        nullable=False,
+        default="instalacao_pendente"
+    )
+
+    # Horas totais de motor (consolidado)
+    horas_motor = db.Column(db.Float, nullable=False, default=0.0)
+
+    # Horas paradas (motor desligado, se aplicável)
+    horas_paradas = db.Column(db.Float, nullable=False, default=0.0)
+
+    # Última tensão de bateria medida (V)
+    tensao_bateria = db.Column(db.Float, nullable=True)
+
+    # Origem dos dados de monitoramento: brasilsat, esp32, manual, etc.
+    origem_dados = db.Column(
+        db.String(32),
+        nullable=False,
+        default="brasilsat"
     )
 
     def __repr__(self):

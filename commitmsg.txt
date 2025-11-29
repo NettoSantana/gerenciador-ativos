@@ -1,5 +1,7 @@
-﻿feat: vincula usuario cliente a cliente
+﻿feat: menu dinâmico e portal do cliente
 
-- adiciona select de Cliente em novo/editar usuário
-- exige cliente_id quando tipo = cliente
-- oculta vinculo para usuários internos
+- Atualiza base.html para exibir menus diferentes conforme tipo de usuário
+- Tipo cliente agora acessa apenas o Painel do Cliente
+- Admin/Gerente continuam vendo Painel, Usuários, Clientes e Ativos
+- Ajusta redirecionamento pós-login para portal.dashboard_cliente
+- Estrutura pronta para navegação separada entre interno e cliente
