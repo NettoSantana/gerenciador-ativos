@@ -1,6 +1,4 @@
-﻿feat: cria endpoint de monitoramento de ativo
+﻿feat: registra blueprint de monitoramento BrasilSat no server.py
 
-- adiciona blueprint monitoramento_bp
-- implementa rota GET /api/ativos/<id>/monitoramento
-- integra com módulo BrasilSat para obter telemetria
-- atualiza campos de monitoramento do modelo Ativo e retorna JSON consolidado
+- adiciona import do monitoramento_bp
+- registra o blueprint para ativar a rota /api/ativos/<id>/monitoramento
