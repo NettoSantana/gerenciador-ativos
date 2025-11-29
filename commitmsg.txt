@@ -1,4 +1,4 @@
-﻿fix: adiciona dependência 'requests' para integração com a BrasilSat
+﻿feat: adiciona rota de detalhe para ativos
 
-- atualiza requirements.txt
-- corrige erro ModuleNotFoundError: No module named 'requests'
+- cria rota /ativos/<id> protegida por login e perfil interno
+- prepara a tela detalhe.html para exibir painel e monitoramento do ativo

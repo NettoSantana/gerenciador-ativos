@@ -28,23 +28,35 @@
           <td style="padding:14px 20px;">{{ a.cliente.nome if a.cliente else '-' }}</td>
           <td style="padding:14px 20px;">{{ a.nome }}</td>
           <td style="padding:14px 20px;">{{ a.categoria }}</td>
+
           <td style="padding:14px 20px;">
             {% if a.status_operacional == 'Operando' %}
-              <span class="chip" style="background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.4); color:#22c55e;">
+              <span class="chip"
+                style="background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.4); color:#22c55e;">
                 Operando
               </span>
             {% elif a.status_operacional == 'Parado' %}
-              <span class="chip" style="background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.4); color:#f97316;">
+              <span class="chip"
+                style="background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.4); color:#f97316;">
                 Parado
               </span>
             {% else %}
-              <span class="chip" style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.4); color:#3b82f6;">
+              <span class="chip"
+                style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.4); color:#3b82f6;">
                 Em manutenção
               </span>
             {% endif %}
           </td>
-          <td style="padding:14px 20px;">
+
+          <td style="padding:14px 20px; display:flex; gap:10px;">
+
+            <!-- NOVO: Botão para abrir o painel detalhado -->
+            <a href="{{ url_for('ativos.detalhe', id=a.id) }}" class="btn-ghost">
+              Painel
+            </a>
+
             <a href="{{ url_for('ativos.editar', id=a.id) }}" class="btn-ghost">Editar</a>
+
             {% if a.ativo %}
               <a href="{{ url_for('ativos.desativar', id=a.id) }}" class="btn-ghost">Desativar</a>
             {% else %}
