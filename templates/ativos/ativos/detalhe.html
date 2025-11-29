@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Painel do Ativo — {{ ativo.nome }}{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; gap:16px;">
+    <div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <a href="{{ url_for('ativos.lista') }}" class="btn-ghost">← Voltar</a>
+        <h1 style="margin:0;">Painel do Ativo</h1>
+      </div>
+      <p style="margin:4px 0 0; color:#94a3b8;">
+        Cliente: {{ ativo.cliente.nome if ativo.cliente else '-' }} • Ativo: {{ ativo.nome }}
+      </p>
+    </div>
+
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+      {% if ativo.imei %}
+        <span class="chip" id="chip-origem"
+          style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.4); color:#38bdf8;">
+          Origem: {{ ativo.origem_dados or 'brasilsat' }} • IMEI: {{ ativo.imei }}
+        </span>
+      {% else %}
+        <span class="chip"
+          style="background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.4); color:#f87171;">
+          IMEI não configurado
+        </span>
+      {% endif %}
+
+      <button id="btn-atualizar" class="btn-primary" type="button">
+        Atualizar dados
+      </button>
+    </div>
+  </div>
+
+  <div class="cards-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:20px;">
+
+    <!-- Status de monitoramento -->
+    <div class="card" style="padding:16px;">
+      <h2 style="margin:0 0 8px;">Status</h2>
+      <p id="status-monitoramento-texto" style="margin:0; color:#e5e7eb;">
+        {{ ativo.status_monitoramento or 'instalacao_pendente' }}
+      </p>
+      <p style="margin:8px 0 0; font-size:0.85rem; color:#94a3b8;">
+        Última atualização:
+        <span id="ultima-atualizacao-texto">
+          {% if ativo.ultima_atualizacao %}
+            {{ ativo.ultima_atualizacao }}
+          {% else %}
+            nunca
+          {% endif %}
+        </span>
+      </p>
+    </div>
+
+    <!-- Horas de motor -->
+    <div class="card" style="padding:16px;">
+      <h2 style="margin:0 0 8px;">Horas de Motor</h2>
+      <p id="horas-motor-texto" style="margin:0; font-size:1.6rem; font-weight:600;">
+        {{ "%.1f"|format(ativo.horas_motor or 0.0) }} h
+      </p>
+      <p style="margin:8px 0 0; font-size:0.85rem; color:#94a3b8;">
+        Valor consolidado a partir da telemetria.
+      </p>
+    </div>
+
+    <!-- Tensão de bateria -->
+    <div class="card" style="padding:16px;">
+      <h2 style="margin:0 0 8px;">Tensão Bateria</h2>
+      <p id="tensao-bateria-texto" style="margin:0; font-size:1.6rem; font-weight:600;">
+        {% if ativo.tensao_bateria %}
+          {{ "%.1f"|format(ativo.tensao_bateria) }} V
+        {% else %}
+          —
+        {% endif %}
+      </p>
+      <p style="margin:8px 0 0; font-size:0.85rem; color:#94a3b8;">
+        Último valor recebido do rastreador.
+      </p>
+    </div>
+
+    <!-- Motor ligado/desligado -->
+    <div class="card" style="padding:16px;">
+      <h2 style="margin:0 0 8px;">Motor</h2>
+      <p id="motor-ligado-texto" style="margin:0; font-size:1.3rem; font-weight:600;">
+        —
+      </p>
+      <p style="margin:8px 0 0; font-size:0.85rem; color:#94a3b8;">
+        Situação de ignição informada pela BrasilSat (quando disponível).
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Área de mensagens / debug simples -->
+  <div id="monitoramento-mensagem" class="card" style="padding:12px; font-size:0.9rem; color:#94a3b8; display:none;"></div>
+
+</div>
+
+<script>
+  (function () {
+    const btn = document.getElementById("btn-atualizar");
+    const msgBox = document.getElementById("monitoramento-mensagem");
+
+    const statusEl = document.getElementById("status-monitoramento-texto");
+    const ultimaEl = document.getElementById("ultima-atualizacao-texto");
+    const horasEl = document.getElementById("horas-motor-texto");
+    const tensaoEl = document.getElementById("tensao-bateria-texto");
+    const motorEl = document.getElementById("motor-ligado-texto");
+
+    const ativoId = {{ ativo.id }};
+
+    function setMensagem(texto, tipo) {
+      if (!msgBox) return;
+      msgBox.style.display = "block";
+      msgBox.textContent = texto || "";
+      if (tipo === "erro") {
+        msgBox.style.color = "#fca5a5";
+      } else if (tipo === "ok") {
+        msgBox.style.color = "#6ee7b7";
+      } else {
+        msgBox.style.color = "#94a3b8";
+      }
+    }
+
+    async function carregarMonitoramento() {
+      if (!ativoId) return;
+
+      setMensagem("Atualizando dados de monitoramento...", "info");
+      btn.disabled = true;
+
+      try {
+        const resp = await fetch(`/api/ativos/${ativoId}/monitoramento`, {
+          method: "GET",
+          headers: { "Accept": "application/json" }
+        });
+
+        if (!resp.ok) {
+          const erro = await resp.json().catch(() => ({}));
+          const detalhe = erro.detalhe || erro.erro || `HTTP ${resp.status}`;
+          setMensagem("Falha ao atualizar monitoramento: " + detalhe, "erro");
+          btn.disabled = false;
+          return;
+        }
+
+        const data = await resp.json();
+
+        // Atualiza campos na tela
+        if (data.status_monitoramento && statusEl) {
+          statusEl.textContent = data.status_monitoramento;
+        }
+
+        if (data.ultima_atualizacao && ultimaEl) {
+          ultimaEl.textContent = data.ultima_atualizacao;
+        }
+
+        if (typeof data.horas_motor === "number" && horasEl) {
+          horasEl.textContent = data.horas_motor.toFixed(1) + " h";
+        }
+
+        if (data.tensao_bateria != null && tensaoEl) {
+          tensaoEl.textContent = Number(data.tensao_bateria).toFixed(1) + " V";
+        }
+
+        if (data.telemetria && motorEl) {
+          const ligado = !!data.telemetria.motor_ligado;
+          motorEl.textContent = ligado ? "Ligado" : "Desligado";
+        }
+
+        setMensagem("Monitoramento atualizado com sucesso.", "ok");
+      } catch (err) {
+        console.error(err);
+        setMensagem("Erro inesperado ao atualizar monitoramento.", "erro");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    if (btn) {
+      btn.addEventListener("click", function () {
+        carregarMonitoramento();
+      });
+    }
+
+    // Já tenta carregar assim que abrir a tela
+    document.addEventListener("DOMContentLoaded", function () {
+      carregarMonitoramento();
+    });
+  })();
+</script>
+{% endblock %}

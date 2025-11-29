@@ -1,4 +1,4 @@
-﻿feat: adiciona rota de detalhe para ativos
+﻿feat: adiciona link 'Painel' na tabela de ativos
 
-- cria rota /ativos/<id> protegida por login e perfil interno
-- prepara a tela detalhe.html para exibir painel e monitoramento do ativo
+- atualiza templates/ativos/lista.html
+- inclui ação para abrir detalhes do ativo via rota /ativos/<id>
