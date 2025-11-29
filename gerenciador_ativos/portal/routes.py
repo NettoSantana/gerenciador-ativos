@@ -40,3 +40,36 @@ def dashboard_cliente():
         ativos=ativos,
         qtd_ativos=qtd_ativos,
     )
+
+
+# ---------------------------------------------------
+# NOVO: Painel de um ativo específico para o CLIENTE
+# ---------------------------------------------------
+@portal_bp.route("/ativo/<int:ativo_id>")
+@login_required
+@role_required(["cliente"])
+def painel_ativo_cliente(ativo_id: int):
+    """
+    Painel completo de um ativo específico para o cliente.
+
+    - Garante que o ativo pertence ao cliente logado
+    - Renderiza o template com os cards de monitoramento (versão 2)
+    """
+    usuario = getattr(g, "user", None)
+    if not usuario or not usuario.cliente_id:
+        abort(403)
+
+    # Busca o ativo
+    ativo = Ativo.query.get_or_404(ativo_id)
+
+    # Garante que o ativo é do cliente logado
+    if ativo.cliente_id != usuario.cliente_id:
+        abort(403)
+
+    cliente = Cliente.query.get_or_404(usuario.cliente_id)
+
+    return render_template(
+        "portal/ativo_painel.html",
+        cliente=cliente,
+        ativo=ativo,
+    )

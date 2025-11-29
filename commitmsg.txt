@@ -1,5 +1,5 @@
-﻿feat: adiciona suporte ao campo IMEI nos serviços de criação e atualização de ativos
+﻿feat: propaga IMEI dos formulários para criação e edição de ativos
 
-- atualiza criar_ativo para aceitar e salvar imei
-- atualiza atualizar_ativo para atualizar imei
-- prepara backend para monitoramento BrasilSat
+- atualiza ativos.routes.novo para ler e enviar imei ao criar_ativo
+- atualiza ativos.routes.editar para ler e enviar imei ao atualizar_ativo
+- garante que o painel de monitoramento use o IMEI configurado no ativo
