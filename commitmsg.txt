@@ -1,6 +1,5 @@
-﻿feat: cria painel de detalhe do ativo com monitoramento BrasilSat
+﻿feat: adiciona campo IMEI nos formulários de ativos
 
-- adiciona templates/ativos/detalhe.html
-- exibe informações do ativo (cliente, nome, status)
-- consome /api/ativos/<id>/monitoramento via fetch
-- mostra horas de motor, tensão de bateria, status e motor ligado/desligado
+- atualiza templates/ativos/novo.html com campo IMEI (BrasilSat)
+- atualiza templates/ativos/editar.html com campo IMEI (BrasilSat)
+- prepara interface para vincular rastreador ao ativo

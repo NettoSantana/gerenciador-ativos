@@ -2,9 +2,16 @@ from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import Ativo
 
 
-def criar_ativo(cliente_id, nome, categoria, tipo, modelo,
-                numero_serie, codigo_interno, localizacao,
-                status_operacional, observacoes):
+def criar_ativo(
+    cliente_id, nome, categoria, tipo, modelo,
+    numero_serie, codigo_interno, localizacao,
+    status_operacional, observacoes,
+    imei=None
+):
+    """
+    Cria um novo ativo e salva no banco.
+    Agora inclui o campo IMEI (opcional).
+    """
     ativo = Ativo(
         cliente_id=cliente_id,
         nome=nome,
@@ -16,6 +23,7 @@ def criar_ativo(cliente_id, nome, categoria, tipo, modelo,
         localizacao=localizacao,
         status_operacional=status_operacional,
         observacoes=observacoes,
+        imei=imei,
         ativo=True
     )
     db.session.add(ativo)
@@ -23,9 +31,16 @@ def criar_ativo(cliente_id, nome, categoria, tipo, modelo,
     return ativo
 
 
-def atualizar_ativo(ativo, cliente_id, nome, categoria, tipo, modelo,
-                    numero_serie, codigo_interno, localizacao,
-                    status_operacional, observacoes):
+def atualizar_ativo(
+    ativo, cliente_id, nome, categoria, tipo, modelo,
+    numero_serie, codigo_interno, localizacao,
+    status_operacional, observacoes,
+    imei=None
+):
+    """
+    Atualiza os campos do ativo.
+    Agora atualiza IMEI também.
+    """
     ativo.cliente_id = cliente_id
     ativo.nome = nome
     ativo.categoria = categoria
@@ -36,6 +51,8 @@ def atualizar_ativo(ativo, cliente_id, nome, categoria, tipo, modelo,
     ativo.localizacao = localizacao
     ativo.status_operacional = status_operacional
     ativo.observacoes = observacoes
+    ativo.imei = imei
+
     db.session.commit()
     return ativo
 
