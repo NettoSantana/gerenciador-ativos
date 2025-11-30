@@ -1,5 +1,6 @@
-﻿feat: adiciona rota de painel de ativo no portal do cliente
+﻿feat: cria painel completo do ativo (Portal do Cliente PRO)
 
-- mantém dashboard_cliente listando apenas os ativos do cliente logado
-- cria rota /portal/ativo/<id> protegida para user tipo 'cliente'
-- garante que o cliente só acessa ativos vinculados ao seu cliente_id
+- novo template templates/portal/ativo_painel.html
+- layout V2 com cards iguais ao painel antigo
+- integração com /api/ativos/<id>/monitoramento
+- painel limpo, responsivo e pronto para cliente final
