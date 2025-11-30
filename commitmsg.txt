@@ -1,6 +1,6 @@
-﻿feat: adiciona latitude, longitude e velocidade na telemetria BrasilSat
+﻿fix: reescreve brasilsat.py com imports corretos e telemetria completa
 
-- extrai latitude/longitude do record bruto
-- inclui velocidade e direção
-- normaliza conversões numéricas
-- prepara para exibir mapa em tempo real no painel
+- adiciona imports de os, time, hashlib, requests e typing.Dict/Any
+- implementa fluxo completo: autorização, track por IMEI e normalização
+- inclui latitude, longitude, velocidade e direção na telemetria
+- corrige erro NameError: Dict not defined na inicialização do servidor
