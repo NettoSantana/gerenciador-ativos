@@ -65,6 +65,15 @@
       <small style="color:#94a3b8;">Ignition (ACC)</small>
     </div>
 
+    <!-- HORAS PARADAS (MESMO QUE O CLIENTE VÊ) -->
+    <div class="card" style="padding:16px;">
+      <h2>Horas Paradas</h2>
+      <p id="horas-paradas-texto" style="margin:0; font-size:2rem; font-weight:600;">
+        {{ "%.1f"|format(ativo.horas_paradas or 0.0) }} h
+      </p>
+      <small style="color:#94a3b8;">Estimado</small>
+    </div>
+
     <!-- ÚLTIMA ATUALIZAÇÃO -->
     <div class="card" style="padding:16px;">
       <h2>Última Atualização</h2>

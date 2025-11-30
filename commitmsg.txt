@@ -1,6 +1,6 @@
-﻿fix: reescreve brasilsat.py com imports corretos e telemetria completa
+﻿feat: adiciona mapa de localização no painel interno do ativo
 
-- adiciona imports de os, time, hashlib, requests e typing.Dict/Any
-- implementa fluxo completo: autorização, track por IMEI e normalização
-- inclui latitude, longitude, velocidade e direção na telemetria
-- corrige erro NameError: Dict not defined na inicialização do servidor
+- reestrutura templates/ativos/detalhe.html em layout V2
+- mantém cards de status, horas de motor, tensão, motor e última atualização
+- integra Leaflet + OpenStreetMap para mostrar posição (latitude/longitude)
+- usa dados da telemetria BrasilSat (latitude/longitude) via /api/ativos/<id>/monitoramento
