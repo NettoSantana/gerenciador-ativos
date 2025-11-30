@@ -1,5 +1,6 @@
-﻿style: refatora dashboard do cliente para layout em flex
+﻿feat: adiciona latitude, longitude e velocidade na telemetria BrasilSat
 
-- remove tabela e usa linhas em flexbox dentro do card
-- melhora alinhamento das colunas e do botão 'Abrir painel'
-- deixa o painel do cliente visualmente mais limpo e profissional
+- extrai latitude/longitude do record bruto
+- inclui velocidade e direção
+- normaliza conversões numéricas
+- prepara para exibir mapa em tempo real no painel
