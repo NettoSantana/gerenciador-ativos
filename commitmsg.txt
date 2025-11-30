@@ -1,5 +1,5 @@
-﻿fix: corrige autenticação do portal do cliente e cria dashboard real
+﻿style: ajusta layout do botão 'Abrir painel' no portal do cliente
 
-- atualiza portal/routes.py para usar session + Usuario em vez de g.user
-- garante que apenas usuários tipo 'cliente' com cliente_id acessam o portal
-- cria templates/portal/dashboard_cliente.html com lista de ativos e link para painel
+- alinha coluna de ações à direita
+- evita quebra de linha em 'Abrir painel' com white-space: nowrap
+- melhora visual da tabela de ativos no dashboard do cliente
