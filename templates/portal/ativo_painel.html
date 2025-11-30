@@ -90,6 +90,32 @@
 
   </div>
 
+  <!-- LOCALIZAÇÃO / MAPA (AGORA PARA O CLIENTE TAMBÉM) -->
+  <div class="card" style="padding:16px; margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <div>
+        <h2 style="margin:0;">Localização da embarcação</h2>
+        <p id="coords-texto" style="margin:4px 0 0; color:#94a3b8; font-size:0.9rem;">
+          Aguardando atualização de telemetria...
+        </p>
+      </div>
+    </div>
+
+    <!-- CSS/JS do Leaflet (mapa) -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <div id="map" style="width:100%; height:320px; border-radius:12px; overflow:hidden; margin-top:8px;"></div>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin="">
+    </script>
+  </div>
+
   <!-- MENSAGEM / DEBUG -->
   <div id="monitoramento-mensagem"
        class="card"
@@ -108,8 +134,13 @@
   const horasEl = document.getElementById("horas-motor-texto");
   const tensaoEl = document.getElementById("tensao-bateria-texto");
   const motorEl = document.getElementById("motor-ligado-texto");
+  const horasParadasEl = document.getElementById("horas-paradas-texto");
   const ultimaEl = document.getElementById("ultima-atualizacao-texto");
   const msgEl = document.getElementById("monitoramento-mensagem");
+  const coordsEl = document.getElementById("coords-texto");
+
+  let map = null;
+  let marker = null;
 
   function msg(texto, tipo="info") {
     msgEl.style.display = "block";
@@ -118,6 +149,33 @@
     if (tipo === "erro") msgEl.style.color = "#fca5a5";
     else if (tipo === "ok") msgEl.style.color = "#6ee7b7";
     else msgEl.style.color = "#94a3b8";
+  }
+
+  function initMapIfNeeded() {
+    if (map) return;
+    if (typeof L === "undefined") {
+      console.warn("Leaflet não carregado, mapa indisponível.");
+      return;
+    }
+    // Posição default (Salvador) até chegar telemetria
+    map = L.map("map").setView([-12.9777, -38.5016], 10);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+  }
+
+  function atualizarMapa(lat, lng) {
+    if (typeof L === "undefined") return;
+    initMapIfNeeded();
+    if (!map) return;
+
+    if (marker) {
+      marker.setLatLng([lat, lng]);
+    } else {
+      marker = L.marker([lat, lng]).addTo(map);
+    }
+    map.setView([lat, lng], 14);
   }
 
   async function atualizar() {
@@ -135,7 +193,7 @@
         return;
       }
 
-      // atualizar status
+      // status
       statusEl.textContent = data.status_monitoramento || "—";
 
       // horas
@@ -143,14 +201,14 @@
         horasEl.textContent = data.horas_motor.toFixed(1) + " h";
       }
 
-      // tensão
+      // tensao
       if (data.tensao_bateria != null) {
         tensaoEl.textContent = Number(data.tensao_bateria).toFixed(1) + " V";
       }
 
-      // motor ligado
-      if (data.telemetria) {
-        motorEl.textContent = data.telemetria.motor_ligado ? "Ligado" : "Desligado";
+      // horas paradas (se vier da API)
+      if (typeof data.horas_paradas === "number") {
+        horasParadasEl.textContent = data.horas_paradas.toFixed(1) + " h";
       }
 
       // última atualização
@@ -158,10 +216,26 @@
         ultimaEl.textContent = data.ultima_atualizacao;
       }
 
+      // telemetria
+      if (data.telemetria) {
+        motorEl.textContent = data.telemetria.motor_ligado ? "Ligado" : "Desligado";
+
+        const lat = data.telemetria.latitude;
+        const lng = data.telemetria.longitude;
+
+        if (lat != null && lng != null) {
+          coordsEl.textContent = `Latitude: ${lat.toFixed(5)} · Longitude: ${lng.toFixed(5)}`;
+          atualizarMapa(lat, lng);
+        } else {
+          coordsEl.textContent = "Localização ainda não disponível na última telemetria.";
+        }
+      }
+
       msg("Dados atualizados com sucesso!", "ok");
 
     } catch (e) {
       msg("Falha inesperada: " + e, "erro");
+      console.error(e);
     }
 
     btn.disabled = false;
@@ -171,7 +245,10 @@
   btn.addEventListener("click", atualizar);
 
   // Atualiza automaticamente ao abrir
-  document.addEventListener("DOMContentLoaded", atualizar);
+  document.addEventListener("DOMContentLoaded", function () {
+    initMapIfNeeded();
+    atualizar();
+  });
 
 })();
 </script>

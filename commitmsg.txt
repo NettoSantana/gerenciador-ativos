@@ -1,6 +1,5 @@
-﻿feat: adiciona mapa de localização no painel interno do ativo
+﻿feat: alinha painel interno com painel do cliente e mantém mapa
 
-- reestrutura templates/ativos/detalhe.html em layout V2
-- mantém cards de status, horas de motor, tensão, motor e última atualização
-- integra Leaflet + OpenStreetMap para mostrar posição (latitude/longitude)
-- usa dados da telemetria BrasilSat (latitude/longitude) via /api/ativos/<id>/monitoramento
+- adiciona card de Horas Paradas no painel interno
+- garante que o admin vê tudo que o cliente vê, com layout V2
+- mantém card de localização com mapa Leaflet
