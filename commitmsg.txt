@@ -1,5 +1,5 @@
-﻿style: ajusta layout do botão 'Abrir painel' no portal do cliente
+﻿style: refatora dashboard do cliente para layout em flex
 
-- alinha coluna de ações à direita
-- evita quebra de linha em 'Abrir painel' com white-space: nowrap
-- melhora visual da tabela de ativos no dashboard do cliente
+- remove tabela e usa linhas em flexbox dentro do card
+- melhora alinhamento das colunas e do botão 'Abrir painel'
+- deixa o painel do cliente visualmente mais limpo e profissional
