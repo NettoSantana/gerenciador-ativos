@@ -1,6 +1,5 @@
-﻿feat: cria painel completo do ativo (Portal do Cliente PRO)
+﻿fix: corrige autenticação do portal do cliente e cria dashboard real
 
-- novo template templates/portal/ativo_painel.html
-- layout V2 com cards iguais ao painel antigo
-- integração com /api/ativos/<id>/monitoramento
-- painel limpo, responsivo e pronto para cliente final
+- atualiza portal/routes.py para usar session + Usuario em vez de g.user
+- garante que apenas usuários tipo 'cliente' com cliente_id acessam o portal
+- cria templates/portal/dashboard_cliente.html com lista de ativos e link para painel
