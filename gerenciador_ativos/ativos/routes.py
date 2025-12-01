@@ -1,56 +1,36 @@
-from flask import render_template, request, redirect, url_for, flash
-from gerenciador_ativos.ativos import ativos_bp
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from gerenciador_ativos.auth.decorators import login_required
 from gerenciador_ativos.models import Ativo, Cliente
-from gerenciador_ativos.auth.decorators import login_required, role_required
-from gerenciador_ativos.ativos.service import (
-    criar_ativo, atualizar_ativo,
-    desativar_ativo, ativar_ativo
-)
+from gerenciador_ativos.ativos.service import criar_ativo, atualizar_ativo, deletar_ativo
+
+ativos_bp = Blueprint("ativos", url_prefix="/ativos")
 
 
 @ativos_bp.route("/")
 @login_required
-@role_required(["admin", "gerente"])
 def lista():
-    ativos = Ativo.query.order_by(Ativo.nome).all()
+    ativos = Ativo.query.all()
     return render_template("ativos/lista.html", ativos=ativos)
 
 
 @ativos_bp.route("/novo", methods=["GET", "POST"])
 @login_required
-@role_required(["admin", "gerente"])
 def novo():
-    clientes = Cliente.query.filter_by(ativo=True).order_by(Cliente.nome).all()
+    clientes = Cliente.query.order_by(Cliente.nome).all()
 
     if request.method == "POST":
         cliente_id = request.form.get("cliente_id")
         nome = request.form.get("nome")
         categoria = request.form.get("categoria")
-        tipo = request.form.get("tipo")
-        modelo = request.form.get("modelo")
-        numero_serie = request.form.get("numero_serie")
-        codigo_interno = request.form.get("codigo_interno")
-        localizacao = request.form.get("localizacao")
-        status_operacional = request.form.get("status_operacional")
+        imei = request.form.get("imei")
         observacoes = request.form.get("observacoes")
-        imei = request.form.get("imei")  # NOVO
-
-        if not cliente_id:
-            flash("Selecione um cliente.", "danger")
-            return redirect(url_for("ativos.novo"))
 
         criar_ativo(
             cliente_id=int(cliente_id),
             nome=nome,
             categoria=categoria,
-            tipo=tipo,
-            modelo=modelo,
-            numero_serie=numero_serie,
-            codigo_interno=codigo_interno,
-            localizacao=localizacao,
-            status_operacional=status_operacional,
-            observacoes=observacoes,
-            imei=imei or None,  # garante None se vier vazio
+            imei=imei,
+            observacoes=observacoes
         )
 
         flash("Ativo criado com sucesso!", "success")
@@ -59,83 +39,37 @@ def novo():
     return render_template("ativos/novo.html", clientes=clientes)
 
 
-@ativos_bp.route("/editar/<int:id>", methods=["GET", "POST"])
+@ativos_bp.route("/<int:ativo_id>/editar", methods=["GET", "POST"])
 @login_required
-@role_required(["admin", "gerente"])
-def editar(id):
-    ativo = Ativo.query.get_or_404(id)
-    clientes = Cliente.query.filter_by(ativo=True).order_by(Cliente.nome).all()
+def editar(ativo_id):
+    ativo = Ativo.query.get_or_404(ativo_id)
+    clientes = Cliente.query.order_by(Cliente.nome).all()
 
     if request.method == "POST":
         cliente_id = request.form.get("cliente_id")
         nome = request.form.get("nome")
         categoria = request.form.get("categoria")
-        tipo = request.form.get("tipo")
-        modelo = request.form.get("modelo")
-        numero_serie = request.form.get("numero_serie")
-        codigo_interno = request.form.get("codigo_interno")
-        localizacao = request.form.get("localizacao")
-        status_operacional = request.form.get("status_operacional")
+        imei = request.form.get("imei")
         observacoes = request.form.get("observacoes")
-        imei = request.form.get("imei")  # NOVO
-
-        if not cliente_id:
-            flash("Selecione um cliente.", "danger")
-            return redirect(url_for("ativos.editar", id=id))
 
         atualizar_ativo(
-            ativo,
+            ativo_id,
             cliente_id=int(cliente_id),
             nome=nome,
             categoria=categoria,
-            tipo=tipo,
-            modelo=modelo,
-            numero_serie=numero_serie,
-            codigo_interno=codigo_interno,
-            localizacao=localizacao,
-            status_operacional=status_operacional,
-            observacoes=observacoes,
-            imei=imei or None,  # garante None se vier vazio
+            imei=imei,
+            observacoes=observacoes
         )
 
-        flash("Ativo atualizado!", "success")
+        flash("Ativo atualizado com sucesso!", "success")
         return redirect(url_for("ativos.lista"))
 
     return render_template("ativos/editar.html", ativo=ativo, clientes=clientes)
 
 
-@ativos_bp.route("/desativar/<int:id>")
+@ativos_bp.route("/<int:ativo_id>/delete", methods=["POST"])
 @login_required
-@role_required(["admin", "gerente"])
-def desativar(id):
-    ativo = Ativo.query.get_or_404(id)
-    desativar_ativo(ativo)
-    flash("Ativo desativado.", "warning")
+def remover(ativo_id):
+    deletar_ativo(ativo_id)
+    flash("Ativo removido com sucesso!", "success")
     return redirect(url_for("ativos.lista"))
-
-
-@ativos_bp.route("/ativar/<int:id>")
-@login_required
-@role_required(["admin", "gerente"])
-def ativar(id):
-    ativo = Ativo.query.get_or_404(id)
-    ativar_ativo(ativo)
-    flash("Ativo ativado!", "success")
-    return redirect(url_for("ativos.lista"))
-
-
-# -------------------------------
-# Detalhe / painel do ativo
-# -------------------------------
-@ativos_bp.route("/<int:id>")
-@login_required
-@role_required(["admin", "gerente"])
-def detalhe(id):
-    """
-    Tela de detalhe/painel de um ativo específico.
-
-    Aqui consumimos /api/ativos/<id>/monitoramento via JS
-    para exibir horas de motor, tensão, status, etc.
-    """
-    ativo = Ativo.query.get_or_404(id)
-    return render_template("ativos/detalhe.html", ativo=ativo)

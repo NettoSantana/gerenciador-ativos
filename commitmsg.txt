@@ -1,5 +1,4 @@
-﻿fix: corrige modelo Cliente adicionando campo cpf_cnpj e demais atributos necessários
-
-- adiciona cpf_cnpj ao modelo
-- adiciona telefone, email, endereco e observacoes
-- resolve erro 'invalid keyword argument' ao criar cliente
+﻿fix: recria models.py completo (Usuario, Cliente, Ativo)
+- adiciona campos de telemetria avançada no Ativo
+- recria modelo Usuario para login/admin
+- corrige import error no server.py
