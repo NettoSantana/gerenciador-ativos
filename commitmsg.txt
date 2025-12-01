@@ -1,5 +1,5 @@
-﻿fix: remove campo nome_fantasia do service de clientes
+﻿fix: remove nome_fantasia das rotas de clientes
 
-- elimina argumento inexistente no modelo Cliente
-- corrige criação e atualização de clientes
-- resolve erro 500 ao salvar novo cliente
+- ajusta /clientes/novo e /clientes/editar
+- remove parâmetro inexistente que causava erro 500
+- compatível com service.py e models.py atuais
