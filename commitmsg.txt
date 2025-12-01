@@ -1,5 +1,5 @@
-﻿feat: adiciona mapa de localização no painel do cliente
+﻿fix: adiciona rota temporária /reset-admin para redefinir senha do administrador
 
-- atualiza templates/portal/ativo_painel.html
-- mantém mesmos cards de telemetria que o cliente já via
-- adiciona card de localização com Leaflet usando latitude/longitude da BrasilSat
+- adiciona endpoint seguro para reset de senha via navegador
+- redefine senha do admin para admin123
+- solução usada devido à ausência de Shell no Railway

@@ -1,6 +1,8 @@
 from flask import render_template, request, redirect, url_for, flash, session
 from gerenciador_ativos.auth import auth_bp
 from gerenciador_ativos.auth.service import autenticar_usuario
+from gerenciador_ativos.extensions import db
+from gerenciador_ativos.models import Usuario
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
@@ -26,7 +28,7 @@ def login():
         if usuario.is_interno():
             return redirect(url_for("dashboards.dashboard_gerente"))
         else:
-            # tipo cliente → manda para o PORTAL DO CLIENTE NOVO
+            # tipo cliente → manda para o PORTAL DO CLIENTE
             return redirect(url_for("portal.dashboard_cliente"))
 
     return render_template("auth/login.html")
@@ -37,3 +39,41 @@ def logout():
     session.clear()
     flash("Você saiu do sistema.", "info")
     return redirect(url_for("auth.login"))
+
+
+# ============================================================
+# ROTA INTERNA SEGURA PARA RESETAR SENHA DO ADMIN
+# ============================================================
+
+@auth_bp.route("/internal/reset-admin")
+def internal_reset_admin():
+    """
+    Rota interna para redefinir a senha do admin.
+
+    Uso:
+      /internal/reset-admin?token=NETTO123RESET
+
+    Somente se o token for EXATAMENTE NETTO123RESET.
+    """
+    token = request.args.get("token")
+
+    if token != "NETTO123RESET":
+        # não revela nada, só nega
+        return "Acesso negado.", 403
+
+    admin = Usuario.query.filter_by(email="admin@admin.com").first()
+
+    # se não existir, cria; se existir, reseta a senha
+    if not admin:
+        admin = Usuario(
+            nome="Administrador",
+            email="admin@admin.com",
+            tipo="admin",
+            ativo=True,
+        )
+        db.session.add(admin)
+
+    admin.set_password("admin123")
+    db.session.commit()
+
+    return "Senha do admin redefinida para admin123."
