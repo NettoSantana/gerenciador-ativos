@@ -1,5 +1,5 @@
-﻿feat: alinha painel interno com painel do cliente e mantém mapa
+﻿feat: adiciona mapa de localização no painel do cliente
 
-- adiciona card de Horas Paradas no painel interno
-- garante que o admin vê tudo que o cliente vê, com layout V2
-- mantém card de localização com mapa Leaflet
+- atualiza templates/portal/ativo_painel.html
+- mantém mesmos cards de telemetria que o cliente já via
+- adiciona card de localização com Leaflet usando latitude/longitude da BrasilSat
