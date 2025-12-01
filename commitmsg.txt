@@ -1,4 +1,6 @@
-﻿fix: recria models.py completo (Usuario, Cliente, Ativo)
-- adiciona campos de telemetria avançada no Ativo
-- recria modelo Usuario para login/admin
-- corrige import error no server.py
+﻿feat: reescreve módulo ATIVOS V2 (modelo de embarcações)
+
+- remove campos antigos (tipo, modelo, série, status_operacional etc.)
+- adiciona apenas os campos da versão 2: cliente_id, nome, categoria, imei, observacoes
+- reescreve service, routes e templates
+- corrige erros 500 e incompatibilidades com models.py

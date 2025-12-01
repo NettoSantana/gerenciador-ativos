@@ -3,7 +3,8 @@ from gerenciador_ativos.auth.decorators import login_required
 from gerenciador_ativos.models import Ativo, Cliente
 from gerenciador_ativos.ativos.service import criar_ativo, atualizar_ativo, deletar_ativo
 
-ativos_bp = Blueprint("ativos", url_prefix="/ativos")
+# CORREÇÃO → acrescentado "__name__"
+ativos_bp = Blueprint("ativos", __name__, url_prefix="/ativos")
 
 
 @ativos_bp.route("/")
