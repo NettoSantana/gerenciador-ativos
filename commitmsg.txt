@@ -1,6 +1,6 @@
-﻿feat: reescreve módulo ATIVOS V2 (modelo de embarcações)
+﻿fix: corrige criação de usuários (set_password) e criação de ativos
 
-- remove campos antigos (tipo, modelo, série, status_operacional etc.)
-- adiciona apenas os campos da versão 2: cliente_id, nome, categoria, imei, observacoes
-- reescreve service, routes e templates
-- corrige erros 500 e incompatibilidades com models.py
+- ajusta nome do método de senha
+- torna 'observacoes' opcional nos ativos
+- corrige rotas para enviar observacoes
+- padroniza assinaturas das funções

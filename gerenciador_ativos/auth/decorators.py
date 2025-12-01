@@ -28,3 +28,10 @@ def role_required(roles):
         return wrapped_view
 
     return decorator
+
+
+# ------------------------------------------------------
+# ADICIONAR ESTA FUNÇÃO ↓↓↓
+# ------------------------------------------------------
+def gerente_required(view_func):
+    return role_required(["admin", "gerente"])(view_func)
