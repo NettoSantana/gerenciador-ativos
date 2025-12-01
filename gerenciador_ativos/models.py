@@ -1,12 +1,44 @@
 from gerenciador_ativos.extensions import db
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 
+# --------------------------------------------------------
+# USUÁRIO DO SISTEMA (ADMIN, GERENTE, TÉCNICO, CLIENTE)
+# --------------------------------------------------------
+class Usuario(db.Model):
+    __tablename__ = "usuarios"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    nome = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    senha_hash = db.Column(db.String(255), nullable=False)
+
+    tipo = db.Column(db.String(50), default="gerente")  # admin / gerente / cliente
+    ativo = db.Column(db.Boolean, default=True)
+
+    cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=True)
+
+    def set_senha(self, senha):
+        self.senha_hash = generate_password_hash(senha)
+
+    def checar_senha(self, senha):
+        return check_password_hash(self.senha_hash, senha)
+
+    def __repr__(self):
+        return f"<Usuario {self.email}>"
+
+
+# --------------------------------------------------------
+# CLIENTES
+# --------------------------------------------------------
 class Cliente(db.Model):
     __tablename__ = "clientes"
 
     id = db.Column(db.Integer, primary_key=True)
 
-    tipo = db.Column(db.String(50), nullable=False)              # PF ou PJ
+    tipo = db.Column(db.String(50), nullable=False)  # PF ou PJ
     nome = db.Column(db.String(120), nullable=False)
     cpf_cnpj = db.Column(db.String(30), nullable=True)
     telefone = db.Column(db.String(50), nullable=True)
@@ -16,8 +48,42 @@ class Cliente(db.Model):
 
     ativo = db.Column(db.Boolean, default=True)
 
-    # Relacionamentos futuros:
-    # ativos = db.relationship("Ativo", backref="cliente", lazy=True)
+    usuarios = db.relationship("Usuario", backref="cliente", lazy=True)
+    ativos = db.relationship("Ativo", backref="cliente", lazy=True)
 
     def __repr__(self):
         return f"<Cliente {self.nome}>"
+
+
+# --------------------------------------------------------
+# ATIVOS (embarcações, máquinas, etc.)
+# --------------------------------------------------------
+class Ativo(db.Model):
+    __tablename__ = "ativos"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=False)
+
+    nome = db.Column(db.String(120), nullable=False)
+    categoria = db.Column(db.String(120), nullable=True)
+    imei = db.Column(db.String(50), nullable=True)
+
+    # --- TELEMETRIA AVANÇADA ---
+    horas_offset = db.Column(db.Float, default=0.0)              # ajuste manual
+    horas_sistema = db.Column(db.Float, default=0.0)             # acumulador (nunca zera)
+    horas_paradas = db.Column(db.Float, default=0.0)             # zera quando ligar
+    ultimo_estado_motor = db.Column(db.Integer, default=0)       # 0 desligado / 1 ligado
+    total_ignicoes = db.Column(db.Integer, default=0)            # nunca zera
+    ultima_atualizacao = db.Column(db.DateTime, nullable=True)
+
+    # localização
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
+
+    ativo = db.Column(db.Boolean, default=True)
+
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Ativo {self.nome}>"

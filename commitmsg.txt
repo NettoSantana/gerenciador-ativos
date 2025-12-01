@@ -1,6 +1,5 @@
-﻿feat: amplia modelo Cliente com endereco e observacoes
+﻿fix: corrige modelo Cliente adicionando campo cpf_cnpj e demais atributos necessários
 
-- adiciona campos endereco e observacoes ao Cliente
-- mantém documento como campo unificado para CPF/CNPJ
-- compatível com telas, rotas e service
-- prepara sistema para vendas e onboarding profissional
+- adiciona cpf_cnpj ao modelo
+- adiciona telefone, email, endereco e observacoes
+- resolve erro 'invalid keyword argument' ao criar cliente
