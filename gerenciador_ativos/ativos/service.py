@@ -2,16 +2,13 @@ from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import Ativo
 
 
-# --------------------------------------------------------
-# CRIAR ATIVO
-# --------------------------------------------------------
-def criar_ativo(cliente_id, nome, categoria, imei, observacoes):
+def criar_ativo(nome, categoria, imei, cliente_id, observacoes=None):
     ativo = Ativo(
-        cliente_id=cliente_id,
         nome=nome,
-        categoria=categoria or None,
+        categoria=categoria,
         imei=imei or None,
-        observacoes=observacoes or None,
+        observacoes=observacoes,
+        cliente_id=cliente_id,
         ativo=True
     )
 
@@ -20,26 +17,17 @@ def criar_ativo(cliente_id, nome, categoria, imei, observacoes):
     return ativo
 
 
-# --------------------------------------------------------
-# ATUALIZAR ATIVO
-# --------------------------------------------------------
-def atualizar_ativo(ativo_id, cliente_id, nome, categoria, imei, observacoes):
-    ativo = Ativo.query.get_or_404(ativo_id)
-
-    ativo.cliente_id = cliente_id
+def atualizar_ativo(ativo, nome, categoria, imei, cliente_id, observacoes=None):
     ativo.nome = nome
-    ativo.categoria = categoria or None
+    ativo.categoria = categoria
     ativo.imei = imei or None
-    ativo.observacoes = observacoes or None
+    ativo.observacoes = observacoes
+    ativo.cliente_id = cliente_id
 
     db.session.commit()
     return ativo
 
 
-# --------------------------------------------------------
-# EXCLUIR ATIVO (nome correto para a rota)
-# --------------------------------------------------------
-def excluir_ativo(ativo_id):
-    ativo = Ativo.query.get_or_404(ativo_id)
+def excluir_ativo(ativo):
     db.session.delete(ativo)
     db.session.commit()
