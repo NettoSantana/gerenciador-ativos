@@ -1,5 +1,8 @@
-﻿feat: adiciona rota interna segura para reset de senha do admin
+﻿feat: adiciona campos e lógica de Telemetria V2 PRO no modelo Ativo
 
-- cria endpoint /internal/reset-admin protegido por token NETTO123RESET
-- se o admin não existir, cria com email admin@admin.com
-- redefine a senha do admin para admin123 quando chamado com token válido
+- adiciona horas_motor_offset para ajuste manual
+- adiciona horas_sistema_total e timestamp_ligado para contagem de horas em funcionamento
+- adiciona timestamp_desligado para cálculo de horas paradas
+- adiciona total_ignicoes e acc_anterior para detecção de ignições (ACC 0→1)
+- ajusta métodos: atualizar_motor(), horas_paradas() e estado_motor()
+- prepara modelo para painel V2 completo
