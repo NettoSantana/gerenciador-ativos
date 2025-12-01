@@ -50,8 +50,8 @@
 
           <td style="padding:14px 20px; display:flex; gap:10px;">
 
-            <!-- NOVO: Botão para abrir o painel detalhado -->
-            <a href="{{ url_for('ativos.detalhe', id=a.id) }}" class="btn-ghost">
+            <!-- CORRIGIDO: painel chama editar -->
+            <a href="{{ url_for('ativos.editar', id=a.id) }}" class="btn-ghost">
               Painel
             </a>
 
