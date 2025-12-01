@@ -1,141 +1,109 @@
 from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
 from gerenciador_ativos.extensions import db
 
 
-# =========================================
-# MODELO: CLIENTE
-# =========================================
 class Cliente(db.Model):
     __tablename__ = "clientes"
 
     id = db.Column(db.Integer, primary_key=True)
-
-    # PF ou PJ
-    tipo = db.Column(db.String(10), nullable=False)
-
-    # Nome (PF) ou Razão Social (PJ)
-    nome = db.Column(db.String(255), nullable=False)
-
-    # Nome fantasia (apenas PJ)
-    nome_fantasia = db.Column(db.String(255), nullable=True)
-
-    # CPF ou CNPJ
-    cpf_cnpj = db.Column(db.String(20), nullable=False)
-
-    telefone = db.Column(db.String(50), nullable=True)
+    nome = db.Column(db.String(120), nullable=False)
+    tipo = db.Column(db.String(20), nullable=False)  # PF / PJ
+    documento = db.Column(db.String(50), nullable=True)
     email = db.Column(db.String(120), nullable=True)
-    endereco = db.Column(db.String(255), nullable=True)
-    observacoes = db.Column(db.Text, nullable=True)
-
+    telefone = db.Column(db.String(50), nullable=True)
     ativo = db.Column(db.Boolean, default=True)
 
-    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
-    atualizado_em = db.Column(
-        db.DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow
-    )
-
-    # Relacionamentos
-    usuarios = db.relationship(
-        "Usuario",
-        backref="cliente",
-        lazy=True,
-        foreign_keys="Usuario.cliente_id"
-    )
-
-    ativos = db.relationship(
-        "Ativo",
-        backref="cliente",
-        lazy=True,
-        foreign_keys="Ativo.cliente_id"
-    )
+    ativos = db.relationship("Ativo", backref="cliente", lazy=True)
 
     def __repr__(self):
-        return f"<Cliente {self.nome} ({self.tipo})>"
+        return f"<Cliente {self.nome}>"
 
 
-# =========================================
-# MODELO: ATIVO
-# =========================================
 class Ativo(db.Model):
     __tablename__ = "ativos"
 
     id = db.Column(db.Integer, primary_key=True)
 
-    cliente_id = db.Column(
-        db.Integer,
-        db.ForeignKey("clientes.id"),
-        nullable=False
-    )
+    cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=False)
+    nome = db.Column(db.String(120), nullable=False)
+    descricao = db.Column(db.Text, nullable=True)
 
-    # Dados básicos de identificação
-    nome = db.Column(db.String(255), nullable=False)
-    categoria = db.Column(db.String(50), nullable=False)  # Náutica, Industrial, Outros
-    tipo = db.Column(db.String(100), nullable=True)       # Motor, Compressor, Embarcação, etc.
-    modelo = db.Column(db.String(100), nullable=True)
-    numero_serie = db.Column(db.String(100), nullable=True)
-    codigo_interno = db.Column(db.String(100), nullable=True)
-    localizacao = db.Column(db.String(255), nullable=True)
+    imei = db.Column(db.String(50), nullable=True)
 
-    status_operacional = db.Column(
-        db.String(50),
-        nullable=False,
-        default="Operando"   # Operando, Parado, Em manutenção
-    )
+    status_monitoramento = db.Column(db.String(50), default="desconhecido")
 
-    observacoes = db.Column(db.Text, nullable=True)
-    ativo = db.Column(db.Boolean, default=True)
+    # ================================
+    # NOVOS CAMPOS — TELEMETRIA V2 PRO
+    # ================================
 
-    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
-    atualizado_em = db.Column(
-        db.DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow
-    )
+    # Horas de motor (vindas da BrasilSat) + offset manual
+    horas_motor = db.Column(db.Float, default=0.0)
+    horas_motor_offset = db.Column(db.Float, default=0.0)
 
-    # -------------------------------
-    # CAMPOS DE MONITORAMENTO (NÁUTICA / BRASILSAT)
-    # -------------------------------
+    # Horas do sistema — contadas apenas quando motor está LIGADO
+    horas_sistema_total = db.Column(db.Float, default=0.0)
+    timestamp_ligado = db.Column(db.DateTime, nullable=True)
 
-    # IMEI do rastreador BrasilSat vinculado à embarcação
-    imei = db.Column(db.String(32), nullable=True)
+    # Horas paradas — contagem enquanto motor está DESLIGADO
+    timestamp_desligado = db.Column(db.DateTime, nullable=True)
 
-    # Última atualização de telemetria bem-sucedida
+    # Contador de ignições — sempre que ACC passa de 0 → 1
+    total_ignicoes = db.Column(db.Integer, default=0)
+    acc_anterior = db.Column(db.Integer, default=0)
+
+    # Bateria
+    tensao_bateria = db.Column(db.Float, default=0.0)
+
+    # Atualização
     ultima_atualizacao = db.Column(db.DateTime, nullable=True)
 
-    # Status calculado do monitoramento:
-    # instalacao_pendente, online, offline, critico, bloqueado, etc.
-    status_monitoramento = db.Column(
-        db.String(32),
-        nullable=False,
-        default="instalacao_pendente"
-    )
+    def atualizar_motor(self, acc_atual):
+        """Atualiza ignições, horas do sistema e horas paradas com base no status ACC."""
 
-    # Horas totais de motor (consolidado)
-    horas_motor = db.Column(db.Float, nullable=False, default=0.0)
+        agora = datetime.utcnow()
 
-    # Horas paradas (motor desligado, se aplicável)
-    horas_paradas = db.Column(db.Float, nullable=False, default=0.0)
+        # --------------------------------
+        # 1) Contagem de ignições (0 → 1)
+        # --------------------------------
+        if self.acc_anterior == 0 and acc_atual == 1:
+            self.total_ignicoes += 1
+            self.timestamp_ligado = agora
+            self.timestamp_desligado = None  # resetar horas paradas
 
-    # Última tensão de bateria medida (V)
-    tensao_bateria = db.Column(db.Float, nullable=True)
+        # --------------------------------
+        # 2) Motor desligando (1 → 0)
+        # --------------------------------
+        if self.acc_anterior == 1 and acc_atual == 0:
+            if self.timestamp_ligado:
+                tempo_ligado = (agora - self.timestamp_ligado).total_seconds() / 3600
+                self.horas_sistema_total += max(tempo_ligado, 0)
+            self.timestamp_ligado = None
+            self.timestamp_desligado = agora  # começa contagem de horas paradas
 
-    # Origem dos dados de monitoramento: brasilsat, esp32, manual, etc.
-    origem_dados = db.Column(
-        db.String(32),
-        nullable=False,
-        default="brasilsat"
-    )
+        # --------------------------------
+        # 3) Horas paradas (contador só de exibição)
+        # --------------------------------
+        # (não fica salvo acumulado — apenas calculado no painel)
+
+        # Atualiza estado anterior
+        self.acc_anterior = acc_atual
+
+    def horas_paradas(self):
+        """Retorna horas em que o motor está parado (não acumula)."""
+        if not self.timestamp_desligado:
+            return 0.0
+
+        agora = datetime.utcnow()
+        return (agora - self.timestamp_desligado).total_seconds() / 3600
+
+    def estado_motor(self):
+        """Retorna texto baseado no ACC."""
+        return "ligado" if self.acc_anterior == 1 else "desligado"
 
     def __repr__(self):
-        return f"<Ativo {self.nome} ({self.categoria})>"
+        return f"<Ativo {self.nome}>"
 
 
-# =========================================
-# MODELO: USUÁRIO
-# =========================================
 class Usuario(db.Model):
     __tablename__ = "usuarios"
 
@@ -143,32 +111,22 @@ class Usuario(db.Model):
     nome = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha_hash = db.Column(db.String(255), nullable=False)
-    tipo = db.Column(db.String(50), nullable=False)  # admin, gerente, manutencao, financeiro, fiscal, cliente
-
-    cliente_id = db.Column(
-        db.Integer,
-        db.ForeignKey("clientes.id"),
-        nullable=True
-    )
-
+    tipo = db.Column(db.String(50), nullable=False)  # admin, gerente, cliente
     ativo = db.Column(db.Boolean, default=True)
 
-    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
-    atualizado_em = db.Column(
-        db.DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow
-    )
+    # cliente atrelado (somente para usuários tipo "cliente")
+    cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=True)
 
-    # Métodos
-    def set_password(self, senha: str) -> None:
+    def set_password(self, senha):
+        from werkzeug.security import generate_password_hash
         self.senha_hash = generate_password_hash(senha)
 
-    def check_password(self, senha: str) -> bool:
+    def check_password(self, senha):
+        from werkzeug.security import check_password_hash
         return check_password_hash(self.senha_hash, senha)
 
-    def is_interno(self) -> bool:
-        return self.tipo in ["admin", "gerente", "manutencao", "financeiro", "fiscal"]
+    def is_interno(self):
+        return self.tipo in ["admin", "gerente"]
 
-    def __repr__(self) -> str:
-        return f"<Usuario {self.email} ({self.tipo})>"
+    def __repr__(self):
+        return f"<Usuario {self.email}>"

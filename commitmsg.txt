@@ -1,5 +1,5 @@
-﻿fix: adiciona rota temporária /reset-admin para redefinir senha do administrador
+﻿feat: adiciona rota interna segura para reset de senha do admin
 
-- adiciona endpoint seguro para reset de senha via navegador
-- redefine senha do admin para admin123
-- solução usada devido à ausência de Shell no Railway
+- cria endpoint /internal/reset-admin protegido por token NETTO123RESET
+- se o admin não existir, cria com email admin@admin.com
+- redefine a senha do admin para admin123 quando chamado com token válido
