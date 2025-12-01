@@ -10,7 +10,7 @@ def criar_usuario(nome, email, senha, tipo, cliente_id=None):
         cliente_id=cliente_id,
         ativo=True
     )
-    usuario.set_password(senha)
+    usuario.set_senha(senha)  # <-- CORRETO AGORA
     db.session.add(usuario)
     db.session.commit()
     return usuario
@@ -18,7 +18,7 @@ def criar_usuario(nome, email, senha, tipo, cliente_id=None):
 
 def atualizar_usuario(usuario, nome, email, tipo, cliente_id):
     usuario.nome = nome
-    usuario.email = email
+    usuario.email = email.lower()
     usuario.tipo = tipo
     usuario.cliente_id = cliente_id
     db.session.commit()
