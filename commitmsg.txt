@@ -1,8 +1,5 @@
-﻿feat: adiciona campos e lógica de Telemetria V2 PRO no modelo Ativo
+﻿fix: remove campo nome_fantasia do service de clientes
 
-- adiciona horas_motor_offset para ajuste manual
-- adiciona horas_sistema_total e timestamp_ligado para contagem de horas em funcionamento
-- adiciona timestamp_desligado para cálculo de horas paradas
-- adiciona total_ignicoes e acc_anterior para detecção de ignições (ACC 0→1)
-- ajusta métodos: atualizar_motor(), horas_paradas() e estado_motor()
-- prepara modelo para painel V2 completo
+- elimina argumento inexistente no modelo Cliente
+- corrige criação e atualização de clientes
+- resolve erro 500 ao salvar novo cliente

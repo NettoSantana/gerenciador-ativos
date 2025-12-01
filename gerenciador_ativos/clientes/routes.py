@@ -23,14 +23,13 @@ def novo():
     if request.method == "POST":
         tipo = request.form.get("tipo")
         nome = request.form.get("nome")
-        nome_fantasia = request.form.get("nome_fantasia")
         cpf_cnpj = request.form.get("cpf_cnpj")
         telefone = request.form.get("telefone")
         email = request.form.get("email")
         endereco = request.form.get("endereco")
         observacoes = request.form.get("observacoes")
 
-        criar_cliente(tipo, nome, nome_fantasia, cpf_cnpj, telefone, email, endereco, observacoes)
+        criar_cliente(tipo, nome, cpf_cnpj, telefone, email, endereco, observacoes)
         flash("Cliente criado com sucesso!", "success")
         return redirect(url_for("clientes.lista"))
 
@@ -46,14 +45,13 @@ def editar(id):
     if request.method == "POST":
         tipo = request.form.get("tipo")
         nome = request.form.get("nome")
-        nome_fantasia = request.form.get("nome_fantasia")
         cpf_cnpj = request.form.get("cpf_cnpj")
         telefone = request.form.get("telefone")
         email = request.form.get("email")
         endereco = request.form.get("endereco")
         observacoes = request.form.get("observacoes")
 
-        atualizar_cliente(cliente, tipo, nome, nome_fantasia, cpf_cnpj, telefone, email, endereco, observacoes)
+        atualizar_cliente(cliente, tipo, nome, cpf_cnpj, telefone, email, endereco, observacoes)
         flash("Cliente atualizado!", "success")
         return redirect(url_for("clientes.lista"))
 
