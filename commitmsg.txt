@@ -1,5 +1,6 @@
-﻿fix: remove nome_fantasia das rotas de clientes
+﻿feat: amplia modelo Cliente com endereco e observacoes
 
-- ajusta /clientes/novo e /clientes/editar
-- remove parâmetro inexistente que causava erro 500
-- compatível com service.py e models.py atuais
+- adiciona campos endereco e observacoes ao Cliente
+- mantém documento como campo unificado para CPF/CNPJ
+- compatível com telas, rotas e service
+- prepara sistema para vendas e onboarding profissional
