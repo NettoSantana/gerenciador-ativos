@@ -1,4 +1,5 @@
-﻿fix: corrige caminho do painel de ativos
-- move painel.html para templates/ativos/
-- remove pasta duplicada templates/ativos/ativos/
-- corrige TemplateNotFound no /ativos/painel/<id>
+﻿feat: adiciona painel de ativos
+- cria rota painel.py com blueprint próprio
+- registra painel no servidor
+- cria template painel.html
+- estrutura inicial do painel com dados básicos do ativo

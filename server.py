@@ -12,9 +12,6 @@ from gerenciador_ativos.ativos.routes import ativos_bp
 from gerenciador_ativos.portal.routes import portal_bp
 from gerenciador_ativos.ativos.painel import painel_bp
 
-app.register_blueprint(painel_bp)
-
-
 # 🔥 Novo: blueprint do monitoramento BrasilSat
 from gerenciador_ativos.api.monitoramento.routes import monitoramento_bp
 
@@ -35,8 +32,7 @@ def create_app():
     app.register_blueprint(clientes_bp)
     app.register_blueprint(ativos_bp)
     app.register_blueprint(portal_bp)
-
-    # registro do novo blueprint de monitoramento
+    app.register_blueprint(painel_bp)  # <-- CORRETO
     app.register_blueprint(monitoramento_bp)
 
     # cria o banco e cria admin se não existir
