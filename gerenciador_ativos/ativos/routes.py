@@ -7,6 +7,7 @@ from gerenciador_ativos.auth.decorators import login_required, gerente_required
 ativos_bp = Blueprint("ativos", __name__, url_prefix="/ativos")
 
 
+# LISTAGEM
 @ativos_bp.route("/")
 @login_required
 @gerente_required
@@ -15,6 +16,16 @@ def lista():
     return render_template("ativos/lista.html", ativos=ativos)
 
 
+# PAINEL (AGORA EXISTE!)
+@ativos_bp.route("/painel/<int:id>")
+@login_required
+@gerente_required
+def painel(id):
+    ativo = Ativo.query.get_or_404(id)
+    return render_template("ativos/painel.html", ativo=ativo)
+
+
+# NOVO ATIVO
 @ativos_bp.route("/novo", methods=["GET", "POST"])
 @login_required
 @gerente_required
@@ -29,12 +40,12 @@ def novo():
         observacoes = request.form.get("observacoes")
 
         criar_ativo(nome, categoria, imei, cliente_id, observacoes)
-
         return redirect(url_for("ativos.lista"))
 
     return render_template("ativos/novo.html", clientes=clientes)
 
 
+# EDITAR
 @ativos_bp.route("/editar/<int:id>", methods=["GET", "POST"])
 @login_required
 @gerente_required
@@ -55,6 +66,7 @@ def editar(id):
     return render_template("ativos/editar.html", ativo=ativo, clientes=clientes)
 
 
+# EXCLUIR
 @ativos_bp.route("/excluir/<int:id>", methods=["POST"])
 @login_required
 @gerente_required
