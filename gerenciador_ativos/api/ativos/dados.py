@@ -1,103 +1,43 @@
-import os
 import time
 import logging
-import hashlib
-from datetime import datetime
 
-import requests
 from flask import jsonify
 
 from gerenciador_ativos.api.ativos import api_ativos_bp
 from gerenciador_ativos.models import Ativo
 from gerenciador_ativos.extensions import db
+from gerenciador_ativos.api.monitoramento.brasilsat import (
+    get_telemetria_por_imei,
+    BrasilSatError,
+)
 
 logger = logging.getLogger(__name__)
 
-# ============================
-#  CONFIG BRASILSAT (ENV VARS)
-# ============================
-
-BRASILSAT_API_BASE = os.getenv(
-    "BRASILSAT_API_BASE",
-    "https://api.brasilsatgps.com.br",
-).rstrip("/")
-
-BRASILSAT_ACCOUNT = os.getenv("BRASILSAT_ACCOUNT")   # login da API
-BRASILSAT_PASSWORD = os.getenv("BRASILSAT_PASSWORD") # senha da API (texto puro)
-
-# Cache simples do token em memória
-_token_cache = {"token": None, "expires_at": 0.0}
-
 
 # ============================
-#  AUTENTICAÇÃO (authorization)
-# ============================
-
-def _get_access_token():
-    """
-    Fluxo 2.1 da doc BRASILSAT:
-    signature = md5( md5(password) + time )
-    """
-    if not BRASILSAT_ACCOUNT or not BRASILSAT_PASSWORD:
-        logger.warning("BrasilSat: BRASILSAT_ACCOUNT/BRASILSAT_PASSWORD não configurados.")
-        return None
-
-    agora = int(time.time())
-
-    # usa cache se ainda estiver válido
-    if _token_cache["token"] and agora < _token_cache["expires_at"]:
-        return _token_cache["token"]
-
-    pwd_md5 = hashlib.md5(BRASILSAT_PASSWORD.encode("utf-8")).hexdigest()
-    signature_src = pwd_md5 + str(agora)
-    signature = hashlib.md5(signature_src.encode("utf-8")).hexdigest()
-
-    try:
-        resp = requests.get(
-            f"{BRASILSAT_API_BASE}/api/authorization",
-            params={
-                "time": agora,
-                "account": BRASILSAT_ACCOUNT,
-                "signature": signature,
-            },
-            timeout=10,
-        )
-        resp.raise_for_status()
-        data = resp.json() or {}
-
-        if data.get("code") != 0:
-            logger.error("BrasilSat auth erro: %s", data)
-            return None
-
-        record = data.get("record") or {}
-        token = record.get("access_token")
-        expires_in = int(record.get("expires_in", 0))
-
-        if not token:
-            logger.error("BrasilSat auth: resposta sem access_token.")
-            return None
-
-        _token_cache["token"] = token
-        _token_cache["expires_at"] = agora + max(0, expires_in - 300)
-        logger.info("BrasilSat auth OK, token obtido.")
-        return token
-
-    except Exception as exc:
-        logger.error("BrasilSat auth request falhou: %s", exc)
-        return None
-
-
-# ============================
-#  TELEMETRIA (track)
+#  TELEMETRIA (via brasilsat.py)
 # ============================
 
 def fetch_telemetria_externa(ativo: Ativo) -> dict:
     """
-    Chama /api/track da BrasilSat e devolve os campos
-    já no formato que o painel V2 espera.
+    Usa o client oficial da BrasilSat (api.monitoramento.brasilsat)
+    para obter a telemetria por IMEI e converte para o formato
+    que o painel V2 espera.
+
+    Saída padrão:
+    {
+        "imei": str,
+        "monitor_online": bool,
+        "motor_ligado": bool,
+        "tensao_bateria": float,
+        "servertime": int,      # epoch segundos
+        "latitude": float,
+        "longitude": float,
+    }
     """
     imei = getattr(ativo, "imei", None)
 
+    # Sem IMEI: retorna pacote offline
     if not imei:
         logger.warning("Ativo %s sem IMEI configurado.", ativo.id)
         agora = int(time.time())
@@ -111,73 +51,11 @@ def fetch_telemetria_externa(ativo: Ativo) -> dict:
             "longitude": 0.0,
         }
 
-    token = _get_access_token()
-    if not token:
-        logger.warning("BrasilSat: sem access_token, usando fallback.")
-        agora = int(time.time())
-        return {
-            "imei": imei,
-            "monitor_online": False,
-            "motor_ligado": False,
-            "tensao_bateria": 0.0,
-            "servertime": agora,
-            "latitude": 0.0,
-            "longitude": 0.0,
-        }
-
     try:
-        resp = requests.get(
-            f"{BRASILSAT_API_BASE}/api/track",
-            params={"access_token": token, "imeis": imei},
-            timeout=10,
-        )
-        resp.raise_for_status()
-        data = resp.json() or {}
-
-        if data.get("code") != 0:
-            logger.error("BrasilSat track erro: %s", data)
-            raise RuntimeError("track code != 0")
-
-        records = data.get("record") or []
-        if not records:
-            logger.warning("BrasilSat track: nenhum registro para IMEI %s", imei)
-            raise RuntimeError("sem record")
-
-        rec = records[0]
-
-        accstatus = int(rec.get("accstatus", -1))
-        motor_ligado = accstatus == 1
-
-        ext_power_str = (rec.get("externalpower") or "").strip()
-        try:
-            tensao = float(ext_power_str) if ext_power_str else 0.0
-        except ValueError:
-            tensao = 0.0
-
-        servertime = int(
-            rec.get("servertime")
-            or rec.get("systemtime")
-            or time.time()
-        )
-
-        latitude = float(rec.get("latitude", 0.0) or 0.0)
-        longitude = float(rec.get("longitude", 0.0) or 0.0)
-
-        datastatus = int(rec.get("datastatus", 0))
-        monitor_online = datastatus == 2  # 2 = OK
-
-        return {
-            "imei": imei,
-            "monitor_online": monitor_online,
-            "motor_ligado": motor_ligado,
-            "tensao_bateria": tensao,
-            "servertime": servertime,
-            "latitude": latitude,
-            "longitude": longitude,
-        }
-
-    except Exception as exc:
-        logger.error("BrasilSat track falhou para ativo %s: %s", ativo.id, exc)
+        # Chama o client unificado
+        dados = get_telemetria_por_imei(imei)
+    except BrasilSatError as exc:
+        logger.error("BrasilSat error para ativo %s (IMEI %s): %s", ativo.id, imei, exc)
         agora = int(time.time())
         return {
             "imei": imei,
@@ -188,6 +66,71 @@ def fetch_telemetria_externa(ativo: Ativo) -> dict:
             "latitude": 0.0,
             "longitude": 0.0,
         }
+    except Exception as exc:
+        logger.error("Erro inesperado ao obter telemetria BrasilSat para ativo %s: %s", ativo.id, exc)
+        agora = int(time.time())
+        return {
+            "imei": imei,
+            "monitor_online": False,
+            "motor_ligado": False,
+            "tensao_bateria": 0.0,
+            "servertime": agora,
+            "latitude": 0.0,
+            "longitude": 0.0,
+        }
+
+    # ---- Normalização dos campos vindos do client ----
+    motor_ligado = bool(dados.get("motor_ligado", False))
+
+    # Tensão de bateria
+    tensao_raw = dados.get("tensao_bateria")
+    try:
+        tensao_bateria = float(tensao_raw) if tensao_raw is not None else 0.0
+    except Exception:
+        tensao_bateria = 0.0
+
+    # Servertime: força para epoch int
+    servertime_raw = dados.get("servertime") or time.time()
+    try:
+        servertime = int(float(servertime_raw))
+    except Exception:
+        servertime = int(time.time())
+
+    # Latitude / longitude
+    lat_raw = dados.get("latitude")
+    lon_raw = dados.get("longitude")
+    try:
+        latitude = float(lat_raw) if lat_raw is not None else 0.0
+    except Exception:
+        latitude = 0.0
+    try:
+        longitude = float(lon_raw) if lon_raw is not None else 0.0
+    except Exception:
+        longitude = 0.0
+
+    # Monitor online: tenta usar datastatus do "raw" se existir
+    raw = dados.get("raw") or {}
+    try:
+        datastatus = int(raw.get("datastatus", 0))
+    except Exception:
+        datastatus = 0
+
+    if "datastatus" in raw:
+        monitor_online = datastatus == 2
+    else:
+        # fallback: considera "online" se tem telemetria recente
+        idade_seg = max(0, int(time.time()) - servertime)
+        monitor_online = idade_seg <= 600  # 10 minutos
+
+    return {
+        "imei": imei,
+        "monitor_online": monitor_online,
+        "motor_ligado": motor_ligado,
+        "tensao_bateria": tensao_bateria,
+        "servertime": servertime,
+        "latitude": latitude,
+        "longitude": longitude,
+    }
 
 
 # ============================
@@ -197,10 +140,18 @@ def fetch_telemetria_externa(ativo: Ativo) -> dict:
 
 @api_ativos_bp.get("/<int:id>/dados")
 def dados_ativo(id):
+    """
+    Endpoint consumido pelo painel do ativo (templates/ativos/painel.html).
+
+    Combina:
+    - Telemetria externa (BrasilSat)
+    - Horímetro interno (horas_sistema_total + timestamps)
+    - Horas paradas (desde o último desligar)
+    """
     # 1) Busca o ativo no banco
     ativo = Ativo.query.get_or_404(id)
 
-    # 2) Telemetria externa (BrasilSat)
+    # 2) Telemetria externa (BrasilSat, via client único)
     dados_api = fetch_telemetria_externa(ativo)
     motor_ligado = dados_api["motor_ligado"]
     agora_ts = float(dados_api["servertime"] or time.time())
@@ -208,7 +159,7 @@ def dados_ativo(id):
     # -----------------------------
     #  HORÍMETRO (HORAS DO MOTOR)
     # -----------------------------
-    # campos esperados no modelo (se não existirem, o código continua rodando):
+    # Campos esperados no modelo:
     # - ativo.horas_sistema_total (float, acumulado permanente)
     # - ativo.timestamp_ligado (float, epoch segundos)
     # - ativo.timestamp_desligado (float, epoch segundos)  -> p/ horas paradas
@@ -223,8 +174,6 @@ def dados_ativo(id):
         if ts_ligado is None:
             # se estava parado, fecha o ciclo de "parado" anterior
             if ts_desligado is not None:
-                # não precisamos acumular nada em banco por enquanto,
-                # pois "horas paradas" é só o tempo desde o último desligar
                 ativo.timestamp_desligado = None
 
             ativo.timestamp_ligado = agora_ts

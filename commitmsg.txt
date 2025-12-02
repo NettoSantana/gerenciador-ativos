@@ -1,5 +1,5 @@
-﻿feat: adiciona módulo REST profissional para ativos
-- cria pasta api/ativos
-- adiciona blueprint api_ativos_bp
-- implementa endpoint GET /api/ativos/<id>/dados
-- estrutura pronta para integração com BrasilSat, ESP32 e IndFlow
+﻿feat: melhora layout da tela de novo ativo
+- aplica card central com grid responsivo
+- organiza campos de cliente, nome, categoria e IMEI
+- adiciona campo opcional de tag interna e observações
+- mantém navegação com botão de voltar para lista de ativos
