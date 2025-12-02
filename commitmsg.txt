@@ -1,4 +1,4 @@
-﻿fix: restaura botão Painel e corrige rotas dos ativos
-- adiciona link para ativos.painel
-- remove referências quebradas
-- melhora layout da listagem
+﻿fix: corrige caminho do painel de ativos
+- move painel.html para templates/ativos/
+- remove pasta duplicada templates/ativos/ativos/
+- corrige TemplateNotFound no /ativos/painel/<id>
