@@ -1,29 +1,231 @@
 {% extends "base.html" %}
-
 {% block title %}Painel do Ativo{% endblock %}
 
 {% block content %}
-<div class="page">
 
-  <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
-    <h1>Painel — {{ ativo.nome }}</h1>
-    <a href="{{ url_for('ativos.lista') }}" class="btn-primary">Voltar</a>
-  </div>
+<style>
+  :root{
+    --bg:#0b1020; --bg2:#0f172a; --card:#121a2e; --card2:#0f172b;
+    --ink:#e5e7eb; --muted:#94a3b8; --accent:#38bdf8;
+    --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --line:#1f2a44;
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  body{
+    background: radial-gradient(1200px 700px at 20% -10%, #12214a 0%, transparent 70%),
+                radial-gradient(1400px 800px at 120% 10%, #0b3a55 0%, transparent 60%),
+                linear-gradient(180deg,var(--bg),var(--bg2));
+  }
 
-  <div class="card" style="padding: 25px;">
+  .wrap{max-width:1200px;margin:28px auto;padding:0 16px}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+  .row{display:flex;gap:12px;align-items:center}
 
-    <h2>Informações do Ativo</h2>
-    <p><strong>ID:</strong> {{ ativo.id }}</p>
-    <p><strong>Cliente:</strong> {{ ativo.cliente.nome }}</p>
-    <p><strong>Categoria:</strong> {{ ativo.categoria }}</p>
-    <p><strong>Status:</strong> {{ ativo.status }}</p>
+  h1{margin:0;font-size:22px;letter-spacing:.3px}
+  .sub{color:var(--muted);font-size:13px;margin-top:2px}
 
-    <hr style="margin:25px 0;">
+  .pill{
+    padding:6px 10px;border-radius:999px;font-size:12px;
+    background:#0a1325;border:1px solid var(--line);color:var(--muted);
+  }
+  .btn{
+    padding:8px 12px;border-radius:10px;border:1px solid var(--line);
+    background:#0a1325;color:var(--ink);cursor:pointer;font-size:13px;
+  }
+  .btn.active{
+    border-color:rgba(56,189,248,.5);color:var(--accent);
+  }
 
-    <h2>Próximas Ações</h2>
-    <p>Aqui futuramente terá a preventiva, alarmes, eventos, histórico, etc.</p>
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(12,1fr);}
+  .card{
+    background:linear-gradient(180deg,var(--card),var(--card2));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px;box-shadow:0 6px 18px rgba(0,0,0,.35);
+  }
 
-  </div>
+  .card h2{
+    margin:0 0 8px;font-size:14px;font-weight:700;
+    color:var(--accent);letter-spacing:.4px;text-transform:uppercase;
+  }
+
+  .kpi{font-size:30px;font-weight:800;margin:6px 0}
+  .muted{color:var(--muted);font-size:13px}
+
+  .dot{width:10px;height:10px;border-radius:999px;background:var(--muted);}
+  .dot.ok{background:var(--ok)}
+
+  .table{width:100%;border-collapse:collapse;margin-top:6px;font-size:13px;}
+  .table th,.table td{border-bottom:1px solid var(--line);padding:8px;text-align:left;}
+  .table th{color:var(--muted);font-weight:600}
+
+  .col-4{grid-column:span 4}
+  .col-12{grid-column:span 12}
+
+  .hide{display:none!important}
+</style>
+
+
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>Painel — {{ ativo.nome }}</h1>
+      <div class="sub">Ativo #{{ ativo.id }} — Cliente: {{ ativo.cliente.nome }}</div>
+    </div>
+
+    <div class="row">
+      <button class="btn active" id="tabPainel">Painel</button>
+      <button class="btn" id="tabPreventiva">Preventiva</button>
+      <div class="pill" id="lastUpdate">Última: --</div>
+      <div class="pill">IMEI: <span id="imei">--</span></div>
+    </div>
+  </header>
+
+
+  <!-- =======================
+       PAINEL PRINCIPAL
+  ======================== -->
+  <section id="viewPainel" class="grid">
+
+    <div class="card col-4">
+      <h2>Status monitoramento</h2>
+      <div class="kpi" id="statusMon">--</div>
+      <div class="muted">Situação geral</div>
+    </div>
+
+    <div class="card col-4">
+      <h2>Horas de Motor</h2>
+      <div class="kpi" id="horasMotor">--</div>
+      <div class="muted">Total consolidado</div>
+    </div>
+
+    <div class="card col-4">
+      <h2>Tensão Bateria</h2>
+      <div class="kpi" id="tensao">-- V</div>
+      <div class="muted" id="tensaoBadge">--</div>
+    </div>
+
+    <div class="card col-4">
+      <h2>Motor</h2>
+      <div class="kpi" id="motorStatus">--</div>
+      <div class="muted" id="motorHint">--</div>
+    </div>
+
+    <div class="card col-4">
+      <h2>Horas Paradas</h2>
+      <div class="kpi" id="horasParadas">--</div>
+      <div class="muted">Estimado</div>
+    </div>
+
+    <div class="card col-4">
+      <h2>Última Atualização</h2>
+      <div class="kpi" id="ultimaAtt">--</div>
+      <div class="muted">Horário do rastreador</div>
+    </div>
+
+    <div class="card col-12">
+      <h2>Localização</h2>
+      <div class="muted" id="coords">Latitude: -- / Longitude: --</div>
+      <div id="map" style="height:300px;margin-top:8px;border-radius:12px;overflow:hidden"></div>
+    </div>
+
+  </section>
+
+
+  <!-- =======================
+       PREVENTIVA
+  ======================== -->
+  <section id="viewPreventiva" class="grid hide">
+    <div class="card col-12">
+      <h2>Próximas Atividades</h2>
+      <div id="proxAtividades" class="muted">--</div>
+    </div>
+  </section>
 
 </div>
+
+<script>
+
+  const idAtivo = {{ ativo.id }};
+
+  const ENDPOINT_DADOS  = `/api/ativos/${idAtivo}/dados`;
+  const ENDPOINT_PREV   = `/api/ativos/${idAtivo}/preventiva`;
+  const ENDPOINT_OFFSET = `/api/ativos/${idAtivo}/config/offset`;
+  const ENDPOINT_PLANO  = `/api/ativos/${idAtivo}/config/plano`;
+
+
+  // Tabs
+  const tabPainel=document.getElementById("tabPainel");
+  const tabPrev=document.getElementById("tabPreventiva");
+  const viewPainel=document.getElementById("viewPainel");
+  const viewPrev=document.getElementById("viewPreventiva");
+
+  tabPainel.onclick=()=>{
+    tabPainel.classList.add("active");
+    tabPrev.classList.remove("active");
+    viewPainel.classList.remove("hide");
+    viewPrev.classList.add("hide");
+  };
+
+  tabPrev.onclick=()=>{
+    tabPrev.classList.add("active");
+    tabPainel.classList.remove("active");
+    viewPrev.classList.remove("hide");
+    viewPainel.classList.add("hide");
+    loadPrev();
+  };
+
+
+  function tsFmt(ts){
+    return new Date(ts*1000).toLocaleString("pt-BR");
+  }
+
+
+  async function refresh(){
+    const r = await fetch(ENDPOINT_DADOS);
+    const d = await r.json();
+
+    document.getElementById("imei").textContent = d.imei;
+    document.getElementById("lastUpdate").textContent = "Última " + tsFmt(d.servertime);
+    document.getElementById("ultimaAtt").textContent  = tsFmt(d.servertime);
+
+    document.getElementById("statusMon").textContent = d.monitor_online ? "online" : "offline";
+
+    document.getElementById("horasMotor").textContent = Number(d.horas_motor || 0).toFixed(2) + " h";
+    document.getElementById("horasParadas").textContent = Number(d.horas_paradas || 0).toFixed(2) + " h";
+
+    // Motor
+    document.getElementById("motorStatus").textContent = d.motor_ligado ? "Ligado" : "Desligado";
+    document.getElementById("motorHint").textContent   = d.motor_ligado ? "Ignição ON" : "ACC OFF";
+
+    // Tensão
+    const v = Number(d.tensao_bateria || 0);
+    document.getElementById("tensao").textContent = v.toFixed(2) + " V";
+    document.getElementById("tensaoBadge").textContent =
+        v < 12 ? "Baixa" : (v < 12.3 ? "Meia carga" : "OK");
+
+    // Localização
+    document.getElementById("coords").textContent =
+      `Latitude: ${d.latitude} — Longitude: ${d.longitude}`;
+  }
+
+
+  async function loadPrev(){
+    const r = await fetch(ENDPOINT_PREV);
+    const d = await r.json();
+
+    const arr = d.tarefas || [];
+    document.getElementById("proxAtividades").innerHTML =
+      arr.length
+        ? arr.slice(0,3).map(t=>`• ${t.nome} (${t.faltam.toFixed(1)} h)`).join("<br>")
+        : "Nenhuma.";
+  }
+
+
+  setInterval(refresh,20000);
+  refresh();
+
+</script>
+
 {% endblock %}

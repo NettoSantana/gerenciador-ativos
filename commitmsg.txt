@@ -1,5 +1,4 @@
-﻿feat: adiciona painel de ativos
-- cria rota painel.py com blueprint próprio
-- registra painel no servidor
-- cria template painel.html
-- estrutura inicial do painel com dados básicos do ativo
+﻿fix: corrige registro do blueprint painel
+- move app.register_blueprint(painel_bp) para dentro do create_app()
+- remove chamada inválida antes da criação do app
+- evita NameError no startup
