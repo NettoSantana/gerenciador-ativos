@@ -2,34 +2,199 @@
 {% block title %}Novo Ativo{% endblock %}
 
 {% block content %}
-<h2>Novo Ativo</h2>
+<div class="page">
 
-<form method="POST" class="form-card">
+  <style>
+    .novo-ativo-wrap{
+      max-width:960px;
+      margin:20px auto 0;
+    }
+    .novo-ativo-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+    .novo-ativo-header h1{
+      margin:0;
+      font-size:24px;
+    }
+    .novo-ativo-sub{
+      font-size:13px;
+      color:#9ca3af;
+      margin-top:4px;
+    }
+    .btn-ghost{
+      padding:8px 14px;
+      border-radius:999px;
+      border:1px solid #1f2937;
+      background:#020617;
+      color:#e5e7eb;
+      font-size:13px;
+      cursor:pointer;
+      text-decoration:none;
+    }
+    .card-form-ativo{
+      background:linear-gradient(180deg,#020617,#020617);
+      border-radius:16px;
+      border:1px solid #1f2937;
+      box-shadow:0 10px 30px rgba(15,23,42,.6);
+      padding:20px 22px;
+    }
+    .form-grid-ativo{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:14px;
+    }
+    .field-ativo{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      font-size:13px;
+      color:#e5e7eb;
+    }
+    .field-ativo label{
+      font-size:12px;
+      color:#9ca3af;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .field-ativo input,
+    .field-ativo select,
+    .field-ativo textarea{
+      background:#020617;
+      border-radius:10px;
+      border:1px solid #1f2937;
+      padding:8px 10px;
+      color:#e5e7eb;
+      font-size:13px;
+      outline:none;
+      resize:vertical;
+      min-height:40px;
+    }
+    .field-ativo input:focus,
+    .field-ativo select:focus,
+    .field-ativo textarea:focus{
+      border-color:#38bdf8;
+      box-shadow:0 0 0 1px rgba(56,189,248,.3);
+    }
+    .col-3x{grid-column:span 3;}
+    .col-4x{grid-column:span 4;}
+    .col-6x{grid-column:span 6;}
+    .col-8x{grid-column:span 8;}
+    .col-12x{grid-column:span 12;}
 
-  <label>Cliente</label>
-  <select name="cliente_id" required>
-    {% for c in clientes %}
-      <option value="{{ c.id }}">{{ c.nome }}</option>
-    {% endfor %}
-  </select>
+    @media (max-width:900px){
+      .form-grid-ativo{grid-template-columns:repeat(6,1fr);}
+      .col-3x,.col-4x,.col-6x,.col-8x,.col-12x{grid-column:span 6;}
+    }
 
-  <label>Nome</label>
-  <input type="text" name="nome" required placeholder="Ex: Lancha X">
+    .actions-ativo{
+      margin-top:18px;
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+    }
+    .btn-primary{
+      padding:9px 20px;
+      border-radius:999px;
+      border:none;
+      background:linear-gradient(135deg,#0ea5e9,#38bdf8);
+      color:#0b1020;
+      font-weight:600;
+      font-size:14px;
+      cursor:pointer;
+    }
+    .btn-primary:hover{filter:brightness(1.05);}
+    .hint-obs{
+      font-size:12px;
+      color:#64748b;
+      margin-top:4px;
+    }
+  </style>
 
-  <label>Categoria</label>
-  <select name="categoria">
-    <option>Náutica</option>
-    <option>Industrial</option>
-    <option>Outro</option>
-  </select>
+  <div class="novo-ativo-wrap">
 
-  <label>IMEI</label>
-  <input type="text" name="imei" placeholder="IMEI do rastreador">
+    <div class="novo-ativo-header">
+      <div>
+        <h1>Novo Ativo</h1>
+        <div class="novo-ativo-sub">
+          Cadastre um novo equipamento para monitoramento, preventiva e performance.
+        </div>
+      </div>
+      <a href="{{ url_for('ativos.lista') }}" class="btn-ghost">Voltar para lista</a>
+    </div>
 
-  <label>Observações</label>
-  <textarea name="observacoes"></textarea>
+    <div class="card-form-ativo">
+      <form method="post">
+        <div class="form-grid-ativo">
 
-  <button type="submit" class="btn-primary">Salvar</button>
+          <!-- Cliente -->
+          <div class="field-ativo col-6x">
+            <label for="cliente_id">Cliente</label>
+            <select id="cliente_id" name="cliente_id" required>
+              <option value="">Selecione um cliente</option>
+              {% for c in clientes %}
+                <option value="{{ c.id }}">{{ c.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
 
-</form>
+          <!-- Nome do ativo -->
+          <div class="field-ativo col-6x">
+            <label for="nome">Nome do ativo</label>
+            <input id="nome" name="nome" type="text" placeholder="Ex.: Lancha X" required>
+          </div>
+
+          <!-- Categoria -->
+          <div class="field-ativo col-4x">
+            <label for="categoria">Categoria</label>
+            <select id="categoria" name="categoria" required>
+              {% if categorias %}
+                {% for value, label in categorias %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              {% else %}
+                <option value="Naútica">Náutica</option>
+                <option value="Industrial">Industrial</option>
+                <option value="Veicular">Veicular</option>
+                <option value="Outro">Outro</option>
+              {% endif %}
+            </select>
+          </div>
+
+          <!-- IMEI -->
+          <div class="field-ativo col-4x">
+            <label for="imei">IMEI do rastreador</label>
+            <input id="imei" name="imei" type="text" placeholder="Ex.: 355468593059041" required>
+          </div>
+
+          <!-- (Opcional) campo extra: identificador interno -->
+          <div class="field-ativo col-4x">
+            <label for="tag_interna">Tag / Identificação interna</label>
+            <input id="tag_interna" name="tag_interna" type="text" placeholder="Opcional">
+          </div>
+
+          <!-- Observações -->
+          <div class="field-ativo col-12x">
+            <label for="observacoes">Observações</label>
+            <textarea id="observacoes" name="observacoes" rows="3"
+              placeholder="Informações importantes sobre instalação, acesso, particularidades do ativo..."></textarea>
+            <div class="hint-obs">
+              Essas informações ficam visíveis apenas para a equipe técnica.
+            </div>
+          </div>
+
+        </div>
+
+        <div class="actions-ativo">
+          <button type="submit" class="btn-primary">Salvar ativo</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
 {% endblock %}
