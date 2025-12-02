@@ -38,7 +38,10 @@
 
           <td style="padding:14px 20px; display:flex; gap:10px;">
 
-            <!-- PAINEL → ainda NÃO existe rota, removido temporariamente -->
+            <!-- NOVO: Botão Painel -->
+            <a href="{{ url_for('ativos.painel', id=a.id) }}" class="btn-ghost">
+              Painel
+            </a>
 
             <a href="{{ url_for('ativos.editar', id=a.id) }}" class="btn-ghost">
               Editar
