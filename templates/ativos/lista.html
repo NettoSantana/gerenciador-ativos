@@ -30,38 +30,27 @@
           <td style="padding:14px 20px;">{{ a.categoria }}</td>
 
           <td style="padding:14px 20px;">
-            {% if a.status_operacional == 'Operando' %}
-              <span class="chip"
-                style="background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.4); color:#22c55e;">
-                Operando
-              </span>
-            {% elif a.status_operacional == 'Parado' %}
-              <span class="chip"
-                style="background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.4); color:#f97316;">
-                Parado
-              </span>
-            {% else %}
-              <span class="chip"
-                style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.4); color:#3b82f6;">
-                Em manutenção
-              </span>
-            {% endif %}
+            <span class="chip"
+              style="background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.4); color:#22c55e;">
+              Ativo
+            </span>
           </td>
 
           <td style="padding:14px 20px; display:flex; gap:10px;">
 
-            <!-- CORRIGIDO: painel chama editar -->
+            <!-- PAINEL → ainda NÃO existe rota, removido temporariamente -->
+
             <a href="{{ url_for('ativos.editar', id=a.id) }}" class="btn-ghost">
-              Painel
+              Editar
             </a>
 
-            <a href="{{ url_for('ativos.editar', id=a.id) }}" class="btn-ghost">Editar</a>
+            <form action="{{ url_for('ativos.excluir', id=a.id) }}" method="POST"
+              onsubmit="return confirm('Tem certeza que deseja excluir este ativo?')">
+              <button type="submit" class="btn-ghost" style="color:#ef4444;">
+                Excluir
+              </button>
+            </form>
 
-            {% if a.ativo %}
-              <a href="{{ url_for('ativos.desativar', id=a.id) }}" class="btn-ghost">Desativar</a>
-            {% else %}
-              <a href="{{ url_for('ativos.ativar', id=a.id) }}" class="btn-ghost">Ativar</a>
-            {% endif %}
           </td>
         </tr>
         {% endfor %}
