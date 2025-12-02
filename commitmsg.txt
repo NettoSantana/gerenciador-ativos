@@ -1,6 +1,4 @@
-﻿fix: corrige criação de usuários (set_password) e criação de ativos
-
-- ajusta nome do método de senha
-- torna 'observacoes' opcional nos ativos
-- corrige rotas para enviar observacoes
-- padroniza assinaturas das funções
+﻿fix: restaura botão Painel e corrige rotas dos ativos
+- adiciona link para ativos.painel
+- remove referências quebradas
+- melhora layout da listagem
