@@ -11,6 +11,7 @@ from gerenciador_ativos.clientes.routes import clientes_bp
 from gerenciador_ativos.ativos.routes import ativos_bp
 from gerenciador_ativos.portal.routes import portal_bp
 from gerenciador_ativos.ativos.painel import painel_bp
+
 app.register_blueprint(painel_bp)
 
 

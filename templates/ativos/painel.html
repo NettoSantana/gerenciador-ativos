@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Painel do Ativo{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <h1>Painel — {{ ativo.nome }}</h1>
+    <a href="{{ url_for('ativos.lista') }}" class="btn-primary">Voltar</a>
+  </div>
+
+  <div class="card" style="padding: 25px;">
+
+    <h2>Informações do Ativo</h2>
+    <p><strong>ID:</strong> {{ ativo.id }}</p>
+    <p><strong>Cliente:</strong> {{ ativo.cliente.nome }}</p>
+    <p><strong>Categoria:</strong> {{ ativo.categoria }}</p>
+    <p><strong>Status:</strong> {{ ativo.status }}</p>
+
+    <hr style="margin:25px 0;">
+
+    <h2>Próximas Ações</h2>
+    <p>Aqui futuramente terá a preventiva, alarmes, eventos, histórico, etc.</p>
+
+  </div>
+
+</div>
+{% endblock %}
