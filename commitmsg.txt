@@ -1,4 +1,5 @@
-﻿fix: corrige registro do blueprint painel
-- move app.register_blueprint(painel_bp) para dentro do create_app()
-- remove chamada inválida antes da criação do app
-- evita NameError no startup
+﻿feat: adiciona painel V2 completo para ativos
+- cria layout profissional baseado na versão 1
+- adiciona CSS, JS e estrutura REST para integração
+- prepara endpoints /api/ativos/<id>/...
+- painel agora modular e pronto para backend híbrido (API + banco)

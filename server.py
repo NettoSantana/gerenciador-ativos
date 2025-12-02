@@ -11,6 +11,9 @@ from gerenciador_ativos.clientes.routes import clientes_bp
 from gerenciador_ativos.ativos.routes import ativos_bp
 from gerenciador_ativos.portal.routes import portal_bp
 from gerenciador_ativos.ativos.painel import painel_bp
+from gerenciador_ativos.api.ativos import api_ativos_bp
+app.register_blueprint(api_ativos_bp)
+
 
 # 🔥 Novo: blueprint do monitoramento BrasilSat
 from gerenciador_ativos.api.monitoramento.routes import monitoramento_bp
