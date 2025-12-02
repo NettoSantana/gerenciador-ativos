@@ -3,6 +3,9 @@ from gerenciador_ativos.config import Config
 from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import Usuario
 
+# Importa modelos de preventiva para o db.create_all enxergar a tabela
+from gerenciador_ativos import preventiva_models  # noqa
+
 # Blueprints existentes
 from gerenciador_ativos.auth.routes import auth_bp
 from gerenciador_ativos.dashboards.routes import dashboards_bp
@@ -15,7 +18,7 @@ from gerenciador_ativos.ativos.painel import painel_bp
 # 🔥 Novo: blueprint do monitoramento BrasilSat
 from gerenciador_ativos.api.monitoramento.routes import monitoramento_bp
 
-# 🔥 IMPORTA O NOVO MÓDULO REST (mas NÃO registra aqui)
+# 🔥 Novo: blueprint REST dos ativos (dados, preventiva, plano, etc.)
 from gerenciador_ativos.api.ativos import api_ativos_bp
 
 import os
@@ -38,7 +41,7 @@ def create_app():
     app.register_blueprint(painel_bp)
     app.register_blueprint(monitoramento_bp)
 
-    # 🔥 REGISTRO CERTO DO NOVO BLUEPRINT REST
+    # registro do novo blueprint REST
     app.register_blueprint(api_ativos_bp)
 
     # cria o banco e cria admin se não existir
