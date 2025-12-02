@@ -11,12 +11,12 @@ from gerenciador_ativos.clientes.routes import clientes_bp
 from gerenciador_ativos.ativos.routes import ativos_bp
 from gerenciador_ativos.portal.routes import portal_bp
 from gerenciador_ativos.ativos.painel import painel_bp
-from gerenciador_ativos.api.ativos import api_ativos_bp
-app.register_blueprint(api_ativos_bp)
-
 
 # 🔥 Novo: blueprint do monitoramento BrasilSat
 from gerenciador_ativos.api.monitoramento.routes import monitoramento_bp
+
+# 🔥 IMPORTA O NOVO MÓDULO REST (mas NÃO registra aqui)
+from gerenciador_ativos.api.ativos import api_ativos_bp
 
 import os
 
@@ -35,8 +35,11 @@ def create_app():
     app.register_blueprint(clientes_bp)
     app.register_blueprint(ativos_bp)
     app.register_blueprint(portal_bp)
-    app.register_blueprint(painel_bp)  # <-- CORRETO
+    app.register_blueprint(painel_bp)
     app.register_blueprint(monitoramento_bp)
+
+    # 🔥 REGISTRO CERTO DO NOVO BLUEPRINT REST
+    app.register_blueprint(api_ativos_bp)
 
     # cria o banco e cria admin se não existir
     with app.app_context():

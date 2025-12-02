@@ -1,5 +1,5 @@
-﻿feat: adiciona painel V2 completo para ativos
-- cria layout profissional baseado na versão 1
-- adiciona CSS, JS e estrutura REST para integração
-- prepara endpoints /api/ativos/<id>/...
-- painel agora modular e pronto para backend híbrido (API + banco)
+﻿feat: adiciona módulo REST profissional para ativos
+- cria pasta api/ativos
+- adiciona blueprint api_ativos_bp
+- implementa endpoint GET /api/ativos/<id>/dados
+- estrutura pronta para integração com BrasilSat, ESP32 e IndFlow
