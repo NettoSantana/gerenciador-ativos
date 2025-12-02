@@ -9,6 +9,7 @@ from flask import jsonify
 
 from gerenciador_ativos.api.ativos import api_ativos_bp
 from gerenciador_ativos.models import Ativo
+from gerenciador_ativos.extensions import db
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +17,11 @@ logger = logging.getLogger(__name__)
 #  CONFIG BRASILSAT (ENV VARS)
 # ============================
 
-# Pode sobrescrever no Railway, se quiser outro host
 BRASILSAT_API_BASE = os.getenv(
     "BRASILSAT_API_BASE",
     "https://api.brasilsatgps.com.br",
 ).rstrip("/")
 
-# Essas duas você vai configurar como VARIÁVEL DE AMBIENTE no Railway
 BRASILSAT_ACCOUNT = os.getenv("BRASILSAT_ACCOUNT")   # login da API
 BRASILSAT_PASSWORD = os.getenv("BRASILSAT_PASSWORD") # senha da API (texto puro)
 
@@ -34,13 +33,10 @@ _token_cache = {"token": None, "expires_at": 0.0}
 #  AUTENTICAÇÃO (authorization)
 # ============================
 
-
 def _get_access_token():
     """
-    Faz o fluxo 2.1 da documentação:
+    Fluxo 2.1 da doc BRASILSAT:
     signature = md5( md5(password) + time )
-    e retorna o access_token.
-    Cacheia em memória até expirar.
     """
     if not BRASILSAT_ACCOUNT or not BRASILSAT_PASSWORD:
         logger.warning("BrasilSat: BRASILSAT_ACCOUNT/BRASILSAT_PASSWORD não configurados.")
@@ -48,11 +44,10 @@ def _get_access_token():
 
     agora = int(time.time())
 
-    # Usa token em cache se ainda estiver válido
+    # usa cache se ainda estiver válido
     if _token_cache["token"] and agora < _token_cache["expires_at"]:
         return _token_cache["token"]
 
-    # md5(md5(password) + time)
     pwd_md5 = hashlib.md5(BRASILSAT_PASSWORD.encode("utf-8")).hexdigest()
     signature_src = pwd_md5 + str(agora)
     signature = hashlib.md5(signature_src.encode("utf-8")).hexdigest()
@@ -82,7 +77,6 @@ def _get_access_token():
             logger.error("BrasilSat auth: resposta sem access_token.")
             return None
 
-        # Guarda token em cache (deixa uma folga de 5 min)
         _token_cache["token"] = token
         _token_cache["expires_at"] = agora + max(0, expires_in - 300)
         logger.info("BrasilSat auth OK, token obtido.")
@@ -97,13 +91,11 @@ def _get_access_token():
 #  TELEMETRIA (track)
 # ============================
 
-
 def fetch_telemetria_externa(ativo: Ativo) -> dict:
     """
-    Chama /api/track da BrasilSat para pegar o último ponto do IMEI.
-    Faz o mapeamento para o formato que o painel V2 espera.
+    Chama /api/track da BrasilSat e devolve os campos
+    já no formato que o painel V2 espera.
     """
-
     imei = getattr(ativo, "imei", None)
 
     if not imei:
@@ -121,7 +113,6 @@ def fetch_telemetria_externa(ativo: Ativo) -> dict:
 
     token = _get_access_token()
     if not token:
-        # Sem token → não tenta API, mas não derruba o painel
         logger.warning("BrasilSat: sem access_token, usando fallback.")
         agora = int(time.time())
         return {
@@ -137,10 +128,7 @@ def fetch_telemetria_externa(ativo: Ativo) -> dict:
     try:
         resp = requests.get(
             f"{BRASILSAT_API_BASE}/api/track",
-            params={
-                "access_token": token,
-                "imeis": imei,
-            },
+            params={"access_token": token, "imeis": imei},
             timeout=10,
         )
         resp.raise_for_status()
@@ -155,13 +143,11 @@ def fetch_telemetria_externa(ativo: Ativo) -> dict:
             logger.warning("BrasilSat track: nenhum registro para IMEI %s", imei)
             raise RuntimeError("sem record")
 
-        # normalmente vem só 1 registro por IMEI
         rec = records[0]
 
         accstatus = int(rec.get("accstatus", -1))
         motor_ligado = accstatus == 1
 
-        # externalpower vem como string "12.1"
         ext_power_str = (rec.get("externalpower") or "").strip()
         try:
             tensao = float(ext_power_str) if ext_power_str else 0.0
@@ -178,7 +164,7 @@ def fetch_telemetria_externa(ativo: Ativo) -> dict:
         longitude = float(rec.get("longitude", 0.0) or 0.0)
 
         datastatus = int(rec.get("datastatus", 0))
-        monitor_online = datastatus == 2  # 2 = OK na doc
+        monitor_online = datastatus == 2  # 2 = OK
 
         return {
             "imei": imei,
@@ -209,7 +195,6 @@ def fetch_telemetria_externa(ativo: Ativo) -> dict:
 #  GET /api/ativos/<id>/dados
 # ============================
 
-
 @api_ativos_bp.get("/<int:id>/dados")
 def dados_ativo(id):
     # 1) Busca o ativo no banco
@@ -217,22 +202,70 @@ def dados_ativo(id):
 
     # 2) Telemetria externa (BrasilSat)
     dados_api = fetch_telemetria_externa(ativo)
-
     motor_ligado = dados_api["motor_ligado"]
+    agora_ts = float(dados_api["servertime"] or time.time())
 
-    # 3) Cálculo de horas de sistema (acumuladas + ciclo atual)
-    horas_sistema_total = getattr(ativo, "horas_sistema_total", 0) or 0.0
-    timestamp_ligado = getattr(ativo, "timestamp_ligado", None)
+    # -----------------------------
+    #  HORÍMETRO (HORAS DO MOTOR)
+    # -----------------------------
+    # campos esperados no modelo (se não existirem, o código continua rodando):
+    # - ativo.horas_sistema_total (float, acumulado permanente)
+    # - ativo.timestamp_ligado (float, epoch segundos)
+    # - ativo.timestamp_desligado (float, epoch segundos)  -> p/ horas paradas
 
-    if motor_ligado and timestamp_ligado:
-        agora_ts = time.time()
-        ciclo_horas = max(0.0, (agora_ts - timestamp_ligado) / 3600.0)
-        horas_motor = horas_sistema_total + ciclo_horas
+    horas_sistema_total = float(getattr(ativo, "horas_sistema_total", 0.0) or 0.0)
+    ts_ligado = getattr(ativo, "timestamp_ligado", None)
+    ts_desligado = getattr(ativo, "timestamp_desligado", None)
+
+    # Detecta bordas de estado usando ts_ligado / ts_desligado
+    if motor_ligado:
+        # Caso 1: motor acabou de ligar (antes não tinha timestamp_ligado)
+        if ts_ligado is None:
+            # se estava parado, fecha o ciclo de "parado" anterior
+            if ts_desligado is not None:
+                # não precisamos acumular nada em banco por enquanto,
+                # pois "horas paradas" é só o tempo desde o último desligar
+                ativo.timestamp_desligado = None
+
+            ativo.timestamp_ligado = agora_ts
+            ts_ligado = agora_ts
+
+    else:
+        # motor está desligado
+        if ts_ligado is not None:
+            # Caso 2: motor acabou de desligar → fecha ciclo de funcionamento
+            delta_h = max(0.0, (agora_ts - float(ts_ligado)) / 3600.0)
+            horas_sistema_total += delta_h
+            ativo.horas_sistema_total = horas_sistema_total
+            ativo.timestamp_ligado = None
+            ts_ligado = None
+            # marca início do período parado
+            ativo.timestamp_desligado = agora_ts
+            ts_desligado = agora_ts
+        elif ts_desligado is None:
+            # estava desligado há tempo indeterminado → define referência
+            ativo.timestamp_desligado = agora_ts
+            ts_desligado = agora_ts
+
+    # Persiste qualquer alteração de estado
+    try:
+        db.session.commit()
+    except Exception as exc:
+        logger.error("Erro ao salvar horímetro do ativo %s: %s", ativo.id, exc)
+        db.session.rollback()
+
+    # Horas de motor para exibir no painel
+    if motor_ligado and ts_ligado is not None:
+        # acumulado + tempo desde que ligou
+        horas_motor = horas_sistema_total + max(0.0, (agora_ts - float(ts_ligado)) / 3600.0)
     else:
         horas_motor = horas_sistema_total
 
-    # 4) Horas paradas (se não existir no modelo, assume 0)
-    horas_paradas = getattr(ativo, "horas_paradas", 0) or 0.0
+    # Horas paradas: tempo desde que desligou (não acumulativo, é "há quanto tempo está parado")
+    if (not motor_ligado) and ts_desligado is not None:
+        horas_paradas = max(0.0, (agora_ts - float(ts_desligado)) / 3600.0)
+    else:
+        horas_paradas = 0.0
 
     # 5) Monta resposta final para o painel V2
     return jsonify(
