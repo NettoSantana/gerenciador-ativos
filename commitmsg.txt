@@ -1,4 +1,4 @@
-﻿fix: remove vínculo cliente_id do cadastro de usuários
-- rotas reescritas sem dependência de clientes
-- formulario novo usuário simplificado
-- remove JS e select de cliente
+﻿fix: corrige responsividade do login isolando estilos no style.css
+- adiciona isolamento completo via body.login-body
+- impede conflito do layout geral com a tela de login no mobile
+- melhora compatibilidade com iPhone/Android
