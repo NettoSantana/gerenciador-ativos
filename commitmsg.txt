@@ -1,1 +1,1 @@
-﻿feat: adiciona campo tensao_bateria ao modelo Ativo
+﻿feat: atualiza painel do ativo com integração ao endpoint /api/ativos/<id>/dados
