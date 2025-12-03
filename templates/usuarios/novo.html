@@ -10,21 +10,25 @@
   <div class="card">
     <form method="post" class="form">
 
+      <!-- NOME -->
       <div class="field">
         <label>Nome</label>
         <input name="nome" required>
       </div>
 
+      <!-- EMAIL -->
       <div class="field">
         <label>Email</label>
         <input name="email" type="email" required>
       </div>
 
+      <!-- SENHA -->
       <div class="field">
         <label>Senha</label>
         <input name="senha" type="password" required>
       </div>
 
+      <!-- TIPO DE USUÁRIO -->
       <div class="field">
         <label>Tipo</label>
         <select name="tipo" required>
@@ -35,6 +39,32 @@
           <option value="fiscal">Fiscal</option>
           <option value="cliente">Cliente</option>
         </select>
+      </div>
+
+      <hr style="margin: 20px 0; opacity: .3;">
+
+      <!-- TELEFONE -->
+      <div class="field">
+        <label>Telefone</label>
+        <input name="telefone" placeholder="(71) 99999-9999">
+      </div>
+
+      <!-- CPF / CNPJ -->
+      <div class="field">
+        <label>CPF/CNPJ</label>
+        <input name="cpf_cnpj" placeholder="Digite somente números">
+      </div>
+
+      <!-- ENDEREÇO -->
+      <div class="field">
+        <label>Endereço</label>
+        <input name="endereco" placeholder="Rua, número, bairro...">
+      </div>
+
+      <!-- OBSERVAÇÕES -->
+      <div class="field">
+        <label>Observações</label>
+        <textarea name="observacoes" rows="3" placeholder="Informações adicionais"></textarea>
       </div>
 
       <button class="btn-primary">Salvar</button>
