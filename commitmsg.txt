@@ -1,5 +1,1 @@
-﻿feat: conecta painel gerencial ao banco de dados com KPI reais
-
-- adiciona contagem dinâmica de clientes, ativos e preventivas
-- rota /dashboard/gerente agora retorna dados reais
-- substitui valores estáticos por variáveis reais no template
+﻿feat: adiciona rota raiz / redirecionando para /login

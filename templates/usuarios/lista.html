@@ -26,6 +26,7 @@
           <td style="padding:14px 20px;">{{ u.nome }}</td>
           <td style="padding:14px 20px;">{{ u.email }}</td>
           <td style="padding:14px 20px; text-transform:capitalize;">{{ u.tipo }}</td>
+
           <td style="padding:14px 20px;">
             {% if u.ativo %}
               <span class="chip" style="background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.4); color:#22c55e;">
@@ -37,14 +38,29 @@
               </span>
             {% endif %}
           </td>
-          <td style="padding:14px 20px;">
+
+          <td style="padding:14px 20px; display:flex; gap:10px;">
+
+            <!-- EDITAR -->
             <a href="{{ url_for('usuarios.editar', id=u.id) }}" class="btn-ghost">Editar</a>
 
+            <!-- ATIVAR / DESATIVAR -->
             {% if u.ativo %}
-            <a href="{{ url_for('usuarios.desativar', id=u.id) }}" class="btn-ghost">Desativar</a>
+              <a href="{{ url_for('usuarios.toggle', id=u.id) }}" class="btn-ghost">Desativar</a>
             {% else %}
-            <a href="{{ url_for('usuarios.ativar', id=u.id) }}" class="btn-ghost">Ativar</a>
+              <a href="{{ url_for('usuarios.toggle', id=u.id) }}" class="btn-ghost">Ativar</a>
             {% endif %}
+
+            <!-- EXCLUIR (POST + CONFIRM) -->
+            <form action="{{ url_for('usuarios.excluir', id=u.id) }}"
+                  method="POST"
+                  onsubmit="return confirm('Tem certeza que deseja excluir DEFINITIVAMENTE este usuário?');">
+
+              <button class="btn-danger" style="margin:0;">
+                Excluir
+              </button>
+            </form>
+
           </td>
         </tr>
         {% endfor %}
