@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from gerenciador_ativos.config import Config
 from gerenciador_ativos.extensions import db
@@ -16,14 +17,11 @@ from gerenciador_ativos.portal.routes import portal_bp
 from gerenciador_ativos.ativos.painel import painel_bp
 from gerenciador_ativos.api.ativos.routes_dados import api_ativos_dados_bp
 
-
 # 🔥 Novo: blueprint do monitoramento BrasilSat
 from gerenciador_ativos.api.monitoramento.routes import monitoramento_bp
 
 # 🔥 Novo: blueprint REST dos ativos (dados, preventiva, plano, etc.)
 from gerenciador_ativos.api.ativos import api_ativos_bp
-
-import os
 
 
 def create_app():
@@ -43,7 +41,6 @@ def create_app():
     app.register_blueprint(painel_bp)
     app.register_blueprint(monitoramento_bp)
     app.register_blueprint(api_ativos_dados_bp)
-
 
     # registro do novo blueprint REST
     app.register_blueprint(api_ativos_bp)
@@ -66,6 +63,9 @@ def create_app():
 
     return app
 
+
+# 🔥 GANHADOR: Cria diretório instance ANTES do app
+os.makedirs("instance", exist_ok=True)
 
 app = create_app()
 
