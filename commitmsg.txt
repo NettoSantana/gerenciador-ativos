@@ -1,1 +1,5 @@
-﻿feat: adiciona rota raiz / redirecionando para /login
+﻿feat: adiciona botão Excluir com exclusão real na lista de usuários
+
+- inclui form POST com confirmação JS
+- proteção backend já implementada
+- layout alinhado ao padrão do sistema
