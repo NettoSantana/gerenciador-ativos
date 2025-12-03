@@ -1,1 +1,1 @@
-﻿fix: padroniza botão Excluir dos Usuários com estilo do módulo Ativos
+﻿fix: padroniza botão Excluir dos Usuários para o mesmo estilo dos Ativos
