@@ -232,7 +232,6 @@
        VIEW PAINEL
   ======================== -->
   <section id="viewPainel" class="grid-painel">
-
     <div class="card-kpi col-4">
       <h2>Status monitoramento</h2>
       <div class="kpi-value" id="kpiMonitor">--</div>
@@ -240,9 +239,9 @@
     </div>
 
     <div class="card-kpi col-4">
-      <h2>Hora de monitoramento</h2>
+      <h2>Horas de motor</h2>
       <div class="kpi-value" id="kpiHorasMotor">0.00 h</div>
-      <div class="kpi-helper">Somatório de horas com motor ligado</div>
+      <div class="kpi-helper">Total consolidado (rastreador)</div>
     </div>
 
     <div class="card-kpi col-4">
@@ -260,17 +259,24 @@
       </div>
     </div>
 
+    <!-- NOVO CARD — HORAS DA EMBARCAÇÃO -->
+    <div class="card-kpi col-4">
+      <h2>Horas da embarcação</h2>
+      <div class="kpi-value" id="kpiHorasEmbarcacao">0.00 h</div>
+      <div class="kpi-helper">Offset + horas de motor</div>
+    </div>
+
     <div class="card-kpi col-4">
       <h2>Horas paradas</h2>
       <div class="kpi-value" id="kpiHorasParadas">0.00 h</div>
-      <div class="kpi-helper">Estimado</div>
+      <div class="kpi-helper">Acumulado em motor desligado</div>
     </div>
 
-    <!-- NOVO CARD: IGNIÇÕES -->
+    <!-- Card de Ignições -->
     <div class="card-kpi col-4">
       <h2>Ignições</h2>
       <div class="kpi-value" id="kpiIgnicoes">0</div>
-      <div class="kpi-helper">Quantidade de vezes que o motor ligou</div>
+      <div class="kpi-helper">Vezes que o motor ligou</div>
     </div>
 
     <div class="card-kpi col-6">
@@ -341,10 +347,10 @@
             <button type="submit" class="btn-primary-sm">Adicionar atividade</button>
           </div>
         </div>
+
         <div id="planoMsg" class="msg-inline"></div>
       </form>
     </div>
-
     <div class="card-form col-12">
       <h3>Plano cadastrado</h3>
       <table class="table-mini">
@@ -361,7 +367,10 @@
         <tbody id="planoBody">
         </tbody>
       </table>
-      <div id="planoEmpty" class="msg-inline">Nenhuma atividade cadastrada. Serão usadas as regras padrão.</div>
+
+      <div id="planoEmpty" class="msg-inline">
+        Nenhuma atividade cadastrada. Serão usadas as regras padrão.
+      </div>
     </div>
 
   </section>
@@ -386,6 +395,7 @@
     viewPainel.classList.remove("hidden");
     viewPrev.classList.add("hidden");
   };
+
   btnTabPrev.onclick = () => {
     btnTabPrev.classList.add("active");
     btnTabPainel.classList.remove("active");
@@ -402,60 +412,71 @@
     }
   }
 
+  // ============================
+  //   CARREGA DADOS DO PAINEL
+  // ============================
   async function loadDados(){
     try{
       const r = await fetch(ENDPOINT_DADOS);
       if(!r.ok) throw new Error("HTTP "+r.status);
       const d = await r.json();
 
+      // IMEI + Última atualização
       document.getElementById("badgeImei").textContent = d.imei || "--";
       document.getElementById("badgeUltima").textContent = "Última: " + fmtHora(d.servertime);
 
+      // Status monitoramento
       const on = !!d.monitor_online;
       document.getElementById("kpiMonitor").textContent = on ? "online" : "offline";
 
+      // Status motor
       const motorOn = !!d.motor_ligado;
       document.getElementById("kpiMotor").textContent = motorOn ? "Ligado" : "Desligado";
-      const dot = document.getElementById("dotMotor");
-      dot.className = "status-dot " + (motorOn ? "ok" : "bad");
+      document.getElementById("dotMotor").className = "status-dot " + (motorOn ? "ok" : "bad");
       document.getElementById("kpiMotorHint").textContent = motorOn ? "Ignição ON" : "Ignição OFF";
 
+      // Tensão da bateria
       const tensao = Number(d.tensao_bateria || 0);
       document.getElementById("kpiTensao").textContent = tensao.toFixed(2) + " V";
-      let tinfo = "—";
-      if(tensao === 0) tinfo = "Sem leitura";
-      else if(tensao < 12.0) tinfo = "Baixa";
-      else if(tensao < 12.3) tinfo = "Meia carga";
-      else tinfo = "OK";
-      document.getElementById("kpiTensaoInfo").textContent = tinfo;
 
+      let info = "—";
+      if(tensao === 0) info = "Sem leitura";
+      else if(tensao < 12.0) info = "Baixa";
+      else if(tensao < 12.3) info = "Meia carga";
+      else info = "OK";
+
+      document.getElementById("kpiTensaoInfo").textContent = info;
+
+      // Horas de motor (rastreador)
       const hMotor = Number(d.horas_motor || 0);
       document.getElementById("kpiHorasMotor").textContent = hMotor.toFixed(2) + " h";
 
+      // Horas da embarcação (offset + rastreador)  ← NOVO
+      const hEmb = Number(d.hora_embarcacao || 0);
+      document.getElementById("kpiHorasEmbarcacao").textContent = hEmb.toFixed(2) + " h";
+
+      // Horas paradas
       const hParadas = Number(d.horas_paradas || 0);
       document.getElementById("kpiHorasParadas").textContent = hParadas.toFixed(2) + " h";
 
-      // NOVO: ignições
-      const ign = Number(
-        d.ignicoes ??
-        d.ignicoes_totais ??
-        d.qtd_ignicoes ??
-        0
-      );
+      // Ignições
+      const ign = Number(d.ignicoes || 0);
       document.getElementById("kpiIgnicoes").textContent = ign.toString();
 
-      const lat = d.latitude != null ? d.latitude : "--";
-      const lon = d.longitude != null ? d.longitude : "--";
-      document.getElementById("kpiLocalizacao").textContent =
-        `Latitude: ${lat} — Longitude: ${lon}`;
+      // Coordenadas
+      const lat = d.latitude;
+      const lon = d.longitude;
 
-      // Atualiza mapa se tiver coordenadas válidas
-      if(lat !== "--" && lon !== "--"){
+      document.getElementById("kpiLocalizacao").textContent =
+        `Latitude: ${lat ?? "--"} — Longitude: ${lon ?? "--"}`;
+
+      // Mapa
+      if(lat && lon){
         const url = `https://www.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
         if(mapFrame.src !== url){
           mapFrame.src = url;
         }
-      }else{
+      } else {
         mapFrame.src = "";
       }
 
@@ -464,6 +485,9 @@
     }
   }
 
+  // ============================
+  //   PREVENTIVA — PRÓXIMAS
+  // ============================
   function renderAtividades(lista, el){
     if(!lista || !lista.length){
       el.innerHTML = "--";
@@ -479,21 +503,29 @@
     try{
       const r = await fetch(ENDPOINT_PREV);
       if(!r.ok) throw new Error("HTTP "+r.status);
+
       const d = await r.json();
       const tarefas = d.tarefas || [];
+
       renderAtividades(tarefas, document.getElementById("listaAtividadesPainel"));
       renderAtividades(tarefas, document.getElementById("listaAtividadesPrev"));
+
     }catch(e){
       console.error("Erro ao carregar preventiva:", e);
     }
   }
 
+  // ============================
+  //   PREVENTIVA — CRUD
+  // ============================
   async function loadPlano(){
     try{
       const r = await fetch(ENDPOINT_PLANO);
       if(!r.ok) throw new Error("HTTP "+r.status);
+
       const d = await r.json();
       const plano = d.plano || [];
+
       const tbody = document.getElementById("planoBody");
       const empty = document.getElementById("planoEmpty");
 
@@ -503,42 +535,45 @@
         empty.textContent = "Nenhuma atividade cadastrada. Serão usadas as regras padrão.";
         return;
       }
+
       empty.textContent = "";
 
       plano.forEach(item => {
         const tr = document.createElement("tr");
         const base = (item.base || "horas").toLowerCase();
+
         tr.innerHTML = `
           <td>${item.nome}</td>
-          <td><span class="tag-base ${base}">${base === "dias" ? "dias" : "horas"}</span></td>
+          <td><span class="tag-base ${base}">${base}</span></td>
           <td>${item.intervalo ?? ""}</td>
           <td>${item.primeira_execucao ?? ""}</td>
           <td>${item.avisar_antes ?? ""}</td>
           <td><button class="btn-link" data-id="${item.id}">Excluir</button></td>
         `;
+
         tbody.appendChild(tr);
       });
 
+      // Ação deletar
       tbody.querySelectorAll("button[data-id]").forEach(btn => {
-        btn.addEventListener("click", async () => {
+        btn.onclick = async () => {
           const id = btn.getAttribute("data-id");
           if(!id) return;
+
           if(!confirm("Remover esta atividade do plano?")) return;
+
           try{
             const rDel = await fetch(`${ENDPOINT_PLANO}/${id}`, {method:"DELETE"});
             if(!rDel.ok){
-              const tx = await rDel.text();
-              console.error("Erro ao excluir:", tx);
-              alert("Não foi possível excluir o item.");
+              alert("Erro ao excluir item.");
               return;
             }
-            await loadPlano();
-            await loadPreventiva();
+            loadPlano();
+            loadPreventiva();
           }catch(e){
-            console.error("Erro ao excluir item:", e);
             alert("Erro ao excluir item.");
           }
-        });
+        };
       });
 
     }catch(e){
@@ -546,8 +581,10 @@
     }
   }
 
+  // SUBMIT DO FORM
   const formPlano = document.getElementById("formPlano");
-  formPlano.addEventListener("submit", async (ev) => {
+
+  formPlano.onsubmit = async (ev) => {
     ev.preventDefault();
     const msg = document.getElementById("planoMsg");
     msg.textContent = "";
@@ -568,7 +605,7 @@
     }
 
     try{
-      const r = await fetch(ENDPOINT_PLANO, {
+      const r = await fetch(ENDPOINT_PLANO,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
@@ -579,6 +616,7 @@
           avisar_antes: avisar ? Number(avisar) : null
         })
       });
+
       const d = await r.json().catch(() => ({}));
 
       if(!r.ok){
@@ -586,25 +624,24 @@
         return;
       }
 
-      msg.textContent = d.mensagem || "Atividade adicionada com sucesso.";
+      msg.textContent = d.mensagem || "Atividade adicionada.";
       formPlano.reset();
-      document.getElementById("planoBase").value = "horas";
-
-      await loadPlano();
-      await loadPreventiva();
+      loadPlano();
+      loadPreventiva();
 
     }catch(e){
-      console.error("Erro ao criar item de plano:", e);
       msg.textContent = "Erro ao salvar atividade.";
     }
-  });
+  };
 
-  // primeira carga
+  // Loop de atualização
   loadDados();
   loadPreventiva();
+
   setInterval(() => {
     loadDados();
     loadPreventiva();
   }, 30000);
 </script>
+
 {% endblock %}
