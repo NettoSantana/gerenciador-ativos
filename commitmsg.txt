@@ -1,5 +1,1 @@
-﻿feat: adiciona botão Excluir com exclusão real na lista de usuários
-
-- inclui form POST com confirmação JS
-- proteção backend já implementada
-- layout alinhado ao padrão do sistema
+﻿fix: padroniza botão Excluir dos Usuários com estilo do módulo Ativos
