@@ -1,5 +1,1 @@
-﻿feat: melhora layout da tela de novo ativo
-- aplica card central com grid responsivo
-- organiza campos de cliente, nome, categoria e IMEI
-- adiciona campo opcional de tag interna e observações
-- mantém navegação com botão de voltar para lista de ativos
+﻿feat: adiciona card de Horas da Embarcação no painel

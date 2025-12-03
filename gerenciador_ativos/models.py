@@ -92,6 +92,9 @@ class Ativo(db.Model):
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
 
+    # bateria — NOVO CAMPO
+    tensao_bateria = db.Column(db.Float, default=0.0)
+
     ativo = db.Column(db.Boolean, default=True)
     criado_em = db.Column(db.DateTime, default=datetime.utcnow)
 
