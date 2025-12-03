@@ -1,1 +1,7 @@
-﻿feat: cria banco SQLite automaticamente no Railway e evita recriação
+﻿feat: adiciona layout premium de login com duas colunas, animação slide/fade, 
+e separação completa via login.css e login.js
+
+- remove herança do base.html no login
+- cria novo login.html independente
+- adiciona login.css com layout premium responsivo
+- adiciona login.js para transições entre os formulários

@@ -5,6 +5,10 @@ from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import Usuario
 
 
+# ============================================================
+# LOGIN
+# ============================================================
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -28,11 +32,14 @@ def login():
         if usuario.is_interno():
             return redirect(url_for("dashboards.dashboard_gerente"))
         else:
-            # tipo cliente → manda para o PORTAL DO CLIENTE
             return redirect(url_for("portal.dashboard_cliente"))
 
     return render_template("auth/login.html")
 
+
+# ============================================================
+# LOGOUT
+# ============================================================
 
 @auth_bp.route("/logout")
 def logout():
@@ -42,28 +49,60 @@ def logout():
 
 
 # ============================================================
-# ROTA INTERNA SEGURA PARA RESETAR SENHA DO ADMIN
+# CADASTRO LIVRE (para campanhas)
+# ============================================================
+
+@auth_bp.route("/register", methods=["POST"])
+def register():
+    """Cadastro simples e direto, ideal para campanhas."""
+    
+    nome = request.form.get("nome", "").strip()
+    email = request.form.get("email", "").strip().lower()
+    senha = request.form.get("senha")
+    confirmar = request.form.get("confirmar")
+
+    # validações básicas
+    if not nome or not email or not senha:
+        flash("Preencha todos os campos.", "danger")
+        return redirect(url_for("auth.login"))
+
+    if senha != confirmar:
+        flash("As senhas não coincidem.", "danger")
+        return redirect(url_for("auth.login"))
+
+    # email duplicado
+    if Usuario.query.filter_by(email=email).first():
+        flash("Este e-mail já está cadastrado.", "warning")
+        return redirect(url_for("auth.login"))
+
+    # cria o usuário
+    novo = Usuario(
+        nome=nome,
+        email=email,
+        tipo="cliente",  # padrão para campanhas
+        ativo=True
+    )
+    novo.set_password(senha)
+    db.session.add(novo)
+    db.session.commit()
+
+    flash("Conta criada com sucesso! Faça login.", "success")
+    return redirect(url_for("auth.login"))
+
+
+# ============================================================
+# ROTA INTERNA — RESET DE SENHA DO ADMIN
 # ============================================================
 
 @auth_bp.route("/internal/reset-admin")
 def internal_reset_admin():
-    """
-    Rota interna para redefinir a senha do admin.
-
-    Uso:
-      /internal/reset-admin?token=NETTO123RESET
-
-    Somente se o token for EXATAMENTE NETTO123RESET.
-    """
     token = request.args.get("token")
 
     if token != "NETTO123RESET":
-        # não revela nada, só nega
         return "Acesso negado.", 403
 
     admin = Usuario.query.filter_by(email="admin@admin.com").first()
 
-    # se não existir, cria; se existir, reseta a senha
     if not admin:
         admin = Usuario(
             nome="Administrador",
