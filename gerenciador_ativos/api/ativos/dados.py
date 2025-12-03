@@ -1,11 +1,12 @@
 import time
 import logging
-
-from flask import jsonify
+from flask import jsonify, request
 
 from gerenciador_ativos.api.ativos import api_ativos_bp
 from gerenciador_ativos.models import Ativo
 from gerenciador_ativos.extensions import db
+
+# Telemetria externa (BrasilSat)
 from gerenciador_ativos.api.monitoramento.brasilsat import (
     get_telemetria_por_imei,
     BrasilSatError,
@@ -13,33 +14,14 @@ from gerenciador_ativos.api.monitoramento.brasilsat import (
 
 logger = logging.getLogger(__name__)
 
-
-# ============================
-#  TELEMETRIA (via brasilsat.py)
-# ============================
+# ============================================================
+# FUNÇÃO: Busca telemetria externa da BrasilSat
+# ============================================================
 
 def fetch_telemetria_externa(ativo: Ativo) -> dict:
-    """
-    Usa o client oficial da BrasilSat (api.monitoramento.brasilsat)
-    para obter a telemetria por IMEI e converte para o formato
-    que o painel V2 espera.
-
-    Saída padrão:
-    {
-        "imei": str,
-        "monitor_online": bool,
-        "motor_ligado": bool,
-        "tensao_bateria": float,
-        "servertime": int,      # epoch segundos
-        "latitude": float,
-        "longitude": float,
-    }
-    """
     imei = getattr(ativo, "imei", None)
 
-    # Sem IMEI: retorna pacote offline
     if not imei:
-        logger.warning("Ativo %s sem IMEI configurado.", ativo.id)
         agora = int(time.time())
         return {
             "imei": "N/A",
@@ -52,22 +34,9 @@ def fetch_telemetria_externa(ativo: Ativo) -> dict:
         }
 
     try:
-        # Chama o client unificado
         dados = get_telemetria_por_imei(imei)
-    except BrasilSatError as exc:
-        logger.error("BrasilSat error para ativo %s (IMEI %s): %s", ativo.id, imei, exc)
-        agora = int(time.time())
-        return {
-            "imei": imei,
-            "monitor_online": False,
-            "motor_ligado": False,
-            "tensao_bateria": 0.0,
-            "servertime": agora,
-            "latitude": 0.0,
-            "longitude": 0.0,
-        }
     except Exception as exc:
-        logger.error("Erro inesperado ao obter telemetria BrasilSat para ativo %s: %s", ativo.id, exc)
+        logger.error("Erro telemetria ativo %s: %s", ativo.id, exc)
         agora = int(time.time())
         return {
             "imei": imei,
@@ -79,48 +48,32 @@ def fetch_telemetria_externa(ativo: Ativo) -> dict:
             "longitude": 0.0,
         }
 
-    # ---- Normalização dos campos vindos do client ----
+    # Normalização
     motor_ligado = bool(dados.get("motor_ligado", False))
 
-    # Tensão de bateria
-    tensao_raw = dados.get("tensao_bateria")
     try:
-        tensao_bateria = float(tensao_raw) if tensao_raw is not None else 0.0
-    except Exception:
+        tensao_bateria = float(dados.get("tensao_bateria", 0.0))
+    except:
         tensao_bateria = 0.0
 
-    # Servertime: força para epoch int
-    servertime_raw = dados.get("servertime") or time.time()
     try:
-        servertime = int(float(servertime_raw))
-    except Exception:
+        servertime = int(float(dados.get("servertime") or time.time()))
+    except:
         servertime = int(time.time())
 
-    # Latitude / longitude
-    lat_raw = dados.get("latitude")
-    lon_raw = dados.get("longitude")
     try:
-        latitude = float(lat_raw) if lat_raw is not None else 0.0
-    except Exception:
-        latitude = 0.0
-    try:
-        longitude = float(lon_raw) if lon_raw is not None else 0.0
-    except Exception:
-        longitude = 0.0
+        lat = float(dados.get("latitude", 0.0))
+    except:
+        lat = 0.0
 
-    # Monitor online: tenta usar datastatus do "raw" se existir
-    raw = dados.get("raw") or {}
     try:
-        datastatus = int(raw.get("datastatus", 0))
-    except Exception:
-        datastatus = 0
+        lon = float(dados.get("longitude", 0.0))
+    except:
+        lon = 0.0
 
-    if "datastatus" in raw:
-        monitor_online = datastatus == 2
-    else:
-        # fallback: considera "online" se tem telemetria recente
-        idade_seg = max(0, int(time.time()) - servertime)
-        monitor_online = idade_seg <= 600  # 10 minutos
+    # monitor online (fallback)
+    idade = abs(time.time() - servertime)
+    monitor_online = idade <= 600  # 10 minutos
 
     return {
         "imei": imei,
@@ -128,107 +81,126 @@ def fetch_telemetria_externa(ativo: Ativo) -> dict:
         "motor_ligado": motor_ligado,
         "tensao_bateria": tensao_bateria,
         "servertime": servertime,
-        "latitude": latitude,
-        "longitude": longitude,
+        "latitude": lat,
+        "longitude": lon,
     }
 
 
-# ============================
-#  ENDPOINT PRINCIPAL DO PAINEL
-#  GET /api/ativos/<id>/dados
-# ============================
+# ============================================================
+# ENDPOINT: GET /api/ativos/<id>/dados  (Painel)
+# ============================================================
 
 @api_ativos_bp.get("/<int:id>/dados")
 def dados_ativo(id):
-    """
-    Endpoint consumido pelo painel do ativo (templates/ativos/painel.html).
-
-    Combina:
-    - Telemetria externa (BrasilSat)
-    - Horímetro interno (horas_sistema_total + timestamps)
-    - Horas paradas (desde o último desligar)
-    """
-    # 1) Busca o ativo no banco
     ativo = Ativo.query.get_or_404(id)
 
-    # 2) Telemetria externa (BrasilSat, via client único)
-    dados_api = fetch_telemetria_externa(ativo)
-    motor_ligado = dados_api["motor_ligado"]
-    agora_ts = float(dados_api["servertime"] or time.time())
+    # 1) Telemetria externa
+    tele = fetch_telemetria_externa(ativo)
+    motor_ligado = tele["motor_ligado"]
+    agora_ts = float(tele["servertime"])
 
-    # -----------------------------
-    #  HORÍMETRO (HORAS DO MOTOR)
-    # -----------------------------
-    # Campos esperados no modelo:
-    # - ativo.horas_sistema_total (float, acumulado permanente)
-    # - ativo.timestamp_ligado (float, epoch segundos)
-    # - ativo.timestamp_desligado (float, epoch segundos)  -> p/ horas paradas
-
-    horas_sistema_total = float(getattr(ativo, "horas_sistema_total", 0.0) or 0.0)
+    # ======================================================
+    # HORÍMETRO INTERNO (horas_sistema_total)
+    # ======================================================
+    horas_total = float(getattr(ativo, "horas_sistema_total", 0.0) or 0.0)
     ts_ligado = getattr(ativo, "timestamp_ligado", None)
     ts_desligado = getattr(ativo, "timestamp_desligado", None)
 
-    # Detecta bordas de estado usando ts_ligado / ts_desligado
+    # Motor ligado → acumula horas em tempo real
     if motor_ligado:
-        # Caso 1: motor acabou de ligar (antes não tinha timestamp_ligado)
         if ts_ligado is None:
-            # se estava parado, fecha o ciclo de "parado" anterior
-            if ts_desligado is not None:
-                ativo.timestamp_desligado = None
-
             ativo.timestamp_ligado = agora_ts
             ts_ligado = agora_ts
-
     else:
-        # motor está desligado
         if ts_ligado is not None:
-            # Caso 2: motor acabou de desligar → fecha ciclo de funcionamento
-            delta_h = max(0.0, (agora_ts - float(ts_ligado)) / 3600.0)
-            horas_sistema_total += delta_h
-            ativo.horas_sistema_total = horas_sistema_total
+            delta = max(0.0, (agora_ts - float(ts_ligado)) / 3600.0)
+            horas_total += delta
+            ativo.horas_sistema_total = horas_total
             ativo.timestamp_ligado = None
             ts_ligado = None
-            # marca início do período parado
             ativo.timestamp_desligado = agora_ts
             ts_desligado = agora_ts
         elif ts_desligado is None:
-            # estava desligado há tempo indeterminado → define referência
             ativo.timestamp_desligado = agora_ts
             ts_desligado = agora_ts
 
-    # Persiste qualquer alteração de estado
     try:
         db.session.commit()
     except Exception as exc:
-        logger.error("Erro ao salvar horímetro do ativo %s: %s", ativo.id, exc)
+        logger.error("Erro salvando horímetro ativo %s: %s", ativo.id, exc)
         db.session.rollback()
 
-    # Horas de motor para exibir no painel
+    # Horas em tempo real para exibição
     if motor_ligado and ts_ligado is not None:
-        # acumulado + tempo desde que ligou
-        horas_motor = horas_sistema_total + max(0.0, (agora_ts - float(ts_ligado)) / 3600.0)
+        horas_motor = horas_total + max(0.0, (agora_ts - float(ts_ligado)) / 3600.0)
     else:
-        horas_motor = horas_sistema_total
+        horas_motor = horas_total
 
-    # Horas paradas: tempo desde que desligou (não acumulativo, é "há quanto tempo está parado")
+    # Horas paradas
     if (not motor_ligado) and ts_desligado is not None:
         horas_paradas = max(0.0, (agora_ts - float(ts_desligado)) / 3600.0)
     else:
         horas_paradas = 0.0
 
-    # 5) Monta resposta final para o painel V2
+    # ======================================================
+    # OFFSET (ESCOLHIDO POR VOCÊ)
+    # hora_embarcacao = horas_motor + horas_offset
+    # ======================================================
+    offset = float(ativo.horas_offset or 0.0)
+    hora_embarcacao = horas_motor + offset
+
+    # ======================================================
+    # RESPOSTA FINAL PRO PAINEL
+    # ======================================================
     return jsonify(
         {
             "id": ativo.id,
             "nome": ativo.nome,
-            "imei": dados_api["imei"],
-            "monitor_online": dados_api["monitor_online"],
+            "imei": tele["imei"],
+            "monitor_online": tele["monitor_online"],
             "motor_ligado": motor_ligado,
-            "tensao_bateria": dados_api["tensao_bateria"],
-            "servertime": dados_api["servertime"],
-            "latitude": dados_api["latitude"],
-            "longitude": dados_api["longitude"],
+            "tensao_bateria": tele["tensao_bateria"],
+            "servertime": tele["servertime"],
+            "latitude": tele["latitude"],
+            "longitude": tele["longitude"],
+
+            # Horímetros
             "horas_motor": round(horas_motor, 2),
+            "horas_offset": round(offset, 2),
+            "hora_embarcacao": round(hora_embarcacao, 2),
+
             "horas_paradas": round(horas_paradas, 2),
         }
     )
+
+
+# ============================================================
+# ENDPOINT: POST /api/ativos/<id>/ajustar-horas
+# ============================================================
+
+@api_ativos_bp.post("/<int:id>/ajustar-horas")
+def ajustar_horas(id):
+    ativo = Ativo.query.get_or_404(id)
+    data = request.get_json(silent=True) or {}
+
+    # Usuário envia { "offset": 500 }
+    try:
+        novo_offset = float(data.get("offset"))
+    except:
+        return jsonify({"erro": "offset inválido"}), 400
+
+    # Atualiza banco
+    ativo.horas_offset = novo_offset
+
+    try:
+        db.session.commit()
+    except Exception as exc:
+        db.session.rollback()
+        return jsonify({"erro": f"erro ao salvar: {exc}"}), 500
+
+    return jsonify(
+        {
+            "mensagem": "Offset atualizado com sucesso.",
+            "offset": novo_offset,
+        }
+    ), 200

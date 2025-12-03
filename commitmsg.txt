@@ -1,4 +1,5 @@
-﻿fix: corrige responsividade do login isolando estilos no style.css
-- adiciona isolamento completo via body.login-body
-- impede conflito do layout geral com a tela de login no mobile
-- melhora compatibilidade com iPhone/Android
+﻿rework: criação automática de clientes + sincronização usuário→cliente
+- adicionados campos extras no novo.html
+- reescrita completa do routes.py
+- suporte a telefone, CPF/CNPJ, endereço e observações
+- sincronização ao editar usuário
