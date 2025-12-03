@@ -1,12 +1,625 @@
-from flask import Blueprint, render_template
-from gerenciador_ativos.extensions import db
-from gerenciador_ativos.models import Ativo
-from gerenciador_ativos.auth.decorators import login_required
+{% extends "base.html" %}
+{% block title %}Painel do Ativo{% endblock %}
 
-painel_bp = Blueprint("painel_ativos", __name__, url_prefix="/painel-ativo")
+{% block content %}
+<div class="page">
 
-@painel_bp.route("/<int:id>")
-@login_required
-def painel(id):
-    ativo = Ativo.query.get_or_404(id)
-    return render_template("ativos/painel.html", ativo=ativo)
+  <style>
+    .painel-header-top{
+      display:flex;justify-content:space-between;align-items:flex-start;
+      gap:16px;flex-wrap:wrap;margin-bottom:12px;
+    }
+    .painel-titulo h1{
+      margin:0;font-size:24px;
+    }
+    .painel-titulo .sub{
+      margin-top:4px;font-size:13px;color:#94a3b8;
+    }
+    .pill-strip{
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    }
+    .pill-badge{
+      padding:6px 10px;border-radius:999px;font-size:12px;
+      background:#020617;border:1px solid #1f2937;color:#e5e7eb;
+    }
+    .pill-badge.muted{color:#9ca3af;}
+    .tab-row{
+      display:flex;gap:8px;margin-bottom:20px;
+    }
+    .tab-btn{
+      padding:8px 16px;border-radius:999px;font-size:13px;
+      border:1px solid #1f2937;background:#020617;color:#e5e7eb;
+      cursor:pointer;
+    }
+    .tab-btn.active{
+      border-color:#38bdf8;
+      color:#38bdf8;
+      box-shadow:0 0 0 1px rgba(56,189,248,.3);
+    }
+
+    .grid-painel{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:16px;
+    }
+    @media (max-width:900px){
+      .grid-painel{grid-template-columns:repeat(6,1fr);}
+      .col-4{grid-column:span 6;}
+      .col-6{grid-column:span 6;}
+      .col-12{grid-column:span 6;}
+    }
+    @media (min-width:901px){
+      .col-4{grid-column:span 4;}
+      .col-6{grid-column:span 6;}
+      .col-12{grid-column:span 12;}
+    }
+
+    .card-kpi{
+      background:linear-gradient(180deg,#020617,#020617);
+      border-radius:16px;
+      border:1px solid #1f2937;
+      padding:18px;
+      box-shadow:0 10px 30px rgba(15,23,42,.6);
+    }
+    .card-kpi h2{
+      margin:0 0 10px;
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#38bdf8;
+    }
+    .kpi-value{
+      font-size:30px;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+    .kpi-helper{
+      font-size:13px;
+      color:#9ca3af;
+    }
+    .status-row{
+      display:flex;align-items:center;gap:8px;margin-top:6px;font-size:13px;
+    }
+    .status-dot{
+      width:10px;height:10px;border-radius:999px;background:#4b5563;
+    }
+    .status-dot.ok{background:#22c55e;}
+    .status-dot.bad{background:#ef4444;}
+    .status-dot.warn{background:#eab308;}
+
+    .hidden{display:none;}
+
+    /* Preventiva */
+    .card-form{
+      background:linear-gradient(180deg,#020617,#020617);
+      border-radius:16px;
+      border:1px solid #1f2937;
+      padding:18px;
+      box-shadow:0 10px 30px rgba(15,23,42,.6);
+    }
+    .card-form h3{
+      margin:0 0 12px;
+      font-size:15px;
+      color:#e5e7eb;
+    }
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:12px;
+    }
+    .form-field{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      font-size:13px;
+      color:#e5e7eb;
+    }
+    .form-field label{
+      font-size:12px;
+      color:#9ca3af;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .form-field input,
+    .form-field select{
+      background:#020617;
+      border-radius:10px;
+      border:1px solid #1f2937;
+      padding:8px 10px;
+      color:#e5e7eb;
+      font-size:13px;
+      outline:none;
+    }
+    .form-field input:focus,
+    .form-field select:focus{
+      border-color:#38bdf8;
+      box-shadow:0 0 0 1px rgba(56,189,248,.3);
+    }
+    .col-3x{grid-column:span 3;}
+    .col-4x{grid-column:span 4;}
+    .col-6x{grid-column:span 6;}
+    .col-12x{grid-column:span 12;}
+    @media (max-width:900px){
+      .col-3x,.col-4x,.col-6x,.col-12x{grid-column:span 12;}
+    }
+
+    .btn-primary-sm{
+      margin-top:22px;
+      padding:8px 14px;
+      border-radius:999px;
+      border:none;
+      background:#38bdf8;
+      color:#0b1020;
+      font-size:13px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .btn-primary-sm:hover{filter:brightness(1.05);}
+    .msg-inline{
+      margin-top:8px;
+      font-size:12px;
+      color:#9ca3af;
+    }
+
+    .table-mini{
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+      margin-top:6px;
+    }
+    .table-mini th,
+    .table-mini td{
+      padding:6px 8px;
+      border-bottom:1px solid #1f2937;
+      text-align:left;
+    }
+    .table-mini th{
+      color:#9ca3af;
+      font-weight:500;
+    }
+    .tag-base{
+      padding:2px 8px;
+      border-radius:999px;
+      font-size:11px;
+      border:1px solid #1f2937;
+      color:#e5e7eb;
+    }
+    .tag-base.horas{border-color:#38bdf8;color:#38bdf8;}
+    .tag-base.dias{border-color:#a855f7;color:#c4b5fd;}
+    .btn-link{
+      border:none;
+      background:transparent;
+      color:#f97373;
+      font-size:12px;
+      cursor:pointer;
+    }
+
+    /* MAPA */
+    .map-wrapper{
+      margin-top:10px;
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid #1f2937;
+    }
+    .map-frame{
+      width:100%;
+      height:260px;
+      border:0;
+    }
+  </style>
+
+  <div class="painel-header-top">
+    <div class="painel-titulo">
+      <h1>Painel — {{ ativo.nome }}</h1>
+      <div class="sub">
+        Ativo #{{ ativo.id }} — Cliente: {{ ativo.cliente.nome if ativo.cliente else '—' }}
+      </div>
+    </div>
+    <div class="pill-strip">
+      <div class="pill-badge muted">Painel</div>
+      <div class="pill-badge muted">Preventiva</div>
+      <div class="pill-badge" id="badgeUltima">Última: --</div>
+      <div class="pill-badge">IMEI: <span id="badgeImei">--</span></div>
+    </div>
+  </div>
+
+  <div class="tab-row">
+    <button id="btnTabPainel" class="tab-btn active">Painel</button>
+    <button id="btnTabPreventiva" class="tab-btn">Preventiva</button>
+  </div>
+
+  <!-- =======================
+       VIEW PAINEL
+  ======================== -->
+  <section id="viewPainel" class="grid-painel">
+
+    <div class="card-kpi col-4">
+      <h2>Status monitoramento</h2>
+      <div class="kpi-value" id="kpiMonitor">--</div>
+      <div class="kpi-helper">Situação geral</div>
+    </div>
+
+    <div class="card-kpi col-4">
+      <h2>Hora de monitoramento</h2>
+      <div class="kpi-value" id="kpiHorasMonitor">0.00 h</div>
+      <div class="kpi-helper">Somatório de horas com motor ligado</div>
+    </div>
+
+    <div class="card-kpi col-4">
+      <h2>Tensão bateria</h2>
+      <div class="kpi-value" id="kpiTensao">0.00 V</div>
+      <div class="kpi-helper" id="kpiTensaoInfo">--</div>
+    </div>
+
+    <div class="card-kpi col-4">
+      <h2>Motor</h2>
+      <div class="kpi-value" id="kpiMotor">--</div>
+      <div class="status-row">
+        <span class="status-dot" id="dotMotor"></span>
+        <span id="kpiMotorHint" class="kpi-helper">--</span>
+      </div>
+    </div>
+
+    <div class="card-kpi col-4">
+      <h2>Horas paradas</h2>
+      <div class="kpi-value" id="kpiHorasParadas">0.00 h</div>
+      <div class="kpi-helper">Estimado</div>
+    </div>
+
+    <div class="card-kpi col-4">
+      <h2>Ignições</h2>
+      <div class="kpi-value" id="kpiIgnicoes">0</div>
+      <div class="kpi-helper">Quantidade de vezes que o motor ligou</div>
+    </div>
+
+    <!-- NOVO CARD: HORA REAL DA EMBARCAÇÃO -->
+    <div class="card-kpi col-6">
+      <h2>Hora da embarcação</h2>
+      <div class="kpi-value" id="kpiHoraEmbarcacao">0.00 h</div>
+      <div class="kpi-helper">
+        Hora real do motor (offset inicial + horas de monitoramento)
+      </div>
+    </div>
+
+    <div class="card-kpi col-6">
+      <h2>Localização</h2>
+      <div class="kpi-helper" id="kpiLocalizacao">Latitude: -- — Longitude: --</div>
+      <div class="map-wrapper">
+        <iframe
+          id="mapFrame"
+          class="map-frame"
+          src=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
+    </div>
+
+    <div class="card-kpi col-6">
+      <h2>Próximas atividades</h2>
+      <div id="listaAtividadesPainel" class="kpi-helper">--</div>
+    </div>
+
+  </section>
+
+  <!-- =======================
+       VIEW PREVENTIVA
+  ======================== -->
+  <section id="viewPreventiva" class="grid-painel hidden">
+
+    <div class="card-kpi col-6">
+      <h2>Próximas atividades</h2>
+      <div id="listaAtividadesPrev" class="kpi-helper">--</div>
+    </div>
+
+    <div class="card-form col-6">
+      <h3>Cadastrar atividade de preventiva</h3>
+
+      <form id="formPlano" autocomplete="off">
+        <div class="form-grid">
+          <div class="form-field col-12x">
+            <label for="planoNome">Nome da atividade</label>
+            <input id="planoNome" type="text" placeholder="Ex.: Troca de óleo do motor" />
+          </div>
+
+          <div class="form-field col-4x">
+            <label for="planoBase">Tipo de controle</label>
+            <select id="planoBase">
+              <option value="horas" selected>Por horas de motor</option>
+              <option value="dias">Por dias corridos</option>
+            </select>
+          </div>
+
+          <div class="form-field col-4x">
+            <label for="planoIntervalo">Intervalo</label>
+            <input id="planoIntervalo" type="number" step="0.1" min="0" placeholder="Ex.: 100" />
+          </div>
+
+          <div class="form-field col-4x">
+            <label for="planoPrimeira">Primeira execução</label>
+            <input id="planoPrimeira" type="number" step="0.1" min="0" placeholder="Opcional" />
+          </div>
+
+          <div class="form-field col-4x">
+            <label for="planoAvisar">Avisar antes</label>
+            <input id="planoAvisar" type="number" step="0.1" min="0" placeholder="Opcional" />
+          </div>
+
+          <div class="form-field col-4x">
+            <button type="submit" class="btn-primary-sm">Adicionar atividade</button>
+          </div>
+        </div>
+        <div id="planoMsg" class="msg-inline"></div>
+      </form>
+    </div>
+
+    <div class="card-form col-12">
+      <h3>Plano cadastrado</h3>
+      <table class="table-mini">
+        <thead>
+          <tr>
+            <th>Atividade</th>
+            <th>Base</th>
+            <th>Intervalo</th>
+            <th>Primeira</th>
+            <th>Avisar antes</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="planoBody">
+        </tbody>
+      </table>
+      <div id="planoEmpty" class="msg-inline">Nenhuma atividade cadastrada. Serão usadas as regras padrão.</div>
+    </div>
+
+  </section>
+
+</div>
+
+<script>
+  const ATIVO_ID = {{ ativo.id }};
+  const ENDPOINT_DADOS = `/api/ativos/${ATIVO_ID}/dados`;
+  const ENDPOINT_PREV = `/api/ativos/${ATIVO_ID}/preventiva`;
+  const ENDPOINT_PLANO = `/api/ativos/${ATIVO_ID}/plano`;
+
+  const btnTabPainel = document.getElementById("btnTabPainel");
+  const btnTabPrev = document.getElementById("btnTabPreventiva");
+  const viewPainel = document.getElementById("viewPainel");
+  const viewPrev = document.getElementById("viewPreventiva");
+  const mapFrame = document.getElementById("mapFrame");
+
+  btnTabPainel.onclick = () => {
+    btnTabPainel.classList.add("active");
+    btnTabPrev.classList.remove("active");
+    viewPainel.classList.remove("hidden");
+    viewPrev.classList.add("hidden");
+  };
+  btnTabPrev.onclick = () => {
+    btnTabPrev.classList.add("active");
+    btnTabPainel.classList.remove("active");
+    viewPrev.classList.remove("hidden");
+    viewPainel.classList.add("hidden");
+    loadPlano();
+  };
+
+  function fmtHora(ts){
+    try{
+      return new Date(ts*1000).toLocaleString("pt-BR",{hour12:false});
+    }catch(e){
+      return "--";
+    }
+  }
+
+  async function loadDados(){
+    try{
+      const r = await fetch(ENDPOINT_DADOS);
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      const d = await r.json();
+
+      document.getElementById("badgeImei").textContent = d.imei || "--";
+      document.getElementById("badgeUltima").textContent = "Última: " + fmtHora(d.servertime);
+
+      const on = !!d.monitor_online;
+      document.getElementById("kpiMonitor").textContent = on ? "online" : "offline";
+
+      const motorOn = !!d.motor_ligado;
+      document.getElementById("kpiMotor").textContent = motorOn ? "Ligado" : "Desligado";
+      const dot = document.getElementById("dotMotor");
+      dot.className = "status-dot " + (motorOn ? "ok" : "bad");
+      document.getElementById("kpiMotorHint").textContent = motorOn ? "Ignição ON" : "Ignição OFF";
+
+      const tensao = Number(d.tensao_bateria || 0);
+      document.getElementById("kpiTensao").textContent = tensao.toFixed(2) + " V";
+      let tinfo = "—";
+      if(tensao === 0) tinfo = "Sem leitura";
+      else if(tensao < 12.0) tinfo = "Baixa";
+      else if(tensao < 12.3) tinfo = "Meia carga";
+      else tinfo = "OK";
+      document.getElementById("kpiTensaoInfo").textContent = tinfo;
+
+      // Horas de monitoramento (motor ligado)
+      const hMonitor = Number(d.horas_motor || 0);
+      document.getElementById("kpiHorasMonitor").textContent = hMonitor.toFixed(2) + " h";
+
+      // Horas paradas
+      const hParadas = Number(d.horas_paradas || 0);
+      document.getElementById("kpiHorasParadas").textContent = hParadas.toFixed(2) + " h";
+
+      // Ignicoes
+      const ign = Number(
+        d.ignicoes ??
+        d.ignicoes_totais ??
+        d.qtd_ignicoes ??
+        0
+      );
+      document.getElementById("kpiIgnicoes").textContent = ign.toString();
+
+      // Hora da embarcação = offset + horas de monitoramento
+      const offset = Number(d.horas_offset || 0);
+      const hEmb = hMonitor + offset;
+      document.getElementById("kpiHoraEmbarcacao").textContent = hEmb.toFixed(2) + " h";
+
+      // Localização + mapa
+      const lat = d.latitude != null ? d.latitude : "--";
+      const lon = d.longitude != null ? d.longitude : "--";
+      document.getElementById("kpiLocalizacao").textContent =
+        `Latitude: ${lat} — Longitude: ${lon}`;
+
+      if(lat !== "--" && lon !== "--"){
+        const url = `https://www.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
+        if(mapFrame.src !== url){
+          mapFrame.src = url;
+        }
+      }else{
+        mapFrame.src = "";
+      }
+
+    }catch(e){
+      console.error("Erro ao carregar dados:", e);
+    }
+  }
+
+  function renderAtividades(lista, el){
+    if(!lista || !lista.length){
+      el.innerHTML = "--";
+      return;
+    }
+    el.innerHTML = lista
+      .slice(0,5)
+      .map(t => `• ${t.nome} (${t.faltam.toFixed(1)} ${t.base === "dias" ? "d" : "h"})`)
+      .join("<br>");
+  }
+
+  async function loadPreventiva(){
+    try{
+      const r = await fetch(ENDPOINT_PREV);
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      const d = await r.json();
+      const tarefas = d.tarefas || [];
+      renderAtividades(tarefas, document.getElementById("listaAtividadesPainel"));
+      renderAtividades(tarefas, document.getElementById("listaAtividadesPrev"));
+    }catch(e){
+      console.error("Erro ao carregar preventiva:", e);
+    }
+  }
+
+  async function loadPlano(){
+    try{
+      const r = await fetch(ENDPOINT_PLANO);
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      const d = await r.json();
+      const plano = d.plano || [];
+      const tbody = document.getElementById("planoBody");
+      const empty = document.getElementById("planoEmpty");
+
+      tbody.innerHTML = "";
+
+      if(!plano.length){
+        empty.textContent = "Nenhuma atividade cadastrada. Serão usadas as regras padrão.";
+        return;
+      }
+      empty.textContent = "";
+
+      plano.forEach(item => {
+        const tr = document.createElement("tr");
+        const base = (item.base || "horas").toLowerCase();
+        tr.innerHTML = `
+          <td>${item.nome}</td>
+          <td><span class="tag-base ${base}">${base === "dias" ? "dias" : "horas"}</span></td>
+          <td>${item.intervalo ?? ""}</td>
+          <td>${item.primeira_execucao ?? ""}</td>
+          <td>${item.avisar_antes ?? ""}</td>
+          <td><button class="btn-link" data-id="${item.id}">Excluir</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll("button[data-id]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-id");
+          if(!id) return;
+          if(!confirm("Remover esta atividade do plano?")) return;
+          try{
+            const rDel = await fetch(`${ENDPOINT_PLANO}/${id}`, {method:"DELETE"});
+            if(!rDel.ok){
+              const tx = await rDel.text();
+              console.error("Erro ao excluir:", tx);
+              alert("Não foi possível excluir o item.");
+              return;
+            }
+            await loadPlano();
+            await loadPreventiva();
+          }catch(e){
+            console.error("Erro ao excluir item:", e);
+            alert("Erro ao excluir item.");
+          }
+        });
+      });
+
+    }catch(e){
+      console.error("Erro ao carregar plano:", e);
+    }
+  }
+
+  const formPlano = document.getElementById("formPlano");
+  formPlano.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const msg = document.getElementById("planoMsg");
+    msg.textContent = "";
+
+    const nome = document.getElementById("planoNome").value.trim();
+    const base = document.getElementById("planoBase").value;
+    const intervalo = document.getElementById("planoIntervalo").value;
+    const primeira = document.getElementById("planoPrimeira").value;
+    const avisar = document.getElementById("planoAvisar").value;
+
+    if(!nome){
+      msg.textContent = "Informe o nome da atividade.";
+      return;
+    }
+    if(!intervalo || Number(intervalo) <= 0){
+      msg.textContent = "Informe um intervalo maior que zero.";
+      return;
+    }
+
+    try{
+      const r = await fetch(ENDPOINT_PLANO, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          nome:nome,
+          base:base,
+          intervalo:Number(intervalo),
+          primeira_execucao: primeira ? Number(primeira) : null,
+          avisar_antes: avisar ? Number(avisar) : null
+        })
+      });
+      const d = await r.json().catch(() => ({}));
+
+      if(!r.ok){
+        msg.textContent = d.erro || "Erro ao salvar atividade.";
+        return;
+      }
+
+      msg.textContent = d.mensagem || "Atividade adicionada com sucesso.";
+      formPlano.reset();
+      document.getElementById("planoBase").value = "horas";
+
+      await loadPlano();
+      await loadPreventiva();
+
+    }catch(e){
+      console.error("Erro ao criar item de plano:", e);
+      msg.textContent = "Erro ao salvar atividade.";
+    }
+  });
+
+  // primeira carga
+  loadDados();
+  loadPreventiva();
+  setInterval(() => {
+    loadDados();
+    loadPreventiva();
+  }, 30000);
+</script>
+{% endblock %}
