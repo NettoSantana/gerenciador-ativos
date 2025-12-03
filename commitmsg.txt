@@ -1,6 +1,4 @@
-﻿feat: implementa política completa de exclusão de usuários
-- protege admin principal
-- impede auto-exclusão
-- gerente não exclui gerente
-- admin exclui todos exceto admin principal
-- frontend só mostra botão quando permitido
+﻿fix: remove vínculo cliente_id do cadastro de usuários
+- rotas reescritas sem dependência de clientes
+- formulario novo usuário simplificado
+- remove JS e select de cliente
