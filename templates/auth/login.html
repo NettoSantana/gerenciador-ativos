@@ -1,48 +1,117 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login — Gerenciador de Ativos</title>
 
-{% block title %}Login — Gerenciador de Ativos{% endblock %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+  <script defer src="{{ url_for('static', filename='login.js') }}"></script>
+</head>
 
-{% block content %}
-<div class="center-wrapper">
+<body class="login-body">
 
-  <div class="card card-login">
-    <div class="card-header">
-      <h1>Bem-vindo(a)</h1>
-      <p class="muted">
-        Acesse o <strong>Gerenciador de Ativos</strong> com seu e-mail e senha.
-      </p>
+  <div class="login-container">
+
+    <!-- COLUNA ESQUERDA — LOGO / BRANDING -->
+    <div class="login-left">
+      <div class="brand-box">
+        <!-- Aqui você coloca sua logo -->
+        <div class="brand-logo">GA</div>
+
+        <h2 class="brand-title">Gerenciador de Ativos</h2>
+        <p class="brand-sub">Monitoramento • Preventiva • Performance</p>
+      </div>
     </div>
 
-    <form method="post" class="form">
-      <div class="field">
-        <label for="email">E-mail</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          required
-          placeholder="voce@empresa.com"
-        />
+    <!-- COLUNA DIREITA — FORMULÁRIOS -->
+    <div class="login-right">
+
+      <!-- FORM: LOGIN -->
+      <div class="form-panel active" id="panel-login">
+        <h2>Entrar</h2>
+        <p class="form-sub">Acesse sua conta para continuar.</p>
+
+        <form method="post" action="/login">
+          <div class="field">
+            <label>E-mail</label>
+            <input type="email" name="email" required>
+          </div>
+
+          <div class="field">
+            <label>Senha</label>
+            <input type="password" name="senha" required>
+          </div>
+
+          <button class="btn-primary" type="submit">Entrar</button>
+
+          <div class="links">
+            <a href="#" onclick="showPanel('register')">Criar conta</a>
+            <a href="#" onclick="showPanel('reset')">Esqueci minha senha</a>
+          </div>
+
+          <p class="hint">
+            Acesso inicial: <code>admin@admin.com</code> / <code>admin123</code>
+          </p>
+        </form>
       </div>
 
-      <div class="field">
-        <label for="senha">Senha</label>
-        <input
-          type="password"
-          id="senha"
-          name="senha"
-          required
-          placeholder="••••••••"
-        />
+      <!-- FORM: CADASTRAR -->
+      <div class="form-panel" id="panel-register">
+        <h2>Criar conta</h2>
+        <p class="form-sub">Preencha os dados abaixo.</p>
+
+        <form method="post" action="/register">
+          <div class="field">
+            <label>Nome completo</label>
+            <input type="text" name="nome" required>
+          </div>
+
+          <div class="field">
+            <label>E-mail</label>
+            <input type="email" name="email" required>
+          </div>
+
+          <div class="field">
+            <label>Senha</label>
+            <input type="password" name="senha" required>
+          </div>
+
+          <div class="field">
+            <label>Confirmar senha</label>
+            <input type="password" name="confirmar" required>
+          </div>
+
+          <button class="btn-primary" type="submit">Cadastrar</button>
+
+          <div class="links">
+            <a href="#" onclick="showPanel('login')">Voltar para login</a>
+          </div>
+        </form>
       </div>
 
-      <button type="submit" class="btn-primary">Entrar</button>
+      <!-- FORM: RESET SENHA -->
+      <div class="form-panel" id="panel-reset">
+        <h2>Recuperar senha</h2>
+        <p class="form-sub">Enviaremos instruções para seu e-mail.</p>
 
-      <p class="hint">
-        Acesso inicial: <code>admin@admin.com</code> / <code>admin123</code>
-      </p>
-    </form>
+        <form method="post" action="/forgot">
+          <div class="field">
+            <label>E-mail</label>
+            <input type="email" name="email" required>
+          </div>
+
+          <button class="btn-primary" type="submit">Enviar</button>
+
+          <div class="links">
+            <a href="#" onclick="showPanel('login')">Voltar para login</a>
+          </div>
+        </form>
+      </div>
+
+    </div>
   </div>
 
-</div>
-{% endblock %}
+</body>
+</html>

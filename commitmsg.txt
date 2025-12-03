@@ -1,1 +1,1 @@
-﻿feat: garante persistência do SQLite criando diretório instance antes de iniciar o app
+﻿feat: cria banco SQLite automaticamente no Railway e evita recriação
