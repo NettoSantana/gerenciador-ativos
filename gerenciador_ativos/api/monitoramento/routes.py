@@ -83,7 +83,12 @@ def api_ativo_dados(ativo_id: int):
     except Exception:
         horas_motor = 0.0
 
-    # 6) Monta resposta para o painel
+    # 6) NOVO — Hora da embarcação
+    horas_offset = float(ativo.horas_offset or 0.0)
+    horas_sistema = float(ativo.horas_sistema or 0.0)
+    hora_embarcacao = horas_offset + horas_sistema
+
+    # 7) Monta resposta para o painel
     resp = {
         "imei": ativo.imei,
         "servertime": servertime,
@@ -94,11 +99,20 @@ def api_ativo_dados(ativo_id: int):
         or 0.0,
         "latitude": telem.get("lat"),
         "longitude": telem.get("lng"),
+
+        # Horas vindas do sistema
         "horas_motor": round(horas_motor, 2),
+
+        # Horas acumuladas pelo backend
         "horas_paradas": round(ativo.horas_paradas or 0.0, 2),
-        "horas_sistema": round(ativo.horas_sistema or 0.0, 2),
+        "horas_sistema": round(horas_sistema, 2),
+
+        # NOVO — campos reais
+        "horas_offset": round(horas_offset, 2),
+        "hora_embarcacao": round(hora_embarcacao, 2),
+
+        # ignições
         "ignicoes": int(ativo.total_ignicoes or 0),
     }
 
     return jsonify(resp)
-
