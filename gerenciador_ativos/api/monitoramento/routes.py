@@ -52,13 +52,10 @@ def api_ativo_dados(ativo_id: int):
 
         delta_horas = (dt_atual - dt_ant).total_seconds() / 3600.0
 
-        # Proteção contra buracos gigantes (ex.: dias sem comunicar)
         if 0 < delta_horas < 24:
             if ativo.ultimo_estado_motor:
-                # Motor ficou LIGADO nesse intervalo
                 ativo.horas_sistema = (ativo.horas_sistema or 0.0) + delta_horas
             else:
-                # Motor ficou DESLIGADO nesse intervalo
                 ativo.horas_paradas = (ativo.horas_paradas or 0.0) + delta_horas
 
     # 3) Contagem de ignições (transição OFF -> ON)
@@ -83,35 +80,29 @@ def api_ativo_dados(ativo_id: int):
     except Exception:
         horas_motor = 0.0
 
-    # 6) NOVO — Hora da embarcação
+    # Hora da embarcação = offset + horas acumuladas
     horas_offset = float(ativo.horas_offset or 0.0)
     horas_sistema = float(ativo.horas_sistema or 0.0)
     hora_embarcacao = horas_offset + horas_sistema
 
-    # 7) Monta resposta para o painel
+    # 7) Resposta final PARA O PAINEL
     resp = {
         "imei": ativo.imei,
         "servertime": servertime,
         "monitor_online": bool(telem.get("online", True)),
         "motor_ligado": motor_ligado_atual,
-        "tensao_bateria": telem.get("battery_volt")
-        or telem.get("ext_battery_volt")
-        or 0.0,
+
+        # ⭐ CORRIGIDO: TENSÃO REAL DA BRASILSAT
+        "tensao_bateria": telem.get("tensao_bateria") or 0.0,
+
         "latitude": telem.get("lat"),
         "longitude": telem.get("lng"),
 
-        # Horas vindas do sistema
         "horas_motor": round(horas_motor, 2),
-
-        # Horas acumuladas pelo backend
         "horas_paradas": round(ativo.horas_paradas or 0.0, 2),
         "horas_sistema": round(horas_sistema, 2),
-
-        # NOVO — campos reais
         "horas_offset": round(horas_offset, 2),
         "hora_embarcacao": round(hora_embarcacao, 2),
-
-        # ignições
         "ignicoes": int(ativo.total_ignicoes or 0),
     }
 
