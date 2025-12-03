@@ -1,5 +1,7 @@
-﻿rework: criação automática de clientes + sincronização usuário→cliente
-- adicionados campos extras no novo.html
-- reescrita completa do routes.py
-- suporte a telefone, CPF/CNPJ, endereço e observações
-- sincronização ao editar usuário
+﻿refactor: reescrita completa do módulo de dados do ativo
+- adicionada lógica oficial de hora_embarcacao = horas_motor + horas_offset
+- criado endpoint POST /api/ativos/<id>/ajustar-horas
+- implementado tratamento seguro de offset
+- resposta JSON agora inclui horas_offset e hora_embarcacao
+- revisão total do cálculo do horímetro interno (horas_sistema_total)
+- normalização da telemetria BrasilSat reorganizada

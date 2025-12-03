@@ -155,6 +155,7 @@
       cursor:pointer;
     }
     .btn-primary-sm:hover{filter:brightness(1.05);}
+
     .msg-inline{
       margin-top:8px;
       font-size:12px;
@@ -206,8 +207,18 @@
       height:260px;
       border:0;
     }
+
+    /* MODAL */
+    #modalAjuste{
+      display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,0.6);justify-content:center;align-items:center;
+      z-index:9999;
+    }
   </style>
 
+  <!-- =======================
+        CABEÇALHO
+  ======================== -->
   <div class="painel-header-top">
     <div class="painel-titulo">
       <h1>Painel — {{ ativo.nome }}</h1>
@@ -221,15 +232,19 @@
     </div>
   </div>
 
+  <!-- =======================
+        TABS
+  ======================== -->
   <div class="tab-row">
     <button id="btnTabPainel" class="tab-btn active">Painel</button>
     <button id="btnTabPreventiva" class="tab-btn">Preventiva</button>
   </div>
 
   <!-- =======================
-       VIEW PAINEL
+        VIEW PAINEL
   ======================== -->
   <section id="viewPainel" class="grid-painel">
+
     <div class="card-kpi col-4">
       <h2>Status monitoramento</h2>
       <div class="kpi-value" id="kpiMonitor">--</div>
@@ -257,9 +272,21 @@
       </div>
     </div>
 
-    <!-- NOVO CARD — HORAS DA EMBARCAÇÃO -->
+    <!-- ====================================================
+          CARD REFEITO — HORAS DA EMBARCAÇÃO + BOTÃO AJUSTAR
+    ===================================================== -->
     <div class="card-kpi col-4">
-      <h2>Horas da embarcação</h2>
+
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>Horas da embarcação</h2>
+
+        <button class="btn-primary-sm"
+                id="btnAjustarHoras"
+                style="padding:6px 10px; font-size:12px; margin-top:0;">
+          Ajustar
+        </button>
+      </div>
+
       <div class="kpi-value" id="kpiHorasEmbarcacao">0.00 h</div>
       <div class="kpi-helper">Offset + horas de motor</div>
     </div>
@@ -270,7 +297,6 @@
       <div class="kpi-helper">Acumulado em motor desligado</div>
     </div>
 
-    <!-- Card de Ignições -->
     <div class="card-kpi col-4">
       <h2>Ignições</h2>
       <div class="kpi-value" id="kpiIgnicoes">0</div>
@@ -281,12 +307,11 @@
       <h2>Localização</h2>
       <div class="kpi-helper" id="kpiLocalizacao">Latitude: -- — Longitude: --</div>
       <div class="map-wrapper">
-        <iframe
-          id="mapFrame"
-          class="map-frame"
-          src=""
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade">
+        <iframe id="mapFrame"
+                class="map-frame"
+                src=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade">
         </iframe>
       </div>
     </div>
@@ -298,9 +323,9 @@
 
   </section>
 
-  <!-- =======================
-       VIEW PREVENTIVA
-  ======================== -->
+  <!-- ====================================================
+        VIEW PREVENTIVA
+  ==================================================== -->
   <section id="viewPreventiva" class="grid-painel hidden">
 
     <div class="card-kpi col-6">
@@ -349,6 +374,7 @@
         <div id="planoMsg" class="msg-inline"></div>
       </form>
     </div>
+
     <div class="card-form col-12">
       <h3>Plano cadastrado</h3>
       <table class="table-mini">
@@ -362,8 +388,7 @@
             <th></th>
           </tr>
         </thead>
-        <tbody id="planoBody">
-        </tbody>
+        <tbody id="planoBody"></tbody>
       </table>
 
       <div id="planoEmpty" class="msg-inline">
@@ -374,6 +399,38 @@
   </section>
 
 </div>
+
+
+
+
+
+<!-- ====================================================
+      MODAL DE AJUSTE DE OFFSET
+==================================================== -->
+<div id="modalAjuste">
+  <div style="background:#020617;padding:20px;border-radius:12px;width:300px;
+              border:1px solid #1f2937;">
+
+    <h3 style="margin-top:0;color:#e5e7eb;">Ajustar Offset</h3>
+
+    <label style="color:#9ca3af;font-size:13px;">Offset (horas)</label>
+    <input id="inputOffset" type="number" step="0.1"
+           style="width:100%;margin-top:6px;padding:8px;border-radius:8px;
+                  background:#0b1020;border:1px solid #1f2937;color:#e5e7eb;">
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+      <button id="btnModalCancelar" class="btn-primary-sm" style="background:#64748b;">Cancelar</button>
+      <button id="btnModalSalvar" class="btn-primary-sm">Salvar</button>
+    </div>
+
+    <div id="modalMsg" style="margin-top:8px;font-size:12px;color:#38bdf8;"></div>
+  </div>
+</div>
+
+
+
+
+
 
 <script>
   const ATIVO_ID = {{ ativo.id }};
@@ -395,7 +452,7 @@
   };
 
   btnTabPrev.onclick = () => {
-    btnTabPrev.classList.add("active");
+    btnTabPreventiva.classList.add("active");
     btnTabPainel.classList.remove("active");
     viewPrev.classList.remove("hidden");
     viewPainel.classList.add("hidden");
@@ -410,16 +467,15 @@
     }
   }
 
-  // ============================
-  //   CARREGA DADOS DO PAINEL
-  // ============================
+  // ============================================================
+  //        CARREGA DADOS DO PAINEL
+  // ============================================================
   async function loadDados(){
     try{
       const r = await fetch(ENDPOINT_DADOS);
       if(!r.ok) throw new Error("HTTP "+r.status);
       const d = await r.json();
 
-      // IMEI + Última atualização
       document.getElementById("badgeImei").textContent = d.imei || "--";
       document.getElementById("badgeUltima").textContent = "Última: " + fmtHora(d.servertime);
 
@@ -445,11 +501,11 @@
 
       document.getElementById("kpiTensaoInfo").textContent = info;
 
-      // Horas de motor (rastreador)
+      // Horas de motor
       const hMotor = Number(d.horas_motor || 0);
       document.getElementById("kpiHorasMotor").textContent = hMotor.toFixed(2) + " h";
 
-      // Horas da embarcação (offset + rastreador)
+      // Horas da embarcação (offset + motor)
       const hEmb = Number(d.hora_embarcacao || 0);
       document.getElementById("kpiHorasEmbarcacao").textContent = hEmb.toFixed(2) + " h";
 
@@ -483,9 +539,77 @@
     }
   }
 
-  // ============================
-  //   PREVENTIVA — PRÓXIMAS
-  // ============================
+
+
+
+
+  // ============================================================
+  //          AJUSTAR OFFSET — BOTÃO + MODAL
+  // ============================================================
+  const modal = document.getElementById("modalAjuste");
+  const btnAjustar = document.getElementById("btnAjustarHoras");
+  const inputOffset = document.getElementById("inputOffset");
+  const btnSalvar = document.getElementById("btnModalSalvar");
+  const btnCancelar = document.getElementById("btnModalCancelar");
+  const modalMsg = document.getElementById("modalMsg");
+
+  // Abrir modal
+  btnAjustar.onclick = () => {
+    modal.style.display = "flex";
+    modalMsg.textContent = "";
+    inputOffset.value = "";
+  };
+
+  // Fechar modal
+  btnCancelar.onclick = () => {
+    modal.style.display = "none";
+  };
+
+  // Salvar offset
+  btnSalvar.onclick = async () => {
+    const valor = parseFloat(inputOffset.value || "0");
+
+    if (isNaN(valor)) {
+      modalMsg.textContent = "Valor inválido";
+      return;
+    }
+
+    try {
+      const r = await fetch(`/api/ativos/${ATIVO_ID}/ajustar-horas`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ offset: valor })
+      });
+
+      const d = await r.json();
+
+      if (!r.ok) {
+        modalMsg.textContent = d.erro || "Erro ao ajustar offset.";
+        return;
+      }
+
+      modalMsg.textContent = "Offset atualizado!";
+
+      // Atualiza o painel
+      loadDados();
+
+      setTimeout(() => {
+        modal.style.display = "none";
+      }, 600);
+
+    } catch (e) {
+      modalMsg.textContent = "Erro ao enviar dados.";
+    }
+  };
+
+
+
+
+
+
+  // ============================================================
+  //        PREVENTIVA — LISTAGEM RÁPIDA
+  // ============================================================
   function renderAtividades(lista, el){
     if(!lista || !lista.length){
       el.innerHTML = "--";
@@ -513,9 +637,9 @@
     }
   }
 
-  // ============================
-  //   PREVENTIVA — CRUD
-  // ============================
+  // ============================================================
+  //        PREVENTIVA — CRUD COMPLETO
+  // ============================================================
   async function loadPlano(){
     try{
       const r = await fetch(ENDPOINT_PLANO);
@@ -552,7 +676,6 @@
         tbody.appendChild(tr);
       });
 
-      // Ação deletar
       tbody.querySelectorAll("button[data-id]").forEach(btn => {
         btn.onclick = async () => {
           const id = btn.getAttribute("data-id");
@@ -579,7 +702,7 @@
     }
   }
 
-  // SUBMIT DO FORM
+  // Submit do plano
   const formPlano = document.getElementById("formPlano");
 
   formPlano.onsubmit = async (ev) => {
@@ -632,7 +755,9 @@
     }
   };
 
-  // Loop de atualização
+  // ============================================================
+  //  LOOP AUTOMÁTICO DE ATUALIZAÇÃO
+  // ============================================================
   loadDados();
   loadPreventiva();
 
