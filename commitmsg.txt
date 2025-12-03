@@ -1,1 +1,1 @@
-﻿feat: atualiza painel do ativo com integração ao endpoint /api/ativos/<id>/dados
+﻿feat: garante persistência do SQLite criando diretório instance antes de iniciar o app

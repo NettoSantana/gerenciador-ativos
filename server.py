@@ -4,7 +4,7 @@ from gerenciador_ativos.config import Config
 from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import Usuario
 
-# Importa modelos de preventiva para o db.create_all enxergar a tabela
+# importa modelos de preventiva para aparecer nas tabelas
 from gerenciador_ativos import preventiva_models  # noqa
 
 # Blueprints existentes
@@ -17,10 +17,8 @@ from gerenciador_ativos.portal.routes import portal_bp
 from gerenciador_ativos.ativos.painel import painel_bp
 from gerenciador_ativos.api.ativos.routes_dados import api_ativos_dados_bp
 
-# 🔥 Novo: blueprint do monitoramento BrasilSat
+# novos blueprints
 from gerenciador_ativos.api.monitoramento.routes import monitoramento_bp
-
-# 🔥 Novo: blueprint REST dos ativos (dados, preventiva, plano, etc.)
 from gerenciador_ativos.api.ativos import api_ativos_bp
 
 
@@ -31,7 +29,7 @@ def create_app():
     # extensão do banco
     db.init_app(app)
 
-    # registro dos blueprints existentes
+    # registra blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboards_bp)
     app.register_blueprint(usuarios_bp)
@@ -41,15 +39,21 @@ def create_app():
     app.register_blueprint(painel_bp)
     app.register_blueprint(monitoramento_bp)
     app.register_blueprint(api_ativos_dados_bp)
-
-    # registro do novo blueprint REST
     app.register_blueprint(api_ativos_bp)
 
-    # cria o banco e cria admin se não existir
+    # cria banco apenas se não existir
     with app.app_context():
-        db.create_all()
+        instance_path = os.path.join(os.getcwd(), "instance")
+        os.makedirs(instance_path, exist_ok=True)
 
-        if Usuario.query.count() == 0:
+        db_path = os.path.join(instance_path, "gerenciador_ativos.db")
+
+        # cria o banco só se o arquivo não existir
+        if not os.path.exists(db_path):
+            print(">>> Banco não encontrado — criando novo banco...")
+            db.create_all()
+
+            # cria admin apenas na criação do banco
             admin = Usuario(
                 nome="Administrador",
                 email="admin@admin.com",
@@ -59,12 +63,15 @@ def create_app():
             admin.set_password("admin123")
             db.session.add(admin)
             db.session.commit()
+
             print(">>> Usuário admin criado: email=admin@admin.com | senha=admin123")
+        else:
+            print(">>> Banco já existe — não será recriado.")
 
     return app
 
 
-# 🔥 GANHADOR: Cria diretório instance ANTES do app
+# garante o diretório instance ANTES de iniciar o app
 os.makedirs("instance", exist_ok=True)
 
 app = create_app()
