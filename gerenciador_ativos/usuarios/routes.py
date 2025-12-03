@@ -6,12 +6,6 @@ from gerenciador_ativos.models import Usuario
 
 
 # ============================================================
-# CONFIGURAÇÃO DO ADMIN PRINCIPAL
-# ============================================================
-ADMIN_PRINCIPAL_EMAIL = "admin@admin.com"
-
-
-# ============================================================
 # LISTA DE USUÁRIOS
 # ============================================================
 
@@ -24,7 +18,7 @@ def lista():
 
 
 # ============================================================
-# NOVO USUÁRIO
+# NOVO USUÁRIO (SEM CLIENTE)
 # ============================================================
 
 @usuarios_bp.route("/novo", methods=["GET", "POST"])
@@ -38,8 +32,8 @@ def novo():
         tipo = request.form.get("tipo")
 
         if Usuario.query.filter_by(email=email).first():
-            flash("Este e-mail já está cadastrado.", "warning")
-            return redirect(url_for("usuarios.lista"))
+            flash("Já existe um usuário com este e-mail.", "danger")
+            return redirect(url_for("usuarios.novo"))
 
         usuario = Usuario(
             nome=nome,
@@ -52,7 +46,7 @@ def novo():
         db.session.add(usuario)
         db.session.commit()
 
-        flash("Usuário criado com sucesso.", "success")
+        flash("Usuário criado com sucesso!", "success")
         return redirect(url_for("usuarios.lista"))
 
     return render_template("usuarios/novo.html")
@@ -74,7 +68,8 @@ def editar(id):
         usuario.tipo = request.form.get("tipo")
 
         db.session.commit()
-        flash("Usuário atualizado com sucesso.", "success")
+
+        flash("Usuário atualizado com sucesso!", "success")
         return redirect(url_for("usuarios.lista"))
 
     return render_template("usuarios/editar.html", usuario=usuario)
@@ -89,7 +84,6 @@ def editar(id):
 @role_required(["admin", "gerente"])
 def toggle(id):
     usuario = Usuario.query.get_or_404(id)
-
     usuario.ativo = not usuario.ativo
     db.session.commit()
 
@@ -107,26 +101,20 @@ def toggle(id):
 def excluir(id):
     usuario = Usuario.query.get_or_404(id)
 
-    usuario_logado_tipo = session.get("user_tipo")
-    usuario_logado_id = session.get("user_id")
-
-    # 1 — ninguém pode excluir o admin principal
-    if usuario.email == ADMIN_PRINCIPAL_EMAIL:
+    # não permite excluir admin principal
+    if usuario.email == "admin@admin.com":
         flash("O administrador principal não pode ser excluído.", "danger")
         return redirect(url_for("usuarios.lista"))
 
-    # 2 — ninguém pode excluir a si mesmo
-    if usuario.id == usuario_logado_id:
+    # não permite excluir a si mesmo
+    if usuario.id == session.get("user_id"):
         flash("Você não pode excluir seu próprio usuário.", "danger")
         return redirect(url_for("usuarios.lista"))
 
-    # 3 — gerente NÃO exclui gerente
-    if usuario_logado_tipo == "gerente" and usuario.tipo == "gerente":
+    # gerente não exclui gerente
+    if session.get("user_tipo") == "gerente" and usuario.tipo == "gerente":
         flash("Gerentes não podem excluir outros gerentes.", "danger")
         return redirect(url_for("usuarios.lista"))
-
-    # 4 — admin pode excluir qualquer um (menos admin principal)
-    # (nenhum bloco adicional necessário)
 
     db.session.delete(usuario)
     db.session.commit()
