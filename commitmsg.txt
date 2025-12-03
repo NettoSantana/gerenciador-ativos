@@ -1,1 +1,5 @@
-﻿fix: padroniza botão Excluir dos Usuários para o mesmo estilo dos Ativos
+﻿feat: adiciona exclusão real de clientes com validação e segurança
+
+- rota POST /clientes/excluir
+- bloqueio opcional para clientes com ativos
+- restrição para admin/gerente

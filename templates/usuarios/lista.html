@@ -31,13 +31,11 @@
 
           <td style="padding:14px 20px;">
             {% if u.ativo %}
-              <span class="chip"
-                style="background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.4); color:#22c55e;">
+              <span class="chip" style="background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.4); color:#22c55e;">
                 Ativo
               </span>
             {% else %}
-              <span class="chip"
-                style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#ef4444;">
+              <span class="chip" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#ef4444;">
                 Inativo
               </span>
             {% endif %}
@@ -45,30 +43,41 @@
 
           <td style="padding:14px 20px; display:flex; gap:10px;">
 
-            <a href="{{ url_for('usuarios.editar', id=u.id) }}" class="btn-ghost">
-              Editar
-            </a>
+            <!-- EDITAR -->
+            <a href="{{ url_for('usuarios.editar', id=u.id) }}" class="btn-ghost">Editar</a>
 
+            <!-- ATIVAR / DESATIVAR -->
             {% if u.ativo %}
-              <a href="{{ url_for('usuarios.toggle', id=u.id) }}" class="btn-ghost">
-                Desativar
-              </a>
+              <a href="{{ url_for('usuarios.toggle', id=u.id) }}" class="btn-ghost">Desativar</a>
             {% else %}
-              <a href="{{ url_for('usuarios.toggle', id=u.id) }}" class="btn-ghost">
-                Ativar
-              </a>
+              <a href="{{ url_for('usuarios.toggle', id=u.id) }}" class="btn-ghost">Ativar</a>
             {% endif %}
 
-            <!-- EXCLUIR — IGUAL AO DOS ATIVOS -->
-            <form action="{{ url_for('usuarios.excluir', id=u.id) }}" 
-                  method="POST"
-                  onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
+            <!-- EXCLUIR (só se permitido) -->
+            {% set logado = session.get('user_tipo') %}
 
-              <button type="submit" class="btn-ghost" style="color:#ef4444;">
-                Excluir
-              </button>
+            {% if u.email != 'admin@admin.com' %}   {# admin principal nunca mostra excluir #}
+              {% if u.id != session.get('user_id') %}  {# não excluir a si mesmo #}
 
-            </form>
+                {% if logado == 'admin' %}
+                  <!-- admin pode excluir todos, menos admin -->
+                  <form action="{{ url_for('usuarios.excluir', id=u.id) }}" method="POST"
+                        onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
+                    <button type="submit" class="btn-ghost" style="color:#ef4444;">Excluir</button>
+                  </form>
+
+                {% elif logado == 'gerente' %}
+                  {% if u.tipo != 'gerente' %}
+                    <!-- gerente só exclui usuários comuns -->
+                    <form action="{{ url_for('usuarios.excluir', id=u.id) }}" method="POST"
+                          onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
+                      <button type="submit" class="btn-ghost" style="color:#ef4444;">Excluir</button>
+                    </form>
+                  {% endif %}
+                {% endif %}
+
+              {% endif %}
+            {% endif %}
 
           </td>
         </tr>

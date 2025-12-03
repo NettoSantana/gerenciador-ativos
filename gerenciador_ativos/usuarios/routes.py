@@ -6,6 +6,12 @@ from gerenciador_ativos.models import Usuario
 
 
 # ============================================================
+# CONFIGURAÇÃO DO ADMIN PRINCIPAL
+# ============================================================
+ADMIN_PRINCIPAL_EMAIL = "admin@admin.com"
+
+
+# ============================================================
 # LISTA DE USUÁRIOS
 # ============================================================
 
@@ -101,10 +107,26 @@ def toggle(id):
 def excluir(id):
     usuario = Usuario.query.get_or_404(id)
 
-    # Impede excluir a si mesmo
-    if usuario.id == session.get("user_id"):
+    usuario_logado_tipo = session.get("user_tipo")
+    usuario_logado_id = session.get("user_id")
+
+    # 1 — ninguém pode excluir o admin principal
+    if usuario.email == ADMIN_PRINCIPAL_EMAIL:
+        flash("O administrador principal não pode ser excluído.", "danger")
+        return redirect(url_for("usuarios.lista"))
+
+    # 2 — ninguém pode excluir a si mesmo
+    if usuario.id == usuario_logado_id:
         flash("Você não pode excluir seu próprio usuário.", "danger")
         return redirect(url_for("usuarios.lista"))
+
+    # 3 — gerente NÃO exclui gerente
+    if usuario_logado_tipo == "gerente" and usuario.tipo == "gerente":
+        flash("Gerentes não podem excluir outros gerentes.", "danger")
+        return redirect(url_for("usuarios.lista"))
+
+    # 4 — admin pode excluir qualquer um (menos admin principal)
+    # (nenhum bloco adicional necessário)
 
     db.session.delete(usuario)
     db.session.commit()
