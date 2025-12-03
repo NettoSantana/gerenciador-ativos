@@ -1,6 +1,5 @@
-﻿feat: adiciona botão Home na topbar com redirecionamento conforme tipo de usuário
+﻿feat: conecta painel gerencial ao banco de dados com KPI reais
 
-- admin/gerente → /dashboard/gerente
-- cliente → /portal/dashboard
-- botão visível apenas quando usuário está logado
-- melhora navegação geral do sistema
+- adiciona contagem dinâmica de clientes, ativos e preventivas
+- rota /dashboard/gerente agora retorna dados reais
+- substitui valores estáticos por variáveis reais no template

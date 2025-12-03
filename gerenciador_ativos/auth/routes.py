@@ -6,6 +6,15 @@ from gerenciador_ativos.models import Usuario, Cliente
 
 
 # ============================================================
+# ROTA RAIZ → sempre envia para /login
+# ============================================================
+
+@auth_bp.route("/")
+def index_redirect():
+    return redirect(url_for("auth.login"))
+
+
+# ============================================================
 # LOGIN
 # ============================================================
 
