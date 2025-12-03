@@ -1,7 +1,6 @@
-﻿feat: adiciona layout premium de login com duas colunas, animação slide/fade, 
-e separação completa via login.css e login.js
+﻿feat: implementa cadastro livre com criação automática de Cliente vinculado ao Usuário
 
-- remove herança do base.html no login
-- cria novo login.html independente
-- adiciona login.css com layout premium responsivo
-- adiciona login.js para transições entre os formulários
+- adiciona criação automática de cliente tipo PF no /register
+- vincula usuario.cliente_id ao cliente criado
+- resolve erro 403 ao acessar portal/dashboard
+- atualiza fluxo de cadastro para campanhas e afiliados
