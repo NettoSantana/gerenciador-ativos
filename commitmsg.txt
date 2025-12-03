@@ -1,1 +1,1 @@
-﻿feat: adiciona card de Horas da Embarcação no painel
+﻿feat: adiciona campo tensao_bateria ao modelo Ativo
