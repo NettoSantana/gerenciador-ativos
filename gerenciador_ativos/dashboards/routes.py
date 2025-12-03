@@ -1,27 +1,31 @@
-from flask import render_template, session, redirect, url_for
+from flask import render_template
 from gerenciador_ativos.dashboards import dashboards_bp
 from gerenciador_ativos.auth.decorators import login_required
-
-
-@dashboards_bp.route("/")
-def home():
-    # se estiver logado, manda pro dashboard correto
-    if "user_id" in session:
-        if session.get("user_tipo") in ["admin", "gerente", "manutencao", "financeiro", "fiscal"]:
-            return redirect(url_for("dashboards.dashboard_gerente"))
-        else:
-            return redirect(url_for("dashboards.dashboard_cliente"))
-    # senão, manda pro login
-    return redirect(url_for("auth.login"))
+from gerenciador_ativos.models import Cliente, Ativo
+from gerenciador_ativos.preventiva_models import PreventivaItem
 
 
 @dashboards_bp.route("/dashboard/gerente")
 @login_required
 def dashboard_gerente():
-    return render_template("dashboards/gerente.html")
 
+    # =======================
+    # CONTAGENS DO SISTEMA
+    # =======================
+    total_clientes = Cliente.query.count()
+    total_ativos = Ativo.query.count()
+    total_ativos_ativos = Ativo.query.filter_by(ativo=True).count()
 
-@dashboards_bp.route("/dashboard/cliente")
-@login_required
-def dashboard_cliente():
-    return render_template("dashboards/cliente.html")
+    # conta itens de preventiva cadastrados
+    total_preventivas = PreventivaItem.query.count()
+
+    # =======================
+    # Renderiza com dados reais
+    # =======================
+    return render_template(
+        "dashboards/gerente.html",
+        total_clientes=total_clientes,
+        total_ativos=total_ativos,
+        total_ativos_ativos=total_ativos_ativos,
+        total_preventivas=total_preventivas
+    )

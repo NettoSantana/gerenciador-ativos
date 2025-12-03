@@ -6,27 +6,32 @@
 <div class="page">
   <div class="page-header">
     <h1>Painel Gerencial</h1>
-    <p class="muted">Visão interna do sistema. Aqui depois entram KPIs, alarmes, clientes, etc.</p>
+    <p class="muted">Visão interna do sistema com informações em tempo real.</p>
   </div>
 
   <div class="grid">
+
+    <!-- KPI: Clientes -->
     <div class="card card-kpi">
       <span class="kpi-label">Clientes</span>
-      <span class="kpi-value">0</span>
-      <span class="kpi-foot muted">Em breve: contagem real</span>
+      <span class="kpi-value">{{ total_clientes }}</span>
+      <span class="kpi-foot muted">Total de clientes cadastrados</span>
     </div>
 
+    <!-- KPI: Ativos monitorados -->
     <div class="card card-kpi">
       <span class="kpi-label">Ativos monitorados</span>
-      <span class="kpi-value">0</span>
+      <span class="kpi-value">{{ total_ativos_ativos }}</span>
       <span class="kpi-foot muted">IndFlow | Náutica | Outros</span>
     </div>
 
+    <!-- KPI: Próximas preventivas -->
     <div class="card card-kpi">
       <span class="kpi-label">Próximas preventivas</span>
-      <span class="kpi-value">0</span>
+      <span class="kpi-value">{{ total_preventivas }}</span>
       <span class="kpi-foot muted">Eventos futuros</span>
     </div>
+
   </div>
 </div>
 {% endblock %}
