@@ -2,7 +2,7 @@ from flask import render_template, request, redirect, url_for, flash, session
 from gerenciador_ativos.auth import auth_bp
 from gerenciador_ativos.auth.service import autenticar_usuario
 from gerenciador_ativos.extensions import db
-from gerenciador_ativos.models import Usuario
+from gerenciador_ativos.models import Usuario, Cliente
 
 
 # ============================================================
@@ -20,7 +20,7 @@ def login():
             flash("Usuário ou senha inválidos.", "danger")
             return render_template("auth/login.html")
 
-        # guarda dados mínimos na sessão
+        # guarda dados na sessão
         session["user_id"] = usuario.id
         session["user_nome"] = usuario.nome
         session["user_tipo"] = usuario.tipo
@@ -28,7 +28,7 @@ def login():
 
         flash(f"Bem-vindo(a), {usuario.nome}!", "success")
 
-        # redireciona conforme o tipo
+        # rota conforme o tipo
         if usuario.is_interno():
             return redirect(url_for("dashboards.dashboard_gerente"))
         else:
@@ -49,12 +49,12 @@ def logout():
 
 
 # ============================================================
-# CADASTRO LIVRE (para campanhas)
+# CADASTRO LIVRE — com criação automática de CLIENTE
 # ============================================================
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    """Cadastro simples e direto, ideal para campanhas."""
+    """Cadastro simples para campanhas, com criação automática de cliente."""
     
     nome = request.form.get("nome", "").strip()
     email = request.form.get("email", "").strip().lower()
@@ -75,23 +75,39 @@ def register():
         flash("Este e-mail já está cadastrado.", "warning")
         return redirect(url_for("auth.login"))
 
-    # cria o usuário
-    novo = Usuario(
+    # ===========================
+    # 1 — Criar CLIENTE automático
+    # ===========================
+    cliente = Cliente(
+        tipo="PF",
         nome=nome,
         email=email,
-        tipo="cliente",  # padrão para campanhas
         ativo=True
     )
-    novo.set_password(senha)
-    db.session.add(novo)
+    db.session.add(cliente)
+    db.session.flush()  # garante ID imediato
+
+    # ===========================
+    # 2 — Criar USUÁRIO vinculado
+    # ===========================
+    usuario = Usuario(
+        nome=nome,
+        email=email,
+        tipo="cliente",   # padrão para campanhas
+        ativo=True,
+        cliente_id=cliente.id
+    )
+    usuario.set_password(senha)
+
+    db.session.add(usuario)
     db.session.commit()
 
-    flash("Conta criada com sucesso! Faça login.", "success")
+    flash("Conta criada com sucesso! Faça login para continuar.", "success")
     return redirect(url_for("auth.login"))
 
 
 # ============================================================
-# ROTA INTERNA — RESET DE SENHA DO ADMIN
+# RESET DE SENHA DO ADMIN
 # ============================================================
 
 @auth_bp.route("/internal/reset-admin")
