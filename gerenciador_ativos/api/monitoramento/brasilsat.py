@@ -1,61 +1,153 @@
-import requests
+import os
 import time
+import hashlib
+from typing import Dict, Any
+import requests
 
-# ==============================
-#   CONFIG BRASILSAT
-# ==============================
+# --------------------------------------------------
+# CONFIGURAÇÃO DA API BRASILSAT
+# --------------------------------------------------
 
-BRASILSAT_URL = "https://gps.brasilsatgps.com.br/V2/api/device/lastposition"
-BRASILSAT_USER = "admin"
-BRASILSAT_PASS = "123456"
+# 🔥 Correção essencial:
+# A API real está no subdiretório /V2 — não no domínio raiz.
+BASE_URL = os.getenv("BRASILSAT_BASE_URL", "https://gps.brasilsatgps.com.br/V2")
+
+ACCOUNT = os.getenv("BRASILSAT_ACCOUNT")
+PASSWORD = os.getenv("BRASILSAT_PASSWORD")
+
 
 class BrasilSatError(Exception):
     pass
 
 
-# ==============================
-#   FUNÇÃO PRINCIPAL
-# ==============================
+def _md5(s: str) -> str:
+    return hashlib.md5(s.encode("utf-8")).hexdigest()
 
-def get_telemetria_por_imei(imei: str):
-    """
-    Consulta a última posição/telemetria de um dispositivo BrasilSat.
-    Retorna sempre um dicionário padronizado.
-    """
 
-    if not imei:
-        raise BrasilSatError("IMEI não informado")
+# --------------------------------------------------
+# OBTÉM ACCESS TOKEN
+# --------------------------------------------------
+
+def _obter_access_token() -> str:
+    if not ACCOUNT or not PASSWORD:
+        raise BrasilSatError("BRASILSAT_ACCOUNT ou BRASILSAT_PASSWORD não definidos.")
+
+    now = int(time.time())
+    signature = _md5(_md5(PASSWORD) + str(now))
+
+    url = f"{BASE_URL}/api/authorization"
+    params = {"time": now, "account": ACCOUNT, "signature": signature}
 
     try:
-        resp = requests.get(
-            BRASILSAT_URL,
-            params={"login": BRASILSAT_USER, "password": BRASILSAT_PASS, "imei": imei},
-            timeout=10
-        )
+        r = requests.get(url, params=params, timeout=10)
     except Exception as exc:
-        raise BrasilSatError(f"Falha de conexão: {exc}")
-
-    if resp.status_code != 200:
-        raise BrasilSatError(f"HTTP {resp.status_code}: {resp.text}")
+        raise BrasilSatError(f"Falha de rede ao autenticar: {exc}")
 
     try:
-        data = resp.json()
+        data = r.json()
     except:
-        raise BrasilSatError("Resposta inválida da API BrasilSat")
+        raise BrasilSatError(f"Resposta inválida da BrasilSat: {r.text}")
 
-    # ==============================
-    # Normalização dos campos
-    # ==============================
+    if data.get("code") != 0:
+        raise BrasilSatError(f"Erro na autorização: {data}")
 
-    tele = {
-        "motor_ligado": bool(data.get("ignicao")),
-        "tensao_bateria": data.get("tensao_bateria"),
-        "servertime": float(data.get("servertime") or time.time()),
-        "latitude": data.get("latitude"),
-        "longitude": data.get("longitude"),
+    record = data.get("record") or data.get("data") or {}
+    token = record.get("access_token")
 
-        # Horas de motor (acctime da BrasilSat)
-        "horas_motor": float(data.get("acctime") or 0.0),
+    if not token:
+        raise BrasilSatError("access_token ausente.")
+
+    return token
+
+
+# --------------------------------------------------
+# BUSCA TRACK (bruto)
+# --------------------------------------------------
+
+def _buscar_track_bruto(imei: str) -> Dict[str, Any]:
+    if not imei:
+        raise BrasilSatError("IMEI não informado.")
+
+    token = _obter_access_token()
+
+    url = f"{BASE_URL}/api/track"
+    params = {"access_token": token, "imeis": imei}
+
+    try:
+        r = requests.get(url, params=params, timeout=10)
+    except Exception as exc:
+        raise BrasilSatError(f"Erro de rede em /track: {exc}")
+
+    try:
+        data = r.json()
+    except:
+        raise BrasilSatError(f"Resposta inválida da BrasilSat: {r.text}")
+
+    if data.get("code") != 0:
+        raise BrasilSatError(f"Erro na consulta /track: {data}")
+
+    records = data.get("record") or []
+    if not records:
+        raise BrasilSatError(f"Nenhum registro retornado para IMEI {imei}")
+
+    return records[0]
+
+
+# --------------------------------------------------
+# NORMALIZA TRACK
+# --------------------------------------------------
+
+def _normalizar_track_bruto(rec: Dict[str, Any]) -> Dict[str, Any]:
+    imei = rec.get("imei")
+
+    acc = rec.get("accstatus")
+    acctime = float(rec.get("acctime") or 0)
+    horas_motor = acctime / 3600.0
+
+    tensao = rec.get("externalpower")
+    try:
+        tensao = float(tensao) if tensao else None
+    except:
+        tensao = None
+
+    lat = rec.get("latitude") or rec.get("lat")
+    lon = rec.get("longitude") or rec.get("lng")
+
+    try:
+        lat = float(lat) if lat else None
+        lon = float(lon) if lon else None
+    except:
+        lat = lon = None
+
+    return {
+        "imei": imei,
+        "motor_ligado": (acc == 1),
+        "acctime_s": acctime,
+        "horas_motor": horas_motor,
+        "tensao_bateria": tensao,
+        "servertime": rec.get("servertime"),
+        "latitude": lat,
+        "longitude": lon,
+        "raw": rec,
     }
 
-    return tele
+
+# --------------------------------------------------
+# FUNÇÃO PÚBLICA
+# --------------------------------------------------
+
+def get_telemetria_por_imei(imei: str) -> Dict[str, Any]:
+    bruto = _buscar_track_bruto(imei)
+    return _normalizar_track_bruto(bruto)
+
+
+# --------------------------------------------------
+# TESTE MANUAL
+# --------------------------------------------------
+
+if __name__ == "__main__":
+    imei = os.getenv("BRASILSAT_IMEI")
+    if not imei:
+        print("Defina BRASILSAT_IMEI")
+    else:
+        print(get_telemetria_por_imei(imei))
