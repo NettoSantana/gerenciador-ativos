@@ -1,7 +1,7 @@
-﻿fix: refatoração completa da tela de login com logo única ampliada
+﻿feat: atualização completa do header com identidade Electro Auto Náutica
 
-- removido texto redundante Electro Auto / Náutica
-- logo agora é exibida sozinha e em tamanho maior (240px)
-- visual mais profissional e limpo
-- responsividade aprimorada
-- reescrita total do login.html
+- removido texto Gerenciador de Ativos e subtítulo
+- inserida apenas a logo oficial no header
+- aumentada a logo para 52px com responsividade mobile
+- limpeza total do bloco logo-text
+- header mais moderno, limpo e profissional
