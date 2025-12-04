@@ -1,9 +1,1 @@
-﻿fix: reescrita completa dos módulos de telemetria (Modelo A — hodômetro real)
-
-- brasilsat.py totalmente refeito
-- dados.py refeito para usar acctime acumulado
-- horas_motor agora reais e consistentes
-- hora_embarcacao = horas_motor + offset
-- motor_ligado corrigido via accstatus
-- horas_paradas corrigido
-- payload limpo e padronizado
+﻿fix: corrigido conflito de endpoints (dados_ativo) criando rota dados-v2 para evitar AssertionError no Railway
