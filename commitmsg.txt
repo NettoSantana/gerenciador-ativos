@@ -1,8 +1,6 @@
-﻿feat: ajuste de horas da embarcação (offset) integrado ao painel
+﻿feat: substituição do texto GA por logo da empresa no header
 
-- adiciona botão 'Ajustar' no card Horas da Embarcação
-- inclui modal completo para entrada do offset
-- integra o modal com o endpoint POST /api/ativos/<id>/ajustar-horas
-- atualiza automaticamente o painel após salvar o offset
-- preserva toda a estrutura existente do painel
-- painel.html totalmente reescrito mantendo compatibilidade
+- adicionada exibição da imagem /static/logo.png no cabeçalho principal
+- removido o texto GA e inserido tag <img> responsiva
+- aplicado estilo minimalista (.logo-img) para manter alinhamento no topbar
+- sem impacto nas rotas e permissões

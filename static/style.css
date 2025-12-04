@@ -329,3 +329,23 @@ body {
     padding: 16px;
   }
 }
+/* ====== LOGO DA EMPRESA NO HEADER ====== */
+
+.logo-img {
+  height: 38px;              /* altura ideal */
+  width: auto;               /* mantém proporção */
+  object-fit: contain;
+  display: block;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;        /* alinha verticalmente */
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .logo-img {
+    height: 32px;            /* reduz um pouco no mobile */
+  }
+}
