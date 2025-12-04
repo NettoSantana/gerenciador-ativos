@@ -1,8 +1,9 @@
-﻿fix: reescrita completa da API de telemetria (dados.py)
+﻿fix: reescrita completa dos módulos de telemetria (Modelo A — hodômetro real)
 
-- motor_ligado normalizado (1/true)
-- horas_motor corrigidas com horímetro interno
-- horas_paradas zerando quando motor liga
-- horas_embarcacao = horas_motor + offset
-- correção total dos timestamps
-- código limpo, seguro e otimizado
+- brasilsat.py totalmente refeito
+- dados.py refeito para usar acctime acumulado
+- horas_motor agora reais e consistentes
+- hora_embarcacao = horas_motor + offset
+- motor_ligado corrigido via accstatus
+- horas_paradas corrigido
+- payload limpo e padronizado
