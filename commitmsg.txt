@@ -1,1 +1,6 @@
-﻿fix: painel corrigido — preventiva voltou a aparecer (endpoint dados)
+﻿feat: painel do ativo refeito
+- tabs funcionando
+- modal de ajuste de offset implementado
+- endpoint POST /offset integrado
+- layout corrigido e estabilizado
+- preventiva funcionando corretamente

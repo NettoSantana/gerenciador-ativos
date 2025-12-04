@@ -337,60 +337,100 @@
 
   btnSalvar.onclick = async () => {
     const val = parseFloat(inputOffset.value || 0);
-    if (isNaN(val)) return alert("Digite um número válido");
+    if (isNaN(val)) {
+      alert("Digite um número válido");
+      return;
+    }
 
-    await fetch(ENDPOINT_OFFSET, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ offset: val })
-    });
-
-    modalBg.style.display = "none";
-    loadDados();
+    try {
+      await fetch(ENDPOINT_OFFSET, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ offset: val })
+      });
+      modalBg.style.display = "none";
+      loadDados();
+    } catch (e) {
+      console.error("Erro ao salvar offset:", e);
+      alert("Erro ao salvar offset.");
+    }
   };
 
   /* =============== CARREGAR DADOS =============== */
   async function loadDados(){
     try{
       const r = await fetch(ENDPOINT_DADOS);
+      if (!r.ok) throw new Error("HTTP " + r.status);
       const d = await r.json();
 
-      document.getElementById("badgeImei").textContent = d.imei || "--";
-      document.getElementById("badgeUltima").textContent = "Última: " + new Date(d.servertime*1000).toLocaleString("pt-BR");
+      const imei = d.imei || "--";
+      document.getElementById("badgeImei").textContent = imei;
 
-      document.getElementById("kpiMonitor").textContent = d.monitor_online ? "online" : "offline";
+      const servertime = d.servertime ? new Date(d.servertime*1000).toLocaleString("pt-BR",{hour12:false}) : "--";
+      document.getElementById("badgeUltima").textContent = "Última: " + servertime;
 
-      const motorOn = d.motor_ligado;
+      const online = !!d.monitor_online;
+      document.getElementById("kpiMonitor").textContent = online ? "online" : "offline";
+
+      const motorOn = !!d.motor_ligado;
       document.getElementById("kpiMotor").textContent = motorOn ? "Ligado" : "Desligado";
       document.getElementById("dotMotor").className = "status-dot " + (motorOn ? "ok" : "bad");
       document.getElementById("kpiMotorHint").textContent = motorOn ? "Ignição ON" : "Ignição OFF";
 
-      document.getElementById("kpiTensao").textContent = d.tensao_bateria.toFixed(2) + " V";
+      const tensao = Number(d.tensao_bateria ?? 0);
+      document.getElementById("kpiTensao").textContent = tensao.toFixed(2) + " V";
+      let info = "—";
+      if (tensao === 0) info = "Sem leitura";
+      else if (tensao < 12.0) info = "Baixa";
+      else if (tensao < 12.3) info = "Meia carga";
+      else info = "OK";
+      document.getElementById("kpiTensaoInfo").textContent = info;
 
-      document.getElementById("kpiHorasMotor").textContent = d.horas_motor.toFixed(2) + " h";
-      document.getElementById("kpiHorasEmbarcacao").textContent = d.hora_embarcacao.toFixed(2) + " h";
-      document.getElementById("kpiHorasParadas").textContent = d.horas_paradas.toFixed(2) + " h";
-      document.getElementById("kpiIgnicoes").textContent = d.ignicoes;
+      const hMotor = Number(d.horas_motor ?? 0);
+      document.getElementById("kpiHorasMotor").textContent = hMotor.toFixed(2) + " h";
+
+      const hEmb = Number(d.hora_embarcacao ?? 0);
+      document.getElementById("kpiHorasEmbarcacao").textContent = hEmb.toFixed(2) + " h";
+
+      const hParadas = Number(d.horas_paradas ?? 0);
+      document.getElementById("kpiHorasParadas").textContent = hParadas.toFixed(2) + " h";
+
+      const ign = Number(d.ignicoes ?? 0);
+      document.getElementById("kpiIgnicoes").textContent = ign.toString();
 
       const lat = d.latitude;
       const lon = d.longitude;
-      document.getElementById("kpiLocalizacao").textContent = `Latitude: ${lat} — Longitude: ${lon}`;
-      document.getElementById("mapFrame").src = `https://www.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
+
+      const latText = (lat !== null && lat !== undefined) ? lat : "--";
+      const lonText = (lon !== null && lon !== undefined) ? lon : "--";
+      document.getElementById("kpiLocalizacao").textContent =
+        `Latitude: ${latText} — Longitude: ${lonText}`;
+
+      const mapFrame = document.getElementById("mapFrame");
+      if (lat !== null && lat !== undefined && lon !== null && lon !== undefined) {
+        const url = `https://www.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
+        if (mapFrame.src !== url) {
+          mapFrame.src = url;
+        }
+      } else {
+        mapFrame.src = "";
+      }
 
     }catch(e){
-      console.error(e);
+      console.error("Erro ao carregar dados:", e);
     }
   }
 
   async function loadPreventiva(){
     try{
       const r = await fetch(ENDPOINT_PREV);
+      if (!r.ok) throw new Error("HTTP " + r.status);
       const d = await r.json();
       const list = d.tarefas || [];
 
       const render = (arr, target) => {
         target.innerHTML = arr.length
-          ? arr.map(t => `• ${t.nome} (${t.faltam.toFixed(1)} ${t.base === 'dias' ? 'd' : 'h'})`).join("<br>")
+          ? arr.map(t => `• ${t.nome} (${Number(t.faltam ?? 0).toFixed(1)} ${t.base === 'dias' ? 'd' : 'h'})`).join("<br>")
           : "--";
       };
 
@@ -398,13 +438,16 @@
       render(list, document.getElementById("listaAtividadesPrev"));
 
     }catch(e){
-      console.error(e);
+      console.error("Erro preventiva:", e);
     }
   }
 
   loadDados();
   loadPreventiva();
-  setInterval(() => { loadDados(); loadPreventiva(); }, 30000);
+  setInterval(() => {
+    loadDados();
+    loadPreventiva();
+  }, 30000);
 </script>
 
 {% endblock %}
