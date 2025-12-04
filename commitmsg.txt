@@ -1,8 +1,8 @@
-﻿fix: correção total da API de telemetria dos ativos
+﻿fix: reescrita completa da API de telemetria (dados.py)
 
-- motor_ligado corrigido com normalização real
-- horas_embarcacao agora é offset + horas_motor
-- horas_paradas zeradas ao ligar motor
-- coordenadas corrigidas (latitude/longitude)
-- payload reorganizado e limpo
-- atualização do banco otimizada
+- motor_ligado normalizado (1/true)
+- horas_motor corrigidas com horímetro interno
+- horas_paradas zerando quando motor liga
+- horas_embarcacao = horas_motor + offset
+- correção total dos timestamps
+- código limpo, seguro e otimizado
