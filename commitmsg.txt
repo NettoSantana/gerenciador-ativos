@@ -1,6 +1,7 @@
-﻿fix: ajuste visual do logo no header (painel)
+﻿fix: substituição total do logo GA por imagem real no header
 
-- adicionada classe .logo-img com altura controlada e proporção preservada
-- ajustado alinhamento vertical no container .topbar-left
-- adicionado comportamento responsivo em telas pequenas
-- melhora alinhamento e estética geral do cabeçalho
+- removido bloco antigo .logo-mark
+- adicionado <img src='static/logo.png'> com classe .logo-img
+- alinhamento corrigido em .topbar-left
+- responsividade ajustada para telas pequenas
+- preservada toda a estrutura original do base.html
