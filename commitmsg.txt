@@ -1,7 +1,8 @@
-﻿fix: correção completa do layout mobile da tela de login
+﻿fix: correção total da API de telemetria dos ativos
 
-- removido height fixo no mobile
-- container se adapta ao tamanho da tela
-- logo agora aparece corretamente no topo
-- formulário não some mais no iPhone
-- layout PC preservado 100%
+- motor_ligado corrigido com normalização real
+- horas_embarcacao agora é offset + horas_motor
+- horas_paradas zeradas ao ligar motor
+- coordenadas corrigidas (latitude/longitude)
+- payload reorganizado e limpo
+- atualização do banco otimizada
