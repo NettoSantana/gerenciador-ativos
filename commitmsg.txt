@@ -1,1 +1,1 @@
-﻿fix: removido circular import e recriado brasilsat.py corretamente
+﻿fix: reescrita completa do endpoint /dados com telemetria estável e cálculo correto de horas
