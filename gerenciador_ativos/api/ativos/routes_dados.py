@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify
 from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import Ativo
 
-# integração BrasilSat da V2 (já existente)
+# integração BrasilSat
 from gerenciador_ativos.api.monitoramento.brasilsat import (
     get_telemetria_por_imei,
     BrasilSatError,
@@ -18,27 +18,45 @@ api_ativos_dados_bp = Blueprint(
 @api_ativos_dados_bp.get("/<int:ativo_id>/dados")
 def dados_do_ativo(ativo_id):
     """
-    Retorna os dados de telemetria do ativo especificado,
-    no mesmo formato usado na V1 (painel interno).
+    Retorna dados completos e corrigidos de telemetria
+    para o painel (motor, horas, offset, localização, etc.)
     """
 
-    # 1) Buscar o ativo no banco
+    # --- (1) Buscar ativo ---
     ativo = Ativo.query.get(ativo_id)
     if not ativo:
         return jsonify({"erro": "Ativo não encontrado"}), 404
 
-    # 2) Precisa ter IMEI
     imei = ativo.imei
     if not imei:
         return jsonify({"erro": "Ativo não possui IMEI cadastrado"}), 400
 
-    # 3) Buscar telemetria da BrasilSat
+    # --- (2) Buscar telemetria da BrasilSat ---
     try:
         tele = get_telemetria_por_imei(imei)
     except BrasilSatError as exc:
         return jsonify({"erro": f"Falha ao obter dados da BrasilSat: {exc}"}), 500
 
-    # 4) Montar payload no padrão da V1
+    # --- (3) Normalizar motor ligado ---
+    motor_raw = tele.get("motor_ligado")
+    motor_ligado = True if str(motor_raw) in ["1", "true", "True"] else False
+
+    # --- (4) Horas do motor e offset ---
+    horas_motor = tele.get("horas_motor") or 0
+    offset = ativo.horas_offset or 0
+
+    # soma real:
+    horas_embarcacao = offset + horas_motor
+
+    # --- (5) Horas paradas ---
+    # se motor liga → zera
+    if motor_ligado:
+        horas_paradas = 0
+    else:
+        # pode expandir depois com cálculo delta
+        horas_paradas = ativo.horas_paradas or 0
+
+    # --- (6) Montar payload final ---
     payload = {
         "ativo_id": ativo.id,
         "nome": ativo.nome,
@@ -46,10 +64,10 @@ def dados_do_ativo(ativo_id):
         "imei": imei,
 
         # telemetria
-        "motor_ligado": tele.get("motor_ligado"),
+        "motor_ligado": motor_ligado,
         "tensao_bateria": tele.get("tensao_bateria"),
         "servertime": tele.get("servertime"),
-        "horas_motor": tele.get("horas_motor"),
+        "horas_motor": horas_motor,
 
         # localização
         "latitude": tele.get("latitude"),
@@ -57,29 +75,29 @@ def dados_do_ativo(ativo_id):
         "velocidade": tele.get("velocidade"),
         "direcao": tele.get("direcao"),
 
-        # compatibilidade com o painel
-        "unidade_base": ativo.categoria or "h",
-        "horas_totais": ativo.horas_sistema or 0,
-        "offset": ativo.horas_offset or 0,
+        # cálculos internos
+        "offset": offset,
+        "horas_embarcacao": horas_embarcacao,
+        "horas_paradas": horas_paradas,
+        "horas_totais": horas_motor,   # compatível com V1
 
-        # campos extras do banco se quiser usar depois
-        "horas_paradas": ativo.horas_paradas or 0,
+        # unidade base
+        "unidade_base": ativo.categoria or "h",
     }
 
-    # 5) Atualizar valores do banco (opcional, mas recomendado)
+    # --- (7) Atualizar banco ---
     try:
-        ativo.horas_sistema = tele.get("horas_motor") or ativo.horas_sistema
+        ativo.horas_sistema = horas_motor
         ativo.ultima_atualizacao = tele.get("servertime")
-        ativo.horas_paradas = ativo.horas_paradas  # se quiser incorporar lógica da V1 depois
-        ativo.ultimo_estado_motor = 1 if tele.get("motor_ligado") else 0
+        ativo.ultimo_estado_motor = 1 if motor_ligado else 0
+        ativo.horas_paradas = horas_paradas
         ativo.latitude = tele.get("latitude")
         ativo.longitude = tele.get("longitude")
-        ativo.horas_offset = ativo.horas_offset  # mantido
         ativo.tensao_bateria = tele.get("tensao_bateria")
 
         db.session.commit()
+
     except Exception:
-        # falha ao atualizar o banco não deve impedir retorno
         pass
 
     return jsonify(payload)

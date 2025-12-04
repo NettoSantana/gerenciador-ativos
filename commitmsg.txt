@@ -1,5 +1,7 @@
-﻿fix: aumento da logo do header para 70px (identidade Electro Auto Náutica)
+﻿fix: correção completa do layout mobile da tela de login
 
-- logo do topo ampliada para 70px (50px no mobile)
-- removido bloco de texto antigo
-- header mais forte e profissional
+- removido height fixo no mobile
+- container se adapta ao tamanho da tela
+- logo agora aparece corretamente no topo
+- formulário não some mais no iPhone
+- layout PC preservado 100%
