@@ -1,1 +1,1 @@
-﻿fix: rota /dados agora envia dados no formato V1 compatível com painel
+﻿fix: refactor completo do endpoint /dados e criação do /dados-v2 para compatibilidade total com painel

@@ -88,11 +88,31 @@
     .status-dot.warn{background:#eab308;}
 
     .hidden{display:none;}
+
+    /* MAPA */
+    .map-wrapper{
+      margin-top:10px;
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid #1f2937;
+    }
+    .map-frame{
+      width:100%;
+      height:260px;
+      border:0;
+    }
+
+    /* MODAL AJUSTE */
+    #modalAjuste{
+      display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,0.6);justify-content:center;align-items:center;
+      z-index:9999;
+    }
   </style>
 
-  <!-- =======================
+  <!-- ======================
         CABEÇALHO
-  ======================== -->
+  ======================= -->
   <div class="painel-header-top">
     <div class="painel-titulo">
       <h1>Painel — {{ ativo.nome }}</h1>
@@ -106,17 +126,16 @@
     </div>
   </div>
 
-  <!-- =======================
+  <!-- ======================
         TABS
-  ======================== -->
+  ======================= -->
   <div class="tab-row">
     <button id="btnTabPainel" class="tab-btn active">Painel</button>
-    <button id="btnTabPreventiva" class="tab-btn">Preventiva</button>
   </div>
 
-  <!-- =======================
-        VIEW PAINEL
-  ======================== -->
+  <!-- ======================
+        PAINEL
+  ======================= -->
   <section id="viewPainel" class="grid-painel">
 
     <div class="card-kpi col-4">
@@ -149,7 +168,8 @@
     <div class="card-kpi col-4">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <h2>Horas da embarcação</h2>
-        <button class="btn-primary-sm" id="btnAjustarHoras" style="padding:6px 10px; font-size:12px; margin-top:0;">
+        <button class="btn-primary-sm" id="btnAjustarHoras"
+          style="padding:6px 10px; font-size:12px; margin-top:0;">
           Ajustar
         </button>
       </div>
@@ -163,97 +183,11 @@
       <div class="kpi-helper">Acumulado em motor desligado</div>
     </div>
 
-    <div class="card-kpi col-4">
-      <h2>Ignições</h2>
-      <div class="kpi-value" id="kpiIgnicoes">0</div>
-      <div class="kpi-helper">Vezes que o motor ligou</div>
-    </div>
-
     <div class="card-kpi col-6">
       <h2>Localização</h2>
       <div class="kpi-helper" id="kpiLocalizacao">Latitude: -- — Longitude: --</div>
       <div class="map-wrapper">
-        <iframe id="mapFrame" class="map-frame" src="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-      </div>
-    </div>
-
-    <div class="card-kpi col-6">
-      <h2>Próximas atividades</h2>
-      <div id="listaAtividadesPainel" class="kpi-helper">--</div>
-    </div>
-
-  </section>
-
-  <!-- ====================================================
-        VIEW PREVENTIVA
-  ==================================================== -->
-  <section id="viewPreventiva" class="grid-painel hidden">
-
-    <div class="card-kpi col-6">
-      <h2>Próximas atividades</h2>
-      <div id="listaAtividadesPrev" class="kpi-helper">--</div>
-    </div>
-
-    <div class="card-form col-6">
-      <h3>Cadastrar atividade de preventiva</h3>
-
-      <form id="formPlano" autocomplete="off">
-        <div class="form-grid">
-          <div class="form-field col-12x">
-            <label for="planoNome">Nome da atividade</label>
-            <input id="planoNome" type="text" placeholder="Ex.: Troca de óleo do motor" />
-          </div>
-
-          <div class="form-field col-4x">
-            <label for="planoBase">Tipo de controle</label>
-            <select id="planoBase">
-              <option value="horas" selected>Por horas de motor</option>
-              <option value="dias">Por dias corridos</option>
-            </select>
-          </div>
-
-          <div class="form-field col-4x">
-            <label for="planoIntervalo">Intervalo</label>
-            <input id="planoIntervalo" type="number" step="0.1" min="0" placeholder="Ex.: 100" />
-          </div>
-
-          <div class="form-field col-4x">
-            <label for="planoPrimeira">Primeira execução</label>
-            <input id="planoPrimeira" type="number" step="0.1" min="0" placeholder="Opcional" />
-          </div>
-
-          <div class="form-field col-4x">
-            <label for="planoAvisar">Avisar antes</label>
-            <input id="planoAvisar" type="number" step="0.1" min="0" placeholder="Opcional" />
-          </div>
-
-          <div class="form-field col-4x">
-            <button type="submit" class="btn-primary-sm">Adicionar atividade</button>
-          </div>
-        </div>
-
-        <div id="planoMsg" class="msg-inline"></div>
-      </form>
-    </div>
-
-    <div class="card-form col-12">
-      <h3>Plano cadastrado</h3>
-      <table class="table-mini">
-        <thead>
-          <tr>
-            <th>Atividade</th>
-            <th>Base</th>
-            <th>Intervalo</th>
-            <th>Primeira</th>
-            <th>Avisar antes</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="planoBody"></tbody>
-      </table>
-
-      <div id="planoEmpty" class="msg-inline">
-        Nenhuma atividade cadastrada. Serão usadas as regras padrão.
+        <iframe id="mapFrame" class="map-frame" src=""></iframe>
       </div>
     </div>
 
@@ -261,21 +195,42 @@
 
 </div>
 
-<!-- ====================================================
-      SCRIPT PRINCIPAL
-==================================================== -->
+<!-- ======================
+      MODAL AJUSTE OFFSET
+======================= -->
+<div id="modalAjuste">
+  <div style="background:#020617;padding:20px;border-radius:12px;width:300px;
+              border:1px solid #1f2937;">
+
+    <h3 style="margin-top:0;color:#e5e7eb;">Ajustar Offset</h3>
+
+    <label style="color:#9ca3af;font-size:13px;">Offset (horas)</label>
+    <input id="inputOffset" type="number" step="0.1"
+           style="width:100%;margin-top:6px;padding:8px;border-radius:8px;
+                  background:#0b1020;border:1px solid #1f2937;color:#e5e7eb;">
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+      <button id="btnModalCancelar" class="btn-primary-sm" style="background:#64748b;">Cancelar</button>
+      <button id="btnModalSalvar" class="btn-primary-sm">Salvar</button>
+    </div>
+
+    <div id="modalMsg" style="margin-top:8px;font-size:12px;color:#38bdf8;"></div>
+  </div>
+</div>
+
+<!-- ======================
+      SCRIPT
+======================= -->
 <script>
   const ATIVO_ID = {{ ativo.id }};
-  const ENDPOINT_DADOS = `/api/ativos/${ATIVO_ID}/dados-v2`;  // *** CORRIGIDO ***
-  const ENDPOINT_PREV = `/api/ativos/${ATIVO_ID}/preventiva`;
-  const ENDPOINT_PLANO = `/api/ativos/${ATIVO_ID}/plano`;
+  const ENDPOINT_DADOS = `/api/ativos/${ATIVO_ID}/dados`;   // <--- CORRETÍSSIMO
 
   const mapFrame = document.getElementById("mapFrame");
 
   function fmtHora(ts){
     try{
       return new Date(ts*1000).toLocaleString("pt-BR",{hour12:false});
-    }catch(e){
+    }catch{
       return "--";
     }
   }
@@ -283,42 +238,30 @@
   async function loadDados(){
     try{
       const r = await fetch(ENDPOINT_DADOS);
-      if(!r.ok) throw new Error("HTTP "+r.status);
       const d = await r.json();
 
       document.getElementById("badgeImei").textContent = d.imei || "--";
       document.getElementById("badgeUltima").textContent = "Última: " + fmtHora(d.servertime);
 
-      const on = !!d.monitor_online;
-      document.getElementById("kpiMonitor").textContent = on ? "online" : "offline";
+      document.getElementById("kpiMonitor").textContent = d.monitor_online ? "online" : "offline";
 
-      const motorOn = !!d.motor_ligado;
-      document.getElementById("kpiMotor").textContent = motorOn ? "Ligado" : "Desligado";
-      document.getElementById("dotMotor").className = "status-dot " + (motorOn ? "ok" : "bad");
-      document.getElementById("kpiMotorHint").textContent = motorOn ? "Ignição ON" : "Ignição OFF";
+      document.getElementById("kpiMotor").textContent = d.motor_ligado ? "Ligado" : "Desligado";
+      document.getElementById("dotMotor").className = "status-dot " + (d.motor_ligado ? "ok" : "bad");
+      document.getElementById("kpiMotorHint").textContent = d.motor_ligado ? "Ignição ON" : "Ignição OFF";
+
+      document.getElementById("kpiHorasMotor").textContent = `${(d.horas_motor ?? 0).toFixed(2)} h`;
+      document.getElementById("kpiHorasEmbarcacao").textContent = `${(d.hora_embarcacao ?? 0).toFixed(2)} h`;
+      document.getElementById("kpiHorasParadas").textContent = `${(d.horas_paradas ?? 0).toFixed(2)} h`;
 
       const tensao = Number(d.tensao_bateria || 0);
       document.getElementById("kpiTensao").textContent = tensao.toFixed(2) + " V";
 
-      let info = "—";
+      let info = "--";
       if(tensao === 0) info = "Sem leitura";
       else if(tensao < 12.0) info = "Baixa";
       else if(tensao < 12.3) info = "Meia carga";
       else info = "OK";
-
       document.getElementById("kpiTensaoInfo").textContent = info;
-
-      const hMotor = Number(d.horas_motor || 0);
-      document.getElementById("kpiHorasMotor").textContent = hMotor.toFixed(2) + " h";
-
-      const hEmb = Number(d.hora_embarcacao || 0);
-      document.getElementById("kpiHorasEmbarcacao").textContent = hEmb.toFixed(2) + " h";
-
-      const hParadas = Number(d.horas_paradas || 0);
-      document.getElementById("kpiHorasParadas").textContent = hParadas.toFixed(2) + " h";
-
-      const ign = Number(d.ignicoes || 0);
-      document.getElementById("kpiIgnicoes").textContent = ign.toString();
 
       const lat = d.latitude;
       const lon = d.longitude;
@@ -331,47 +274,48 @@
         if(mapFrame.src !== url){
           mapFrame.src = url;
         }
-      } else {
-        mapFrame.src = "";
       }
-
     }catch(e){
-      console.error("Erro ao carregar dados:", e);
+      console.warn("Erro carregando dados", e);
     }
   }
 
-  async function loadPreventiva(){
-    try{
-      const r = await fetch(ENDPOINT_PREV);
-      const d = await r.json();
-      const tarefas = d.tarefas || [];
-
-      const render = (lista, target) => {
-        if(!lista.length){
-          target.innerHTML = "--";
-          return;
-        }
-        target.innerHTML = lista
-          .slice(0,5)
-          .map(t => `• ${t.nome} (${t.faltam.toFixed(1)} ${t.base === "dias" ? "d" : "h"})`)
-          .join("<br>");
-      };
-
-      render(tarefas, document.getElementById("listaAtividadesPainel"));
-      render(tarefas, document.getElementById("listaAtividadesPrev"));
-
-    }catch(e){
-      console.error("Erro preventiva:", e);
-    }
-  }
-
+  // Carregar imediatamente
   loadDados();
-  loadPreventiva();
+  setInterval(loadDados, 30000);
 
-  setInterval(() => {
-    loadDados();
-    loadPreventiva();
-  }, 30000);
+  // Modal ajuste (mantido)
+  const modal = document.getElementById("modalAjuste");
+  const inputOffset = document.getElementById("inputOffset");
+  const btnSalvar = document.getElementById("btnModalSalvar");
+  const btnCancelar = document.getElementById("btnModalCancelar");
+  const btnAjustar = document.getElementById("btnAjustarHoras");
+
+  btnAjustar.onclick = () => {
+    modal.style.display = "flex";
+    inputOffset.value = "";
+  };
+
+  btnCancelar.onclick = () => {
+    modal.style.display = "none";
+  };
+
+  btnSalvar.onclick = async () => {
+    const valor = parseFloat(inputOffset.value || "0");
+
+    try{
+      const r = await fetch(`/api/ativos/${ATIVO_ID}/ajustar-horas`, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ offset: valor })
+      });
+
+      modal.style.display = "none";
+      loadDados();
+    }catch(e){
+      console.log("Erro ao salvar offset", e);
+    }
+  };
 </script>
 
 {% endblock %}
