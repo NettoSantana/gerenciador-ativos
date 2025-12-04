@@ -14,10 +14,17 @@ from gerenciador_ativos.api.monitoramento.brasilsat import (
 logger = logging.getLogger(__name__)
 
 
+# ============================================================
+#               ENDPOINT PRINCIPAL (/dados)
+# ============================================================
+
 @api_ativos_bp.get("/<int:id>/dados")
 def dados_ativo(id: int):
     ativo = Ativo.query.get_or_404(id)
 
+    # ===============================
+    #   BUSCA TELEMETRIA
+    # ===============================
     tele = None
     try:
         if ativo.imei:
@@ -28,6 +35,9 @@ def dados_ativo(id: int):
 
     agora_ts = time.time()
 
+    # ===============================
+    #   TELEMETRIA OU MODO OFFLINE
+    # ===============================
     if tele:
         monitor_online = True
         motor_ligado = bool(tele.get("motor_ligado"))
@@ -45,11 +55,15 @@ def dados_ativo(id: int):
         lat = None
         lon = None
 
-    # ---------- HORAS ----------
+    # ===============================
+    #   HORAS DO SISTEMA (V1)
+    # ===============================
     offset = float(ativo.horas_offset or 0.0)
-    horas_totais = horas_motor_externo + offset  # <- FORMATO V1
+    horas_totais = horas_motor_externo + offset   # FORMATO ANTIGO (LANCHA)
 
-    # ---------- PARADAS ----------
+    # ===============================
+    #   HORAS PARADAS
+    # ===============================
     ultimo_estado = ativo.ultimo_estado_motor
     ultimo_ts = ativo.timestamp_evento
 
@@ -66,10 +80,12 @@ def dados_ativo(id: int):
 
     try:
         db.session.commit()
-    except:
+    except Exception:
         db.session.rollback()
 
-    # ---------- FORMATO V1 ----------
+    # ===============================
+    #   RESPOSTA FORMATO V1 (EXATO)
+    # ===============================
     resposta = {
         "id": ativo.id,
         "nome": ativo.nome,
@@ -89,12 +105,25 @@ def dados_ativo(id: int):
         "offset": round(offset, 2),
         "horimetro": round(horas_totais, 2),
 
-        # Paradas
+        # PARADAS
         "horas_paradas": round(horas_paradas, 2),
 
-        # Campos usados no painel antigo
+        # CAMPOS USADOS NA V1
         "unidade_base": "horas",
         "medida_base": "h",
     }
 
     return jsonify(resposta)
+
+
+# ============================================================
+#        ENDPOINT ANTIGO USADO PELO PAINEL (/dados-v2)
+# ============================================================
+
+@api_ativos_bp.get("/<int:id>/dados-v2")
+def dados_ativo_v2(id: int):
+    """
+    Compatibilidade total com o painel atual.
+    Devolve exatamente o mesmo formato do /dados.
+    """
+    return dados_ativo(id)

@@ -1,1 +1,1 @@
-﻿fix: reescrita completa do endpoint /dados com telemetria estável e cálculo correto de horas
+﻿fix: rota /dados agora envia dados no formato V1 compatível com painel
