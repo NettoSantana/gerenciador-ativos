@@ -1,6 +1,1 @@
-﻿fix: revisão completa do endpoint dados-v2 (modelo A)
-- uso direto do horas_motor da BrasilSat
-- cálculo correto de horas paradas
-- somatória correta de hora_embarcacao
-- atualização segura do estado
-- retorno compatível com painel V2
+﻿fix: painel agora usa /dados-v2 (horas reais do motor)

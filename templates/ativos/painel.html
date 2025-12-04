@@ -88,132 +88,6 @@
     .status-dot.warn{background:#eab308;}
 
     .hidden{display:none;}
-
-    /* Preventiva */
-    .card-form{
-      background:linear-gradient(180deg,#020617,#020617);
-      border-radius:16px;
-      border:1px solid #1f2937;
-      padding:18px;
-      box-shadow:0 10px 30px rgba(15,23,42,.6);
-    }
-    .card-form h3{
-      margin:0 0 12px;
-      font-size:15px;
-      color:#e5e7eb;
-    }
-    .form-grid{
-      display:grid;
-      grid-template-columns:repeat(12,1fr);
-      gap:12px;
-    }
-    .form-field{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-      font-size:13px;
-      color:#e5e7eb;
-    }
-    .form-field label{
-      font-size:12px;
-      color:#9ca3af;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-    }
-    .form-field input,
-    .form-field select{
-      background:#020617;
-      border-radius:10px;
-      border:1px solid #1f2937;
-      padding:8px 10px;
-      color:#e5e7eb;
-      font-size:13px;
-      outline:none;
-    }
-    .form-field input:focus,
-    .form-field select:focus{
-      border-color:#38bdf8;
-      box-shadow:0 0 0 1px rgba(56,189,248,.3);
-    }
-    .col-3x{grid-column:span 3;}
-    .col-4x{grid-column:span 4;}
-    .col-6x{grid-column:span 6;}
-    .col-12x{grid-column:span 12;}
-    @media (max-width:900px){
-      .col-3x,.col-4x,.col-6x,.col-12x{grid-column:span 12;}
-    }
-
-    .btn-primary-sm{
-      margin-top:22px;
-      padding:8px 14px;
-      border-radius:999px;
-      border:none;
-      background:#38bdf8;
-      color:#0b1020;
-      font-size:13px;
-      font-weight:600;
-      cursor:pointer;
-    }
-    .btn-primary-sm:hover{filter:brightness(1.05);}
-
-    .msg-inline{
-      margin-top:8px;
-      font-size:12px;
-      color:#9ca3af;
-    }
-
-    .table-mini{
-      width:100%;
-      border-collapse:collapse;
-      font-size:13px;
-      margin-top:6px;
-    }
-    .table-mini th,
-    .table-mini td{
-      padding:6px 8px;
-      border-bottom:1px solid #1f2937;
-      text-align:left;
-    }
-    .table-mini th{
-      color:#9ca3af;
-      font-weight:500;
-    }
-    .tag-base{
-      padding:2px 8px;
-      border-radius:999px;
-      font-size:11px;
-      border:1px solid #1f2937;
-      color:#e5e7eb;
-    }
-    .tag-base.horas{border-color:#38bdf8;color:#38bdf8;}
-    .tag-base.dias{border-color:#a855f7;color:#c4b5fd;}
-    .btn-link{
-      border:none;
-      background:transparent;
-      color:#f97373;
-      font-size:12px;
-      cursor:pointer;
-    }
-
-    /* MAPA */
-    .map-wrapper{
-      margin-top:10px;
-      border-radius:12px;
-      overflow:hidden;
-      border:1px solid #1f2937;
-    }
-    .map-frame{
-      width:100%;
-      height:260px;
-      border:0;
-    }
-
-    /* MODAL */
-    #modalAjuste{
-      display:none;position:fixed;top:0;left:0;width:100%;height:100%;
-      background:rgba(0,0,0,0.6);justify-content:center;align-items:center;
-      z-index:9999;
-    }
   </style>
 
   <!-- =======================
@@ -272,21 +146,13 @@
       </div>
     </div>
 
-    <!-- ====================================================
-          CARD REFEITO — HORAS DA EMBARCAÇÃO + BOTÃO AJUSTAR
-    ===================================================== -->
     <div class="card-kpi col-4">
-
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <h2>Horas da embarcação</h2>
-
-        <button class="btn-primary-sm"
-                id="btnAjustarHoras"
-                style="padding:6px 10px; font-size:12px; margin-top:0;">
+        <button class="btn-primary-sm" id="btnAjustarHoras" style="padding:6px 10px; font-size:12px; margin-top:0;">
           Ajustar
         </button>
       </div>
-
       <div class="kpi-value" id="kpiHorasEmbarcacao">0.00 h</div>
       <div class="kpi-helper">Offset + horas de motor</div>
     </div>
@@ -307,12 +173,7 @@
       <h2>Localização</h2>
       <div class="kpi-helper" id="kpiLocalizacao">Latitude: -- — Longitude: --</div>
       <div class="map-wrapper">
-        <iframe id="mapFrame"
-                class="map-frame"
-                src=""
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade">
-        </iframe>
+        <iframe id="mapFrame" class="map-frame" src="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
     </div>
 
@@ -400,64 +261,16 @@
 
 </div>
 
-
-
-
-
 <!-- ====================================================
-      MODAL DE AJUSTE DE OFFSET
+      SCRIPT PRINCIPAL
 ==================================================== -->
-<div id="modalAjuste">
-  <div style="background:#020617;padding:20px;border-radius:12px;width:300px;
-              border:1px solid #1f2937;">
-
-    <h3 style="margin-top:0;color:#e5e7eb;">Ajustar Offset</h3>
-
-    <label style="color:#9ca3af;font-size:13px;">Offset (horas)</label>
-    <input id="inputOffset" type="number" step="0.1"
-           style="width:100%;margin-top:6px;padding:8px;border-radius:8px;
-                  background:#0b1020;border:1px solid #1f2937;color:#e5e7eb;">
-
-    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
-      <button id="btnModalCancelar" class="btn-primary-sm" style="background:#64748b;">Cancelar</button>
-      <button id="btnModalSalvar" class="btn-primary-sm">Salvar</button>
-    </div>
-
-    <div id="modalMsg" style="margin-top:8px;font-size:12px;color:#38bdf8;"></div>
-  </div>
-</div>
-
-
-
-
-
-
 <script>
   const ATIVO_ID = {{ ativo.id }};
-  const ENDPOINT_DADOS = `/api/ativos/${ATIVO_ID}/dados`;
+  const ENDPOINT_DADOS = `/api/ativos/${ATIVO_ID}/dados-v2`;  // *** CORRIGIDO ***
   const ENDPOINT_PREV = `/api/ativos/${ATIVO_ID}/preventiva`;
   const ENDPOINT_PLANO = `/api/ativos/${ATIVO_ID}/plano`;
 
-  const btnTabPainel = document.getElementById("btnTabPainel");
-  const btnTabPrev = document.getElementById("btnTabPreventiva");
-  const viewPainel = document.getElementById("viewPainel");
-  const viewPrev = document.getElementById("viewPreventiva");
   const mapFrame = document.getElementById("mapFrame");
-
-  btnTabPainel.onclick = () => {
-    btnTabPainel.classList.add("active");
-    btnTabPrev.classList.remove("active");
-    viewPainel.classList.remove("hidden");
-    viewPrev.classList.add("hidden");
-  };
-
-  btnTabPrev.onclick = () => {
-    btnTabPreventiva.classList.add("active");
-    btnTabPainel.classList.remove("active");
-    viewPrev.classList.remove("hidden");
-    viewPainel.classList.add("hidden");
-    loadPlano();
-  };
 
   function fmtHora(ts){
     try{
@@ -467,9 +280,6 @@
     }
   }
 
-  // ============================================================
-  //        CARREGA DADOS DO PAINEL
-  // ============================================================
   async function loadDados(){
     try{
       const r = await fetch(ENDPOINT_DADOS);
@@ -479,17 +289,14 @@
       document.getElementById("badgeImei").textContent = d.imei || "--";
       document.getElementById("badgeUltima").textContent = "Última: " + fmtHora(d.servertime);
 
-      // Status monitoramento
       const on = !!d.monitor_online;
       document.getElementById("kpiMonitor").textContent = on ? "online" : "offline";
 
-      // Status motor
       const motorOn = !!d.motor_ligado;
       document.getElementById("kpiMotor").textContent = motorOn ? "Ligado" : "Desligado";
       document.getElementById("dotMotor").className = "status-dot " + (motorOn ? "ok" : "bad");
       document.getElementById("kpiMotorHint").textContent = motorOn ? "Ignição ON" : "Ignição OFF";
 
-      // Tensão da bateria
       const tensao = Number(d.tensao_bateria || 0);
       document.getElementById("kpiTensao").textContent = tensao.toFixed(2) + " V";
 
@@ -501,30 +308,24 @@
 
       document.getElementById("kpiTensaoInfo").textContent = info;
 
-      // Horas de motor
       const hMotor = Number(d.horas_motor || 0);
       document.getElementById("kpiHorasMotor").textContent = hMotor.toFixed(2) + " h";
 
-      // Horas da embarcação (offset + motor)
       const hEmb = Number(d.hora_embarcacao || 0);
       document.getElementById("kpiHorasEmbarcacao").textContent = hEmb.toFixed(2) + " h";
 
-      // Horas paradas
       const hParadas = Number(d.horas_paradas || 0);
       document.getElementById("kpiHorasParadas").textContent = hParadas.toFixed(2) + " h";
 
-      // Ignições
       const ign = Number(d.ignicoes || 0);
       document.getElementById("kpiIgnicoes").textContent = ign.toString();
 
-      // Coordenadas
       const lat = d.latitude;
       const lon = d.longitude;
 
       document.getElementById("kpiLocalizacao").textContent =
         `Latitude: ${lat ?? "--"} — Longitude: ${lon ?? "--"}`;
 
-      // Mapa
       if(lat && lon){
         const url = `https://www.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
         if(mapFrame.src !== url){
@@ -539,225 +340,31 @@
     }
   }
 
-
-
-
-
-  // ============================================================
-  //          AJUSTAR OFFSET — BOTÃO + MODAL
-  // ============================================================
-  const modal = document.getElementById("modalAjuste");
-  const btnAjustar = document.getElementById("btnAjustarHoras");
-  const inputOffset = document.getElementById("inputOffset");
-  const btnSalvar = document.getElementById("btnModalSalvar");
-  const btnCancelar = document.getElementById("btnModalCancelar");
-  const modalMsg = document.getElementById("modalMsg");
-
-  // Abrir modal
-  btnAjustar.onclick = () => {
-    modal.style.display = "flex";
-    modalMsg.textContent = "";
-    inputOffset.value = "";
-  };
-
-  // Fechar modal
-  btnCancelar.onclick = () => {
-    modal.style.display = "none";
-  };
-
-  // Salvar offset
-  btnSalvar.onclick = async () => {
-    const valor = parseFloat(inputOffset.value || "0");
-
-    if (isNaN(valor)) {
-      modalMsg.textContent = "Valor inválido";
-      return;
-    }
-
-    try {
-      const r = await fetch(`/api/ativos/${ATIVO_ID}/ajustar-horas`, {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ offset: valor })
-      });
-
-      const d = await r.json();
-
-      if (!r.ok) {
-        modalMsg.textContent = d.erro || "Erro ao ajustar offset.";
-        return;
-      }
-
-      modalMsg.textContent = "Offset atualizado!";
-
-      // Atualiza o painel
-      loadDados();
-
-      setTimeout(() => {
-        modal.style.display = "none";
-      }, 600);
-
-    } catch (e) {
-      modalMsg.textContent = "Erro ao enviar dados.";
-    }
-  };
-
-
-
-
-
-
-  // ============================================================
-  //        PREVENTIVA — LISTAGEM RÁPIDA
-  // ============================================================
-  function renderAtividades(lista, el){
-    if(!lista || !lista.length){
-      el.innerHTML = "--";
-      return;
-    }
-    el.innerHTML = lista
-      .slice(0,5)
-      .map(t => `• ${t.nome} (${t.faltam.toFixed(1)} ${t.base === "dias" ? "d" : "h"})`)
-      .join("<br>");
-  }
-
   async function loadPreventiva(){
     try{
       const r = await fetch(ENDPOINT_PREV);
-      if(!r.ok) throw new Error("HTTP "+r.status);
-
       const d = await r.json();
       const tarefas = d.tarefas || [];
 
-      renderAtividades(tarefas, document.getElementById("listaAtividadesPainel"));
-      renderAtividades(tarefas, document.getElementById("listaAtividadesPrev"));
+      const render = (lista, target) => {
+        if(!lista.length){
+          target.innerHTML = "--";
+          return;
+        }
+        target.innerHTML = lista
+          .slice(0,5)
+          .map(t => `• ${t.nome} (${t.faltam.toFixed(1)} ${t.base === "dias" ? "d" : "h"})`)
+          .join("<br>");
+      };
+
+      render(tarefas, document.getElementById("listaAtividadesPainel"));
+      render(tarefas, document.getElementById("listaAtividadesPrev"));
 
     }catch(e){
-      console.error("Erro ao carregar preventiva:", e);
+      console.error("Erro preventiva:", e);
     }
   }
 
-  // ============================================================
-  //        PREVENTIVA — CRUD COMPLETO
-  // ============================================================
-  async function loadPlano(){
-    try{
-      const r = await fetch(ENDPOINT_PLANO);
-      if(!r.ok) throw new Error("HTTP "+r.status);
-
-      const d = await r.json();
-      const plano = d.plano || [];
-
-      const tbody = document.getElementById("planoBody");
-      const empty = document.getElementById("planoEmpty");
-
-      tbody.innerHTML = "";
-
-      if(!plano.length){
-        empty.textContent = "Nenhuma atividade cadastrada. Serão usadas as regras padrão.";
-        return;
-      }
-
-      empty.textContent = "";
-
-      plano.forEach(item => {
-        const tr = document.createElement("tr");
-        const base = (item.base || "horas").toLowerCase();
-
-        tr.innerHTML = `
-          <td>${item.nome}</td>
-          <td><span class="tag-base ${base}">${base}</span></td>
-          <td>${item.intervalo ?? ""}</td>
-          <td>${item.primeira_execucao ?? ""}</td>
-          <td>${item.avisar_antes ?? ""}</td>
-          <td><button class="btn-link" data-id="${item.id}">Excluir</button></td>
-        `;
-
-        tbody.appendChild(tr);
-      });
-
-      tbody.querySelectorAll("button[data-id]").forEach(btn => {
-        btn.onclick = async () => {
-          const id = btn.getAttribute("data-id");
-          if(!id) return;
-
-          if(!confirm("Remover esta atividade do plano?")) return;
-
-          try{
-            const rDel = await fetch(`${ENDPOINT_PLANO}/${id}`, {method:"DELETE"});
-            if(!rDel.ok){
-              alert("Erro ao excluir item.");
-              return;
-            }
-            loadPlano();
-            loadPreventiva();
-          }catch(e){
-            alert("Erro ao excluir item.");
-          }
-        };
-      });
-
-    }catch(e){
-      console.error("Erro ao carregar plano:", e);
-    }
-  }
-
-  // Submit do plano
-  const formPlano = document.getElementById("formPlano");
-
-  formPlano.onsubmit = async (ev) => {
-    ev.preventDefault();
-    const msg = document.getElementById("planoMsg");
-    msg.textContent = "";
-
-    const nome = document.getElementById("planoNome").value.trim();
-    const base = document.getElementById("planoBase").value;
-    const intervalo = document.getElementById("planoIntervalo").value;
-    const primeira = document.getElementById("planoPrimeira").value;
-    const avisar = document.getElementById("planoAvisar").value;
-
-    if(!nome){
-      msg.textContent = "Informe o nome da atividade.";
-      return;
-    }
-    if(!intervalo || Number(intervalo) <= 0){
-      msg.textContent = "Informe um intervalo maior que zero.";
-      return;
-    }
-
-    try{
-      const r = await fetch(ENDPOINT_PLANO,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          nome:nome,
-          base:base,
-          intervalo:Number(intervalo),
-          primeira_execucao: primeira ? Number(primeira) : null,
-          avisar_antes: avisar ? Number(avisar) : null
-        })
-      });
-
-      const d = await r.json().catch(() => ({}));
-
-      if(!r.ok){
-        msg.textContent = d.erro || "Erro ao salvar atividade.";
-        return;
-      }
-
-      msg.textContent = d.mensagem || "Atividade adicionada.";
-      formPlano.reset();
-      loadPlano();
-      loadPreventiva();
-
-    }catch(e){
-      msg.textContent = "Erro ao salvar atividade.";
-    }
-  };
-
-  // ============================================================
-  //  LOOP AUTOMÁTICO DE ATUALIZAÇÃO
-  // ============================================================
   loadDados();
   loadPreventiva();
 
