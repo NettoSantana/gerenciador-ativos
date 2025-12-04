@@ -1,91 +1,61 @@
+import requests
 import time
-import logging
-from flask import jsonify, request
 
-from gerenciador_ativos.api.ativos import api_ativos_bp
-from gerenciador_ativos.models import Ativo
-from gerenciador_ativos.extensions import db
+# ==============================
+#   CONFIG BRASILSAT
+# ==============================
 
-from gerenciador_ativos.api.monitoramento.brasilsat import (
-    get_telemetria_por_imei,
-    BrasilSatError,
-)
+BRASILSAT_URL = "https://gps.brasilsatgps.com.br/V2/api/device/lastposition"
+BRASILSAT_USER = "admin"
+BRASILSAT_PASS = "123456"
 
-logger = logging.getLogger(__name__)
+class BrasilSatError(Exception):
+    pass
 
-# ============================================================
-# GET /api/ativos/<id>/dados-v2 → MODELO REAL DE HORAS
-# ============================================================
 
-@api_ativos_bp.get("/<int:id>/dados-v2")
-def dados_ativo_v2(id):
-    ativo = Ativo.query.get_or_404(id)
+# ==============================
+#   FUNÇÃO PRINCIPAL
+# ==============================
 
-    # Buscar telemetria BrasilSat
-    try:
-        tele = get_telemetria_por_imei(ativo.imei)
-    except BrasilSatError as exc:
-        return jsonify({"erro": f"Erro BrasilSat: {exc}"}), 500
+def get_telemetria_por_imei(imei: str):
+    """
+    Consulta a última posição/telemetria de um dispositivo BrasilSat.
+    Retorna sempre um dicionário padronizado.
+    """
 
-    motor_ligado = bool(tele.get("motor_ligado"))
-    tensao = tele.get("tensao_bateria")
-    ts = float(tele.get("servertime") or time.time())
-    lat = tele.get("latitude")
-    lon = tele.get("longitude")
-
-    # HORAS DE MOTOR vindo direto da BrasilSat
-    horas_motor = float(tele.get("horas_motor") or 0.0)
-
-    # OFFSET (valor configurado manualmente)
-    offset = float(ativo.horas_offset or 0.0)
-
-    # HORAS DA EMBARCAÇÃO = HORAS MOTOR + OFFSET
-    hora_embarcacao = horas_motor + offset
-
-    # =======================================================
-    # CÁLCULO DE HORAS PARADAS (motor desligado continuamente)
-    # =======================================================
-    ultimo_estado = ativo.ultimo_estado_motor
-    ultimo_timestamp = ativo.timestamp_evento
-
-    horas_paradas = 0.0
-
-    if ultimo_timestamp is not None:
-        if not motor_ligado and ultimo_estado == 0:
-            horas_paradas = max(0.0, (ts - float(ultimo_timestamp)) / 3600.0)
-
-    # Salva o novo estado no banco
-    ativo.ultimo_estado_motor = 1 if motor_ligado else 0
-    ativo.timestamp_evento = ts
+    if not imei:
+        raise BrasilSatError("IMEI não informado")
 
     try:
-        db.session.commit()
+        resp = requests.get(
+            BRASILSAT_URL,
+            params={"login": BRASILSAT_USER, "password": BRASILSAT_PASS, "imei": imei},
+            timeout=10
+        )
     except Exception as exc:
-        db.session.rollback()
+        raise BrasilSatError(f"Falha de conexão: {exc}")
 
-    # =======================================================
-    # RETORNO COMPLETO QUE O PAINEL PRECISA
-    # =======================================================
-    return jsonify({
-        "id": ativo.id,
-        "imei": ativo.imei,
+    if resp.status_code != 200:
+        raise BrasilSatError(f"HTTP {resp.status_code}: {resp.text}")
 
-        "monitor_online": True,
-        "motor_ligado": motor_ligado,
+    try:
+        data = resp.json()
+    except:
+        raise BrasilSatError("Resposta inválida da API BrasilSat")
 
-        "tensao_bateria": tensao,
-        "servertime": ts,
+    # ==============================
+    # Normalização dos campos
+    # ==============================
 
-        "latitude": lat,
-        "longitude": lon,
+    tele = {
+        "motor_ligado": bool(data.get("ignicao")),
+        "tensao_bateria": data.get("tensao_bateria"),
+        "servertime": float(data.get("servertime") or time.time()),
+        "latitude": data.get("latitude"),
+        "longitude": data.get("longitude"),
 
-        "horas_motor": round(horas_motor, 2),
-        "horas_offset": round(offset, 2),
-        "hora_embarcacao": round(hora_embarcacao, 2),
+        # Horas de motor (acctime da BrasilSat)
+        "horas_motor": float(data.get("acctime") or 0.0),
+    }
 
-        "horas_paradas": round(horas_paradas, 2),
-
-        # Ainda não implementado, mas mantemos para não quebrar o painel
-        "ignicoes": 0,
-        "horas_sistema": 0.0,
-    })
+    return tele

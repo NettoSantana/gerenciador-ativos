@@ -1,1 +1,1 @@
-﻿fix: painel agora usa /dados-v2 (horas reais do motor)
+﻿fix: reconstruído dados-v2 com todos os campos esperados pelo painel
