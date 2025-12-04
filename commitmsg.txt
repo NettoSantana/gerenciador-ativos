@@ -1,6 +1,6 @@
-﻿feat: substituição do texto GA por logo da empresa no header
+﻿fix: ajuste visual do logo no header (painel)
 
-- adicionada exibição da imagem /static/logo.png no cabeçalho principal
-- removido o texto GA e inserido tag <img> responsiva
-- aplicado estilo minimalista (.logo-img) para manter alinhamento no topbar
-- sem impacto nas rotas e permissões
+- adicionada classe .logo-img com altura controlada e proporção preservada
+- ajustado alinhamento vertical no container .topbar-left
+- adicionado comportamento responsivo em telas pequenas
+- melhora alinhamento e estética geral do cabeçalho

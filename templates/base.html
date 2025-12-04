@@ -5,27 +5,34 @@
   <title>{% block title %}Gerenciador de Ativos{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  
+
   <style>
+    /* Ajuste do logo no header */
     .logo-img {
-      height: 42px;
+      height: 38px;
       width: auto;
       object-fit: contain;
-      margin-right: 10px;
+      display: block;
+    }
+
+    @media (max-width: 640px) {
+      .logo-img {
+        height: 32px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="app-shell">
 
+    <!-- ====================== HEADER ======================= -->
     <header class="topbar">
       <div class="topbar-left">
 
-        <!-- ======== LOGO ALTERADO ======== -->
+        <!-- 🔥 LOGO CORRETO AQUI (SEM GA, SEM DIV) -->
         <img src="{{ url_for('static', filename='logo.png') }}"
              alt="Logo da Empresa"
              class="logo-img">
-        <!-- ================================= -->
 
         <div class="logo-text">
           <span class="logo-title">Gerenciador de Ativos</span>
@@ -60,6 +67,7 @@
 
       </div>
     </header>
+    <!-- ====================== FIM HEADER ======================= -->
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
