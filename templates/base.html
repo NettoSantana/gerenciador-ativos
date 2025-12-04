@@ -2,14 +2,14 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <title>{% block title %}Gerenciador de Ativos{% endblock %}</title>
+  <title>{% block title %}Electro Auto Náutica{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
   <style>
-    /* Ajuste do logo no header */
+    /* LOGO DO HEADER */
     .logo-img {
-      height: 38px;
+      height: 52px;              /* maior e mais bonita */
       width: auto;
       object-fit: contain;
       display: block;
@@ -17,8 +17,13 @@
 
     @media (max-width: 640px) {
       .logo-img {
-        height: 32px;
+        height: 40px;
       }
+    }
+
+    /* Remover espaçamento do bloco antigo */
+    .logo-text {
+      display: none;
     }
   </style>
 </head>
@@ -29,15 +34,11 @@
     <header class="topbar">
       <div class="topbar-left">
 
-        <!-- 🔥 LOGO CORRETO AQUI (SEM GA, SEM DIV) -->
+        <!-- LOGO ÚNICA NO HEADER -->
         <img src="{{ url_for('static', filename='logo.png') }}"
-             alt="Logo da Empresa"
+             alt="Electro Auto Náutica"
              class="logo-img">
 
-        <div class="logo-text">
-          <span class="logo-title">Gerenciador de Ativos</span>
-          <span class="logo-sub">Monitoramento · Preventiva · Performance</span>
-        </div>
       </div>
 
       <div class="topbar-right">
@@ -84,7 +85,7 @@
     </main>
 
     <footer class="footer">
-      <span>©️ {{ 2025 }} Gerenciador de Ativos • Versão 2</span>
+      <span>©️ {{ 2025 }} Electro Auto Náutica • Versão 2</span>
     </footer>
 
   </div>

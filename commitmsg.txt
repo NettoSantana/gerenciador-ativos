@@ -1,7 +1,7 @@
-﻿feat: atualização da tela de login com nova identidade visual Electro Auto Náutica
+﻿fix: refatoração completa da tela de login com logo única ampliada
 
-- substituído GA por novo logo (ícone + Electro Auto / Náutica)
-- removido texto de acesso inicial
-- reescrita completa do login.html
-- melhorias de responsividade
-- layout muito mais profissional e alinhado com a marca
+- removido texto redundante Electro Auto / Náutica
+- logo agora é exibida sozinha e em tamanho maior (240px)
+- visual mais profissional e limpo
+- responsividade aprimorada
+- reescrita total do login.html
