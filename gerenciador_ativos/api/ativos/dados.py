@@ -14,6 +14,7 @@ from gerenciador_ativos.api.monitoramento.brasilsat import (
 
 logger = logging.getLogger(__name__)
 
+
 # ============================================================
 # GET /api/ativos/<id>/dados-v2  → MODELO A COMPLETO
 # ============================================================
@@ -22,29 +23,31 @@ logger = logging.getLogger(__name__)
 def dados_ativo_v2(id):
     ativo = Ativo.query.get_or_404(id)
 
-    # Buscar telemetria
+    # Buscar telemetria BrasilSat
     try:
         tele = get_telemetria_por_imei(ativo.imei)
-    except:
+    except Exception as exc:
+        logger.error(f"Erro BrasilSat: {exc}")
         return jsonify({"erro": "Falha ao obter telemetria"}), 500
 
     motor_ligado = bool(tele.get("motor_ligado"))
-    horas_motor_externo = float(tele.get("horas_motor") or 0.0)  # << AQUI ESTÁ O SEGREDO
+    horas_motor = float(tele.get("horas_motor") or 0.0)  # valor oficial BrasilSat
     tensao = tele.get("tensao_bateria")
+    latitude = tele.get("latitude")
+    longitude = tele.get("longitude")
+
     ts = float(tele.get("servertime") or time.time())
 
-    lat = tele.get("latitude")
-    lon = tele.get("longitude")
-
-    # ===============================
-    # HORAS DA EMBARCAÇÃO
-    # ===============================
+    # ======================================================
+    # HORAS DA EMBARCAÇÃO = horas_motor + offset
+    # ======================================================
     offset = float(ativo.horas_offset or 0.0)
-    hora_embarcacao = horas_motor_externo + offset
+    hora_embarcacao = horas_motor + offset
 
-    # ===============================
-    # CÁLCULO DE HORAS PARADAS
-    # ===============================
+    # ======================================================
+    # CÁLCULO DAS HORAS PARADAS
+    # ======================================================
+
     ultimo_estado = ativo.ultimo_estado_motor
     ultimo_ts = ativo.timestamp_evento
 
@@ -56,40 +59,46 @@ def dados_ativo_v2(id):
         else:
             horas_paradas = 0.0
 
-    # Salvar novo estado
+    # ======================================================
+    # ATUALIZAÇÃO DO BANCO
+    # ======================================================
     ativo.ultimo_estado_motor = 1 if motor_ligado else 0
     ativo.timestamp_evento = ts
+    ativo.latitude = latitude
+    ativo.longitude = longitude
+    ativo.tensao_bateria = tensao
 
     try:
         db.session.commit()
     except Exception as exc:
         db.session.rollback()
-        logger.error(f"Erro salvando estado do motor: {exc}")
+        logger.error(f"Erro ao salvar estado: {exc}")
 
-    return jsonify(
-        {
-            "id": ativo.id,
-            "nome": ativo.nome,
-            "imei": ativo.imei,
+    # ======================================================
+    # RETORNO PARA O PAINEL
+    # ======================================================
+    return jsonify({
+        "id": ativo.id,
+        "nome": ativo.nome,
+        "imei": ativo.imei,
 
-            "monitor_online": True,
-            "motor_ligado": motor_ligado,
+        "monitor_online": True,
+        "motor_ligado": motor_ligado,
 
-            "tensao_bateria": tensao,
-            "servertime": ts,
+        "tensao_bateria": tensao,
+        "servertime": ts,
 
-            "latitude": lat,
-            "longitude": lon,
+        "latitude": latitude,
+        "longitude": longitude,
 
-            # HORAS OFICIAIS
-            "horas_motor": round(horas_motor_externo, 2),
-            "horas_offset": round(offset, 2),
-            "hora_embarcacao": round(hora_embarcacao, 2),
+        # HORAS MODELO A
+        "horas_motor": round(horas_motor, 2),
+        "horas_offset": round(offset, 2),
+        "hora_embarcacao": round(hora_embarcacao, 2),
 
-            # HORAS PARADAS REAL
-            "horas_paradas": round(horas_paradas, 2),
-        }
-    )
+        # HORAS PARADAS ATUALIZADAS
+        "horas_paradas": round(horas_paradas, 2),
+    })
 
 
 # ============================================================
@@ -112,6 +121,9 @@ def ajustar_horas(id):
         db.session.commit()
     except Exception as exc:
         db.session.rollback()
-        return jsonify({"erro": f"erro ao salvar: {exc}"}), 500
+        return jsonify({"erro": str(exc)}), 500
 
-    return jsonify({"mensagem": "Offset atualizado", "offset": offset})
+    return jsonify({
+        "mensagem": "Offset atualizado",
+        "offset": offset
+    })
