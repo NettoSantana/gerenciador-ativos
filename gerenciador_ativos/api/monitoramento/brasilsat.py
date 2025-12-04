@@ -1,206 +1,252 @@
-import requests
+"""
+Integração com a API da BrasilSat para telemetria de ativos.
+
+Responsabilidades deste módulo:
+- autenticar na BrasilSat
+- buscar o último track por IMEI
+- normalizar os dados em um dicionário amigável
+
+Uso típico dentro da app:
+
+    from gerenciador_ativos.api.monitoramento.brasilsat import (
+        get_telemetria_por_imei,
+        BrasilSatError,
+    )
+
+    dados = get_telemetria_por_imei(imei="355468593059041")
+"""
+
+import os
 import time
+import hashlib
+from typing import Dict, Any
+
+import requests
+
+
+# --------------------------------------------------
+# Configuração básica
+# --------------------------------------------------
+
+BASE_URL = os.getenv("BRASILSAT_BASE_URL", "https://gps.brasilsatgps.com.br")
+ACCOUNT = os.getenv("BRASILSAT_ACCOUNT")
+PASSWORD = os.getenv("BRASILSAT_PASSWORD")
+
 
 class BrasilSatError(Exception):
-    pass
+    """Erro genérico de integração com a BrasilSat."""
 
 
-URL_BRASILSAT = "https://api.brasilsat.com.br/telemetria"
+def _md5(s: str) -> str:
+    return hashlib.md5(s.encode("utf-8")).hexdigest()
 
 
-def get_telemetria_por_imei(imei: str) -> dict:
+# --------------------------------------------------
+# Autenticação
+# --------------------------------------------------
+
+def _obter_access_token() -> str:
     """
-    Consulta a BrasilSat e normaliza todos os campos.
+    Obtém um access_token na BrasilSat.
+
+    Endpoint típico:
+        GET /api/authorization?time=...&account=...&signature=...
+
+    A resposta costuma ter o formato:
+        {"code": 0, "record": {"access_token": "...", "expire_time": 1710000000}}
     """
+
+    if not ACCOUNT or not PASSWORD:
+        raise BrasilSatError("BRASILSAT_ACCOUNT ou BRASILSAT_PASSWORD não definidos no ambiente.")
+
+    now = int(time.time())
+    signature = _md5(_md5(PASSWORD) + str(now))
+
+    url = f"{BASE_URL}/api/authorization"
+    params = {
+        "time": now,
+        "account": ACCOUNT,
+        "signature": signature,
+    }
+
     try:
-        response = requests.get(f"{URL_BRASILSAT}/{imei}", timeout=8)
-    except Exception as exc:
-        raise BrasilSatError(f"Erro de conexão: {exc}")
+        resp = requests.get(url, params=params, timeout=10)
+    except requests.RequestException as exc:
+        raise BrasilSatError(f"Falha de rede ao autenticar na BrasilSat: {exc}") from exc
 
-    if response.status_code != 200:
-        raise BrasilSatError(f"HTTP {response.status_code}: {response.text}")
-
-    bruto = response.json() or {}
-    return _normalizar_track_bruto(bruto)
-
-
-# =====================================================================
-# NORMALIZAÇÃO TOTAL
-# =====================================================================
-
-def _normalizar_track_bruto(d: dict) -> dict:
-    """
-    Normaliza os campos do pacote BrasilSat.
-    MODELO A — HORAS REAIS DO MOTOR (hodômetro fixo)
-    """
-
-    # --- Accstatus → motor ligado ---
-    acc = str(d.get("accstatus", 0)).strip()
-    motor_ligado = acc in ["1", "true", "True"]
-
-    # --- Horas motor (HODÔMETRO REAL) ---
-    # acctime é SEMPRE acumulado desde que instalou
     try:
-        acctime_s = float(d.get("acctime", 0))
-    except:
+        data = resp.json()
+    except ValueError as exc:
+        raise BrasilSatError(f"Resposta inválida da BrasilSat em /authorization: {resp.text}") from exc
+
+    if data.get("code") != 0:
+        raise BrasilSatError(f"Erro na autorização BrasilSat: {data}")
+
+    record = data.get("record") or data.get("data") or {}
+    token = record.get("access_token")
+
+    if not token:
+        raise BrasilSatError(f"access_token não encontrado na resposta de autorização: {data}")
+
+    return token
+
+
+# --------------------------------------------------
+# Track por IMEI
+# --------------------------------------------------
+
+def _buscar_track_bruto(imei: str) -> Dict[str, Any]:
+    """
+    Busca o último track da BrasilSat para o IMEI informado e retorna o JSON bruto.
+    """
+
+    if not imei:
+        raise BrasilSatError("IMEI não informado para busca de track.")
+
+    access_token = _obter_access_token()
+
+    url = f"{BASE_URL}/api/track"
+    params = {
+        "access_token": access_token,
+        "imeis": imei,
+    }
+
+    try:
+        resp = requests.get(url, params=params, timeout=15)
+    except requests.RequestException as exc:
+        raise BrasilSatError(f"Falha de rede ao buscar track da BrasilSat: {exc}") from exc
+
+    try:
+        data = resp.json()
+    except ValueError as exc:
+        raise BrasilSatError(f"Resposta inválida da BrasilSat em /track: {resp.text}") from exc
+
+    if data.get("code") != 0:
+        raise BrasilSatError(f"Erro na chamada /track BrasilSat: {data}")
+
+    records = data.get("record") or []
+    if not records:
+        raise BrasilSatError(f"Nenhum registro de track retornado para IMEI {imei}: {data}")
+
+    # A BrasilSat costuma devolver uma lista, pegamos o primeiro
+    return records[0]
+
+
+# --------------------------------------------------
+# Normalização do track
+# --------------------------------------------------
+
+def _normalizar_track_bruto(record: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Normaliza o registro bruto em um dicionário mais amigável
+    para o restante do sistema.
+
+    Agora inclui também latitude, longitude, velocidade e curso
+    (quando disponíveis na BrasilSat).
+    """
+
+    imei = record.get("imei")
+
+    # ---- STATUS MOTOR ----
+    accstatus = record.get("accstatus")         # 0/1
+    acctime_s = record.get("acctime", 0)        # seg com ignição ligada
+    externalpower_v = record.get("externalpower")
+    servertime = record.get("servertime")
+
+    # ---- LOCALIZAÇÃO ----
+    lat = record.get("latitude") or record.get("lat") or None
+    lon = record.get("longitude") or record.get("lng") or record.get("lon") or None
+
+    speed = record.get("speed") or record.get("gps_speed") or None
+    course = record.get("course") or record.get("direction") or None
+
+    # Conversões básicas
+    try:
+        acctime_s = float(acctime_s)
+    except Exception:
         acctime_s = 0.0
 
     horas_motor = acctime_s / 3600.0
 
-    # --- Tensão ---
     try:
-        vbatt = float(d.get("vbatt", 0.0))
-    except:
-        vbatt = 0.0
+        tensao_bateria = float(externalpower_v) if externalpower_v is not None else None
+    except Exception:
+        tensao_bateria = None
 
-    # --- Tempo do servidor ---
-    try:
-        servertime = int(float(d.get("servertime", time.time())))
-    except:
-        servertime = int(time.time())
+    motor_ligado = bool(accstatus == 1)
 
-    # --- Latitude / Longitude ---
+    # Latitude / Longitude
     try:
-        lat = float(d.get("lat", 0))
-    except:
-        lat = 0.0
+        lat = float(lat) if lat is not None else None
+    except Exception:
+        lat = None
 
     try:
-        lng = float(d.get("lng", 0))
-    except:
-        lng = 0.0
+        lon = float(lon) if lon is not None else None
+    except Exception:
+        lon = None
 
-    # --- Velocidade ---
+    # Velocidade
     try:
-        vel = float(d.get("speed", 0))
-    except:
-        vel = 0.0
-
-    # --- Direção ---
-    try:
-        direcao = float(d.get("course", 0))
-    except:
-        direcao = 0.0
-
-    # ==============================================================
-    # RETORNO FINAL NORMALIZADO
-    # ==============================================================
+        speed = float(speed) if speed is not None else None
+    except Exception:
+        speed = None
 
     return {
+        "imei": imei,
         "motor_ligado": motor_ligado,
+
+        "acctime_s": acctime_s,
         "horas_motor": horas_motor,
-        "tensao_bateria": vbatt,
+
+        "tensao_bateria": tensao_bateria,
         "servertime": servertime,
+
+        # ---- CAMPOS NOVOS ----
         "latitude": lat,
-        "longitude": lng,
-        "velocidade": vel,
-        "direcao": direcao,
+        "longitude": lon,
+        "velocidade": speed,
+        "direcao": course,
+
+        "raw": record,
     }
-import logging
-from flask import jsonify, request
-
-from gerenciador_ativos.api.ativos import api_ativos_bp
-from gerenciador_ativos.models import Ativo
-from gerenciador_ativos.extensions import db
-
-from gerenciador_ativos.api.monitoramento.brasilsat import (
-    get_telemetria_por_imei,
-    BrasilSatError,
-)
-
-logger = logging.getLogger(__name__)
 
 
-# ========================================================================
-# GET /api/ativos/<id>/dados     → usado pelo painel
-# ========================================================================
+# --------------------------------------------------
+# Função pública
+# --------------------------------------------------
 
-@api_ativos_bp.get("/<int:id>/dados")
-def dados_ativo(id):
-    ativo = Ativo.query.get_or_404(id)
+def get_telemetria_por_imei(imei: str) -> Dict[str, Any]:
+    """
+    Função pública usada pelo restante da aplicação.
 
-    # ------------------------------
-    # TELEMETRIA BRASILSAT
-    # ------------------------------
-    try:
-        tele = get_telemetria_por_imei(ativo.imei)
-    except BrasilSatError as exc:
-        return jsonify({"erro": str(exc)}), 500
-
-    motor_ligado = tele["motor_ligado"]
-    horas_motor = tele["horas_motor"]             # HODÔMETRO REAL
-    offset = float(ativo.horas_offset or 0)
-    horas_embarcacao = horas_motor + offset       # regra definida
-
-    # ------------------------------
-    # HORAS PARADAS
-    # ------------------------------
-    horas_paradas = 0.0 if motor_ligado else (float(ativo.horas_paradas or 0))
-
-    # ------------------------------
-    # ATUALIZAÇÕES NO BANCO
-    # ------------------------------
-    try:
-        ativo.horas_sistema_total = horas_motor
-        ativo.ultimo_estado_motor = 1 if motor_ligado else 0
-        ativo.horas_paradas = horas_paradas
-        ativo.latitude = tele["latitude"]
-        ativo.longitude = tele["longitude"]
-        ativo.tensao_bateria = tele["tensao_bateria"]
-        ativo.ultima_atualizacao = tele["servertime"]
-        db.session.commit()
-    except Exception as exc:
-        db.session.rollback()
-        logger.error(f"Erro salvando ativo {ativo.id}: {exc}")
-
-    # ------------------------------
-    # RETORNO AO PAINEL
-    # ------------------------------
-    return jsonify(
-        {
-            "id": ativo.id,
-            "nome": ativo.nome,
-            "imei": ativo.imei,
-
-            "motor_ligado": motor_ligado,
-            "horas_motor": round(horas_motor, 2),
-            "horas_offset": round(offset, 2),
-            "horas_embarcacao": round(horas_embarcacao, 2),
-
-            "horas_paradas": round(horas_paradas, 2),
-
-            "tensao_bateria": tele["tensao_bateria"],
-            "servertime": tele["servertime"],
-            "latitude": tele["latitude"],
-            "longitude": tele["longitude"],
-            "velocidade": tele["velocidade"],
-            "direcao": tele["direcao"],
-        }
-    )
+    Retorna um dicionário com:
+      - horas_motor
+      - tensao_bateria
+      - motor_ligado
+      - servertime
+      - latitude / longitude / velocidade / direcao
+      - raw (registro original)
+    """
+    bruto = _buscar_track_bruto(imei)
+    return _normalizar_track_bruto(bruto)
 
 
-# ========================================================================
-# POST /api/ativos/<id>/ajustar-horas     → botão do painel
-# ========================================================================
+# --------------------------------------------------
+# Execução direta para teste manual
+# --------------------------------------------------
 
-@api_ativos_bp.post("/<int:id>/ajustar-horas")
-def ajustar_horas(id):
-    ativo = Ativo.query.get_or_404(id)
-    data = request.get_json(silent=True) or {}
-
-    try:
-        novo_offset = float(data.get("offset"))
-    except:
-        return jsonify({"erro": "offset inválido"}), 400
-
-    ativo.horas_offset = novo_offset
-
-    try:
-        db.session.commit()
-    except Exception as exc:
-        db.session.rollback()
-        return jsonify({"erro": str(exc)}), 500
-
-    return jsonify(
-        {"mensagem": "Offset atualizado com sucesso.", "offset": novo_offset}
-    ), 200
+if __name__ == "__main__":
+    imei_teste = os.getenv("BRASILSAT_IMEI")
+    if not imei_teste:
+        print("Defina BRASILSAT_IMEI para testar.")
+    else:
+        try:
+            dados = get_telemetria_por_imei(imei_teste)
+            print("Telemetria BrasilSat OK:")
+            for k, v in dados.items():
+                if k == "raw":
+                    continue
+                print(f" - {k}: {v}")
+        except BrasilSatError as exc:
+            print(f"Erro ao obter telemetria: {exc}")
