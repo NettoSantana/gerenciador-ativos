@@ -1,8 +1,1 @@
-﻿Atualização completa do painel.html:
-- Substituído arquivo inteiro pela nova versão corrigida
-- Endpoint unificado para /api/ativos/<id>/dados
-- Exibição correta de IMEI e última leitura
-- Correção de horas_motor, hora_embarcacao, horas_paradas
-- Correção de tensão, localização e mapa
-- Código alinhado com formato V1 de telemetria
-- Remoção total de referencias a /dados-v2
+﻿fix: painel corrigido — preventiva voltou a aparecer (endpoint dados)
