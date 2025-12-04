@@ -19,15 +19,14 @@ logger = logging.getLogger(__name__)
 def dados_ativo(id: int):
     """
     Endpoint principal consumido pelo painel.
-
-    Sempre devolve 200 com um JSON “amigável” pro front, mesmo que a BrasilSat
-    esteja fora do ar. Se a telemetria falhar, cai em modo offline.
+    Sempre devolve dados consistentes: se a BrasilSat cair → painel continua funcionando.
     """
+
     ativo = Ativo.query.get_or_404(id)
 
-    # -----------------------------
+    # =================================================
     # 1) TENTAR BUSCAR TELEMETRIA
-    # -----------------------------
+    # =================================================
     tele = None
     try:
         if ativo.imei:
@@ -35,17 +34,15 @@ def dados_ativo(id: int):
     except BrasilSatError as exc:
         logger.error(f"[BRASILSAT] Erro ao obter telemetria para ativo {id}: {exc}")
         tele = None
-    except Exception as exc:  # qualquer outra coisa inesperada
-        logger.exception(
-            f"[BRASILSAT] Erro inesperado ao obter telemetria para ativo {id}"
-        )
+    except Exception as exc:
+        logger.exception(f"[BRASILSAT] Erro inesperado no ativo {id}")
         tele = None
 
-    # -----------------------------
-    # 2) DADOS BÁSICOS
-    # -----------------------------
     agora_ts = time.time()
 
+    # =================================================
+    # 2) SE TELEMETRIA VEIO, PEGAMOS TODOS OS CAMPOS
+    # =================================================
     if tele:
         monitor_online = True
         motor_ligado = bool(tele.get("motor_ligado"))
@@ -55,7 +52,7 @@ def dados_ativo(id: int):
         lat = tele.get("latitude")
         lon = tele.get("longitude")
     else:
-        # Modo "offline": sem leitura válida
+        # Modo offline → não derruba o painel
         monitor_online = False
         motor_ligado = False
         horas_motor_externo = 0.0
@@ -64,15 +61,15 @@ def dados_ativo(id: int):
         lat = None
         lon = None
 
-    # -----------------------------
-    # 3) CÁLCULO HORÍMETRO OFICIAL
-    # -----------------------------
+    # =================================================
+    # 3) HORÍMETRO FINAL (offset + horas do rastreador)
+    # =================================================
     offset = float(ativo.horas_offset or 0.0)
     hora_embarcacao = horas_motor_externo + offset
 
-    # -----------------------------
+    # =================================================
     # 4) HORAS PARADAS
-    # -----------------------------
+    # =================================================
     ultimo_estado = ativo.ultimo_estado_motor
     ultimo_ts = ativo.timestamp_evento
 
@@ -80,25 +77,23 @@ def dados_ativo(id: int):
         horas_paradas = 0.0
     else:
         if (not motor_ligado) and ultimo_estado == 0:
-            # motor já estava desligado antes → acumula tempo
             horas_paradas = max(0.0, (ts - float(ultimo_ts)) / 3600.0)
         else:
-            # ligou agora ou está ligado → zera contador
             horas_paradas = 0.0
 
-    # Atualiza estado atual no banco (mas não deixamos o painel quebrar
-    # se o commit der erro).
+    # Atualiza estado do motor
     ativo.ultimo_estado_motor = 1 if motor_ligado else 0
     ativo.timestamp_evento = ts
+
     try:
         db.session.commit()
     except Exception as exc:
         db.session.rollback()
         logger.error(f"Erro ao salvar estado do motor do ativo {id}: {exc}")
 
-    # -----------------------------
-    # 5) MONTA RESPOSTA PRO FRONT
-    # -----------------------------
+    # =================================================
+    # 5) RESPOSTA FINAL PARA O PAINEL
+    # =================================================
     resposta = {
         "id": ativo.id,
         "nome": ativo.nome,
@@ -113,17 +108,13 @@ def dados_ativo(id: int):
         "latitude": lat,
         "longitude": lon,
 
-        # Horímetro vindo do rastreador
         "horas_motor": round(horas_motor_externo, 2),
-
-        # Ajustes da embarcação
         "horas_offset": round(offset, 2),
         "hora_embarcacao": round(hora_embarcacao, 2),
 
-        # Horas paradas acumuladas
         "horas_paradas": round(horas_paradas, 2),
 
-        # Campo que o front já conhece, mesmo que hoje seja 0
+        # Campos que o painel espera
         "horas_sistema": 0.0,
         "ignicoes": 0,
     }
