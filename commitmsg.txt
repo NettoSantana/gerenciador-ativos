@@ -1,7 +1,7 @@
-﻿fix: substituição total do logo GA por imagem real no header
+﻿feat: atualização da tela de login com nova identidade visual Electro Auto Náutica
 
-- removido bloco antigo .logo-mark
-- adicionado <img src='static/logo.png'> com classe .logo-img
-- alinhamento corrigido em .topbar-left
-- responsividade ajustada para telas pequenas
-- preservada toda a estrutura original do base.html
+- substituído GA por novo logo (ícone + Electro Auto / Náutica)
+- removido texto de acesso inicial
+- reescrita completa do login.html
+- melhorias de responsividade
+- layout muito mais profissional e alinhado com a marca

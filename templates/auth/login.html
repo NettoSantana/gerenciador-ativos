@@ -10,18 +10,18 @@
   <script defer src="{{ url_for('static', filename='login.js') }}"></script>
 
   <style>
-    /* Ajuste do novo logo */
+    /* LOGO GRANDE */
     .brand-logo-img {
-      width: 160px;
+      width: 240px;        /* tamanho grande no desktop */
       height: auto;
       object-fit: contain;
-      margin-bottom: 14px;
       display: block;
+      margin-bottom: 10px;
     }
 
     @media (max-width: 700px) {
       .brand-logo-img {
-        width: 120px;
+        width: 160px;      /* menor no mobile */
       }
     }
   </style>
@@ -31,17 +31,15 @@
 
   <div class="login-container">
 
-    <!-- COLUNA ESQUERDA — LOGO / BRANDING -->
+    <!-- COLUNA ESQUERDA — LOGO -->
     <div class="login-left">
       <div class="brand-box">
 
-        <!-- NOVO LOGO -->
+        <!-- LOGO ÚNICA -->
         <img src="{{ url_for('static', filename='logo.png') }}"
              alt="Logo Electro Auto Náutica"
              class="brand-logo-img">
 
-        <h2 class="brand-title">Electro Auto</h2>
-        <p class="brand-sub">Náutica</p>
       </div>
     </div>
 
