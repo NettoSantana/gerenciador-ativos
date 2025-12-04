@@ -1,7 +1,5 @@
-﻿feat: atualização completa do header com identidade Electro Auto Náutica
+﻿fix: aumento da logo do header para 70px (identidade Electro Auto Náutica)
 
-- removido texto Gerenciador de Ativos e subtítulo
-- inserida apenas a logo oficial no header
-- aumentada a logo para 52px com responsividade mobile
-- limpeza total do bloco logo-text
-- header mais moderno, limpo e profissional
+- logo do topo ampliada para 70px (50px no mobile)
+- removido bloco de texto antigo
+- header mais forte e profissional
