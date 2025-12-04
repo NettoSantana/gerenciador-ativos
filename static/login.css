@@ -1,6 +1,6 @@
 /* ============================================================
    LAYOUT PREMIUM — LOGIN
-   Gerenciador de Ativos — NettCore
+   Electro Auto Náutica
    ============================================================ */
 
 /* Reseta margin/padding */
@@ -21,13 +21,13 @@
 .login-container {
   width: 100%;
   max-width: 980px;
-  height: 560px;
   background: var(--card);
   border-radius: 20px;
   display: flex;
   overflow: hidden;
   border: 1px solid rgba(148,163,184,0.20);
   box-shadow: 0 25px 60px rgba(0,0,0,0.60);
+  height: 560px; /* 🔥 Só PC */
 }
 
 /* Coluna Esquerda (LOGO / MARCA) */
@@ -45,31 +45,6 @@
   text-align: center;
 }
 
-.brand-logo {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(to bottom right, #38bdf8, #0ea5e9);
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #0b1020;
-  font-size: 34px;
-  font-weight: 700;
-  margin: 0 auto 20px auto;
-}
-
-.brand-title {
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.brand-sub {
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
 /* Coluna Direita (FORMULÁRIOS) */
 .login-right {
   width: 55%;
@@ -78,7 +53,7 @@
   overflow: hidden;
 }
 
-/* Painéis que alternam entre si */
+/* Painéis */
 .form-panel {
   position: absolute;
   top: 0;
@@ -151,7 +126,7 @@
   text-decoration: underline;
 }
 
-/* Botão primário */
+/* Botão */
 .btn-primary {
   padding: 12px;
   width: 100%;
@@ -171,42 +146,52 @@
   transform: translateY(-1px);
 }
 
-.hint {
-  margin-top: 14px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
 /* ================================
-   MOBILE — troca slide → fade
+   MOBILE — layout perfeito
    ================================ */
 @media (max-width: 768px) {
+
+  .login-body {
+    align-items: flex-start;  /* 🔥 Mostra o topo primeiro */
+    padding-top: 40px;
+  }
+
   .login-container {
-    height: auto;
-    max-width: 420px;
     flex-direction: column;
+    max-width: 380px;
+    width: 90%;
+    height: auto;           /* 🔥 Corrige o BUG */
+    min-height: auto;
   }
 
   .login-left {
-    display: none;
+    display: flex;          /* Exibe a logo no topo */
+    width: 100%;
+    padding: 20px;
+  }
+
+  .brand-box img {
+    width: 140px !important;
+    height: auto;
   }
 
   .login-right {
     width: 100%;
     padding: 28px;
     height: auto;
+    position: relative;
   }
 
   .form-panel {
-    left: 0;
+    position: static;
     width: 100%;
-    transform: translateX(0) !important;
     opacity: 0;
+    transform: none !important;
   }
 
   .form-panel.active {
     opacity: 1;
-    transform: none;
     transition: opacity .25s ease;
   }
+
 }
