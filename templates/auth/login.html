@@ -3,11 +3,28 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login — Gerenciador de Ativos</title>
+  <title>Login — Electro Auto Náutica</title>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
   <script defer src="{{ url_for('static', filename='login.js') }}"></script>
+
+  <style>
+    /* Ajuste do novo logo */
+    .brand-logo-img {
+      width: 160px;
+      height: auto;
+      object-fit: contain;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    @media (max-width: 700px) {
+      .brand-logo-img {
+        width: 120px;
+      }
+    }
+  </style>
 </head>
 
 <body class="login-body">
@@ -17,11 +34,14 @@
     <!-- COLUNA ESQUERDA — LOGO / BRANDING -->
     <div class="login-left">
       <div class="brand-box">
-        <!-- Aqui você coloca sua logo -->
-        <div class="brand-logo">GA</div>
 
-        <h2 class="brand-title">Gerenciador de Ativos</h2>
-        <p class="brand-sub">Monitoramento • Preventiva • Performance</p>
+        <!-- NOVO LOGO -->
+        <img src="{{ url_for('static', filename='logo.png') }}"
+             alt="Logo Electro Auto Náutica"
+             class="brand-logo-img">
+
+        <h2 class="brand-title">Electro Auto</h2>
+        <p class="brand-sub">Náutica</p>
       </div>
     </div>
 
@@ -50,10 +70,6 @@
             <a href="#" onclick="showPanel('register')">Criar conta</a>
             <a href="#" onclick="showPanel('reset')">Esqueci minha senha</a>
           </div>
-
-          <p class="hint">
-            Acesso inicial: <code>admin@admin.com</code> / <code>admin123</code>
-          </p>
         </form>
       </div>
 
