@@ -1,7 +1,8 @@
-﻿refactor: reescrita completa do módulo de dados do ativo
-- adicionada lógica oficial de hora_embarcacao = horas_motor + horas_offset
-- criado endpoint POST /api/ativos/<id>/ajustar-horas
-- implementado tratamento seguro de offset
-- resposta JSON agora inclui horas_offset e hora_embarcacao
-- revisão total do cálculo do horímetro interno (horas_sistema_total)
-- normalização da telemetria BrasilSat reorganizada
+﻿feat: ajuste de horas da embarcação (offset) integrado ao painel
+
+- adiciona botão 'Ajustar' no card Horas da Embarcação
+- inclui modal completo para entrada do offset
+- integra o modal com o endpoint POST /api/ativos/<id>/ajustar-horas
+- atualiza automaticamente o painel após salvar o offset
+- preserva toda a estrutura existente do painel
+- painel.html totalmente reescrito mantendo compatibilidade

@@ -5,13 +5,28 @@
   <title>{% block title %}Gerenciador de Ativos{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  
+  <style>
+    .logo-img {
+      height: 42px;
+      width: auto;
+      object-fit: contain;
+      margin-right: 10px;
+    }
+  </style>
 </head>
 <body>
   <div class="app-shell">
 
     <header class="topbar">
       <div class="topbar-left">
-        <div class="logo-mark">GA</div>
+
+        <!-- ======== LOGO ALTERADO ======== -->
+        <img src="{{ url_for('static', filename='logo.png') }}"
+             alt="Logo da Empresa"
+             class="logo-img">
+        <!-- ================================= -->
+
         <div class="logo-text">
           <span class="logo-title">Gerenciador de Ativos</span>
           <span class="logo-sub">Monitoramento · Preventiva · Performance</span>
@@ -25,23 +40,16 @@
 
           {% set tipo = session.get('user_tipo') %}
 
-          {# ======================== BOTÃO HOME ======================== #}
           {% if tipo in ['admin', 'gerente'] %}
             <a href="{{ url_for('dashboards.dashboard_gerente') }}" class="btn-ghost">Home</a>
           {% else %}
             <a href="{{ url_for('portal.dashboard_cliente') }}" class="btn-ghost">Home</a>
           {% endif %}
-          {# ============================================================ #}
 
-          {# Menus para usuários internos (admin / gerente) #}
           {% if tipo in ['admin', 'gerente'] %}
             <a href="{{ url_for('usuarios.lista') }}" class="btn-ghost">Usuários</a>
             <a href="{{ url_for('clientes.lista') }}" class="btn-ghost">Clientes</a>
             <a href="{{ url_for('ativos.lista') }}" class="btn-ghost">Ativos</a>
-
-          {# Menu para usuário do tipo cliente → Portal do Cliente #}
-          {% elif tipo == 'cliente' %}
-            <!-- Portal do cliente já acessa tudo via Home -->
           {% endif %}
 
           <a href="{{ url_for('auth.logout') }}" class="btn-ghost">Sair</a>
