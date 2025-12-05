@@ -1,1 +1,6 @@
-﻿Reescreve painel.html completo, adiciona botão EXCLUIR funcional e limpa layout.
+﻿feat(painel): tabs de preventiva e layout melhorado
+
+- adiciona alternância Painel/Preventiva no front
+- renderiza próximas atividades e plano de manutenção
+- melhora layout dos cards e formulário
+- prepara botão Ajustar para integrar com endpoint de ajuste
