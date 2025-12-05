@@ -1,5 +1,4 @@
-﻿feat: rota de ajuste de horímetro
-- adicionada POST /api/ativos/<id>/offset
-- salva horas_offset no banco
-- integra com cálculo existente em /dados
-- corrige funcionamento do botão 'Ajustar' no Painel
+﻿fix: registra rotas de offset na API de ativos
+- adiciona import do módulo offset em api_ativos/__init__.py
+- garante que POST /api/ativos/<id>/offset seja registrado pelo Flask
+- botão 'Ajustar' do painel passa a persistir horas_offset corretamente

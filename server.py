@@ -48,7 +48,6 @@ def create_app():
 
         db_path = os.path.join(instance_path, "gerenciador_ativos.db")
 
-        # cria o banco só se o arquivo não existir
         if not os.path.exists(db_path):
             print(">>> Banco não encontrado — criando novo banco...")
             db.create_all()
@@ -63,10 +62,28 @@ def create_app():
             admin.set_password("admin123")
             db.session.add(admin)
             db.session.commit()
-
             print(">>> Usuário admin criado: email=admin@admin.com | senha=admin123")
         else:
             print(">>> Banco já existe — não será recriado.")
+
+    # ----------------------------------------------------------------------
+    # 🔥 ROTA PARA CRIAR A COLUNA horas_offset NO RAILWAY (UMA VEZ SÓ)
+    # ----------------------------------------------------------------------
+    @app.route("/fix-db")
+    def fix_db():
+        import sqlite3
+
+        db_path = os.path.join(os.getcwd(), "instance", "gerenciador_ativos.db")
+
+        try:
+            conn = sqlite3.connect(db_path)
+            cur = conn.cursor()
+            cur.execute("ALTER TABLE ativos ADD COLUMN horas_offset REAL DEFAULT 0;")
+            conn.commit()
+            conn.close()
+            return "Coluna horas_offset criada com sucesso!"
+        except Exception as e:
+            return f"Erro ao criar coluna: {e}"
 
     return app
 
