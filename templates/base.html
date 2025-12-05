@@ -9,7 +9,7 @@
   <style>
     /* LOGO DO HEADER */
     .logo-img {
-      height: 70px;              /* maior e mais bonita */
+      height: 70px;
       width: auto;
       object-fit: contain;
       display: block;
@@ -21,9 +21,50 @@
       }
     }
 
-    /* Remover espaçamento do bloco antigo */
     .logo-text {
       display: none;
+    }
+
+    /* ============================
+       AJUSTE DE RESPONSIVIDADE DO MENU
+       SOMENTE MOBILE (< 640px)
+       ============================ */
+    @media (max-width: 640px) {
+
+      /* Container geral do topo */
+      .topbar {
+        flex-direction: column;
+        align-items: center;
+        padding: 12px;
+        gap: 10px;
+        text-align: center;
+      }
+
+      /* Alinhar logo no centro */
+      .topbar-left {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+
+      /* Menu em coluna */
+      .topbar-right {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+      }
+
+      /* Ajustar botões */
+      .btn-ghost,
+      .chip {
+        width: 90%;
+        max-width: 300px;
+        text-align: center;
+        padding: 10px 12px;
+        font-size: 15px;
+      }
     }
   </style>
 </head>
@@ -34,7 +75,6 @@
     <header class="topbar">
       <div class="topbar-left">
 
-        <!-- LOGO ÚNICA NO HEADER -->
         <img src="{{ url_for('static', filename='logo.png') }}"
              alt="Electro Auto Náutica"
              class="logo-img">

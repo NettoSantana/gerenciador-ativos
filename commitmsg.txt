@@ -1,6 +1,6 @@
-﻿feat(painel): tabs de preventiva e layout melhorado
+﻿feat: adicionar botão Excluir no plano de preventiva
 
-- adiciona alternância Painel/Preventiva no front
-- renderiza próximas atividades e plano de manutenção
-- melhora layout dos cards e formulário
-- prepara botão Ajustar para integrar com endpoint de ajuste
+- mantida estrutura original do painel.html
+- adicionada coluna 'Ações' na tabela de plano
+- criado botão 'Excluir' por linha
+- chamada DELETE em /api/ativos/<id>/plano/<id>
