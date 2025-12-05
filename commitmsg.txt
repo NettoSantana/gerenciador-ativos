@@ -1,1 +1,1 @@
-﻿Corrige ignições: soma somente em transições 0→1, sem afetar horas ou painel.
+﻿Reescreve painel.html completo, adiciona botão EXCLUIR funcional e limpa layout.

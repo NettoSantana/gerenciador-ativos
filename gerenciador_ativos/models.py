@@ -101,3 +101,4 @@ class Ativo(db.Model):
 
     def __repr__(self):
         return f"<Ativo {self.nome}>"
+

@@ -4,77 +4,214 @@
 {% block content %}
 <div class="page">
 
-  <!-- ===================== STYLE ===================== -->
   <style>
-    .painel-header-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:12px;}
-    .painel-titulo h1{margin:0;font-size:24px;font-weight:700;}
-    .painel-titulo .sub{margin-top:4px;font-size:13px;color:#94a3b8;}
-    .pill-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-    .pill-badge{padding:6px 10px;border-radius:999px;font-size:12px;background:#020617;border:1px solid #1f2937;color:#e5e7eb;}
+    .painel-header-top{
+      display:flex;justify-content:space-between;align-items:flex-start;
+      gap:16px;flex-wrap:wrap;margin-bottom:12px;
+    }
+    .painel-titulo h1{
+      margin:0;font-size:24px;
+    }
+    .painel-titulo .sub{
+      margin-top:4px;font-size:13px;color:#94a3b8;
+    }
+    .pill-strip{
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    }
+    .pill-badge{
+      padding:6px 10px;border-radius:999px;font-size:12px;
+      background:#020617;border:1px solid #1f2937;color:#e5e7eb;
+    }
+    .pill-badge.muted{color:#9ca3af;}
 
-    .tab-row{display:flex;gap:10px;margin:20px 0;}
-    .tab-btn{padding:10px 18px;border-radius:999px;font-size:14px;border:1px solid #1f2937;background:#0f172a;color:#e5e7eb;cursor:pointer;transition:.2s;}
-    .tab-btn.active{color:#38bdf8;border-color:#38bdf8;box-shadow:0 0 0 1px rgba(56,189,248,.3);}
+    .tab-row{
+      display:flex;gap:8px;margin:16px 0 20px;
+      border-bottom:1px solid #111827;
+      padding-bottom:4px;
+    }
+    .tab-btn{
+      padding:8px 16px;border-radius:999px;font-size:13px;
+      border:none;background:transparent;color:#9ca3af;
+      cursor:pointer;
+    }
+    .tab-btn.active{
+      color:#38bdf8;
+      background:rgba(56,189,248,0.1);
+      box-shadow:0 0 0 1px rgba(56,189,248,.3);
+    }
 
-    .grid-painel{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;}
-    @media (max-width:900px){.col-4{grid-column:span 12;} .col-6{grid-column:span 12;} .col-12{grid-column:span 12;}}
-    @media (min-width:901px){.col-4{grid-column:span 4;} .col-6{grid-column:span 6;} .col-12{grid-column:span 12;}}
+    .grid-painel{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:16px;
+    }
+    @media (max-width:900px){
+      .grid-painel{grid-template-columns:repeat(6,1fr);}
+      .col-4{grid-column:span 6;}
+      .col-6{grid-column:span 6;}
+      .col-12{grid-column:span 6;}
+    }
+    @media (min-width:901px){
+      .col-4{grid-column:span 4;}
+      .col-6{grid-column:span 6;}
+      .col-12{grid-column:span 12;}
+    }
 
-    .card-kpi,.card-form{background:#0b1220;border-radius:16px;border:1px solid #1f2937;padding:20px;box-shadow:0 10px 25px rgba(0,0,0,.3);}
-    .card-kpi h2,.card-form h3{margin:0 0 10px;color:#38bdf8;font-size:15px;text-transform:uppercase;}
-    .kpi-value{font-size:30px;font-weight:800;margin-bottom:6px;color:#e2e8f0;}
-    .kpi-helper{font-size:13px;color:#9ca3af;}
-
-    .status-row{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:13px;}
-    .status-dot{width:10px;height:10px;border-radius:999px;background:#4b5563;}
+    .card-kpi,
+    .card-form{
+      background:linear-gradient(180deg,#020617,#020617);
+      border-radius:16px;
+      border:1px solid #1f2937;
+      padding:18px;
+      box-shadow:0 10px 30px rgba(15,23,42,.6);
+    }
+    .card-kpi h2,
+    .card-form h3{
+      margin:0 0 10px;
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#38bdf8;
+    }
+    .kpi-value{
+      font-size:30px;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+    .kpi-helper{
+      font-size:13px;
+      color:#9ca3af;
+    }
+    .status-row{
+      display:flex;align-items:center;gap:8px;margin-top:6px;font-size:13px;
+    }
+    .status-dot{
+      width:10px;height:10px;border-radius:999px;background:#4b5563;
+    }
     .status-dot.ok{background:#22c55e;}
     .status-dot.bad{background:#ef4444;}
+    .status-dot.warn{background:#eab308;}
+
+    .map-wrapper{
+      margin-top:10px;
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid #111827;
+      background:#020617;
+      min-height:180px;
+    }
+    .map-frame{
+      width:100%;
+      height:220px;
+      border:0;
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:12px;
+      margin-top:8px;
+    }
+    .form-field{
+      display:flex;flex-direction:column;gap:4px;
+      font-size:13px;
+    }
+    .form-field label{
+      color:#e5e7eb;font-size:13px;
+    }
+    .form-field input,
+    .form-field select{
+      background:#020617;
+      border-radius:8px;
+      border:1px solid #1f2937;
+      padding:6px 10px;
+      color:#e5e7eb;
+      font-size:13px;
+    }
+    .col-12x{grid-column:span 12;}
+    .col-4x{grid-column:span 4;}
+    @media(max-width:900px){
+      .col-4x{grid-column:span 6;}
+      .col-12x{grid-column:span 12;}
+    }
+
+    .btn-primary-sm{
+      display:inline-flex;align-items:center;justify-content:center;
+      border-radius:999px;
+      border:none;
+      padding:7px 14px;
+      font-size:12px;
+      font-weight:500;
+      background:#38bdf8;
+      color:#020617;
+      cursor:pointer;
+    }
+    .btn-primary-sm:hover{
+      background:#0ea5e9;
+    }
+
+    .table-mini{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+      font-size:13px;
+    }
+    .table-mini th,
+    .table-mini td{
+      padding:6px 8px;
+      border-bottom:1px solid #111827;
+    }
+    .table-mini th{
+      text-align:left;
+      color:#9ca3af;
+      font-weight:500;
+    }
+
+    .msg-inline{
+      margin-top:8px;
+      font-size:13px;
+      color:#9ca3af;
+    }
+
+    .badge-chip{
+      display:inline-flex;
+      padding:2px 8px;
+      border-radius:999px;
+      font-size:11px;
+      background:#020617;
+      border:1px solid #1f2937;
+    }
 
     .hidden{display:none;}
-
-    .map-frame{width:100%;height:300px;border:0;border-radius:12px;margin-top:8px;}
-
-    .form-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;}
-    .form-field{display:flex;flex-direction:column;font-size:13px;color:#e5e7eb;}
-    .form-field input,.form-field select{padding:8px;border-radius:8px;border:1px solid #1f2937;background:#0f172a;color:#e5e7eb;margin-top:4px;}
-    .col-12x{grid-column:span 12;} .col-4x{grid-column:span 4;}
-
-    .table-mini{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;}
-    .table-mini th,.table-mini td{padding:8px;border-bottom:1px solid #1f2937;color:#e5e7eb;}
-    .msg-inline{margin-top:10px;color:#94a3b8;font-size:13px;}
-
-    .modal-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;justify-content:center;align-items:center;z-index:9999;}
-    .modal{background:#0f172a;padding:24px;border-radius:16px;width:350px;border:1px solid #1f2937;box-shadow:0 5px 20px rgba(0,0,0,.5);}
-    .modal h3{margin:0 0 12px;color:#38bdf8;font-size:17px;}
-    .modal input{width:100%;padding:10px;border-radius:10px;border:1px solid #1f2937;background:#0b1220;color:#fff;margin-bottom:12px;}
-    .modal-btn-row{display:flex;justify-content:flex-end;gap:10px;}
-    .btn{padding:8px 14px;border-radius:8px;font-size:14px;cursor:pointer;border:none;}
-    .btn-primary{background:#38bdf8;color:#000;font-weight:600;}
-    .btn-secondary{background:#1e293b;color:#e2e8f0;}
   </style>
 
-  <!-- ===================== HEADER ===================== -->
+  <!-- =======================
+        CABEÇALHO
+  ======================== -->
   <div class="painel-header-top">
     <div class="painel-titulo">
       <h1>Painel — {{ ativo.nome }}</h1>
-      <div class="sub">Ativo #{{ ativo.id }} — Cliente: {{ ativo.cliente.nome if ativo.cliente else '—' }}</div>
+      <div class="sub">
+        Ativo #{{ ativo.id }} — Cliente: {{ ativo.cliente.nome if ativo.cliente else '—' }}
+      </div>
     </div>
-
     <div class="pill-strip">
       <div class="pill-badge" id="badgeUltima">Última: --</div>
       <div class="pill-badge">IMEI: <span id="badgeImei">--</span></div>
     </div>
   </div>
 
-  <!-- ===================== TABS ===================== -->
+  <!-- =======================
+        TABS
+  ======================== -->
   <div class="tab-row">
     <button id="btnTabPainel" class="tab-btn active">Painel</button>
     <button id="btnTabPreventiva" class="tab-btn">Preventiva</button>
   </div>
 
-  <!-- =========================================================
+  <!-- =======================
         VIEW PAINEL
-  ========================================================== -->
+  ======================== -->
   <section id="viewPainel" class="grid-painel">
 
     <div class="card-kpi col-4">
@@ -84,9 +221,9 @@
     </div>
 
     <div class="card-kpi col-4">
-      <h2>Horas motor</h2>
+      <h2>Horas de motor</h2>
       <div class="kpi-value" id="kpiHorasMotor">0.00 h</div>
-      <div class="kpi-helper">Total consolidado</div>
+      <div class="kpi-helper">Total consolidado (rastreador)</div>
     </div>
 
     <div class="card-kpi col-4">
@@ -105,30 +242,34 @@
     </div>
 
     <div class="card-kpi col-4">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
         <h2>Horas da embarcação</h2>
-        <button class="tab-btn" id="btnAjustarHoras">Ajustar</button>
+        <button class="btn-primary-sm" id="btnAjustarHoras" style="margin-top:0;">
+          Ajustar
+        </button>
       </div>
       <div class="kpi-value" id="kpiHorasEmbarcacao">0.00 h</div>
-      <div class="kpi-helper">Offset + motor</div>
+      <div class="kpi-helper">Offset + horas de motor</div>
     </div>
 
     <div class="card-kpi col-4">
       <h2>Horas paradas</h2>
       <div class="kpi-value" id="kpiHorasParadas">0.00 h</div>
-      <div class="kpi-helper">Motor OFF</div>
+      <div class="kpi-helper">Acumulado em motor desligado</div>
     </div>
 
     <div class="card-kpi col-4">
       <h2>Ignições</h2>
       <div class="kpi-value" id="kpiIgnicoes">0</div>
-      <div class="kpi-helper">Vezes que ligou</div>
+      <div class="kpi-helper">Vezes que o motor ligou</div>
     </div>
 
     <div class="card-kpi col-6">
       <h2>Localização</h2>
       <div class="kpi-helper" id="kpiLocalizacao">Latitude: -- — Longitude: --</div>
-      <iframe id="mapFrame" class="map-frame" src=""></iframe>
+      <div class="map-wrapper">
+        <iframe id="mapFrame" class="map-frame" src="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
     </div>
 
     <div class="card-kpi col-6">
@@ -138,10 +279,15 @@
 
   </section>
 
-  <!-- =========================================================
+  <!-- ============================
         VIEW PREVENTIVA
-  ========================================================== -->
+  ============================= -->
   <section id="viewPreventiva" class="grid-painel hidden">
+
+    <div class="card-kpi col-6">
+      <h2>Próximas atividades</h2>
+      <div id="listaAtividadesPrev" class="kpi-helper">--</div>
+    </div>
 
     <div class="card-form col-6">
       <h3>Cadastrar atividade de preventiva</h3>
@@ -149,35 +295,35 @@
       <form id="formPlano" autocomplete="off">
         <div class="form-grid">
           <div class="form-field col-12x">
-            <label>Nome da atividade</label>
-            <input id="planoNome" type="text"/>
+            <label for="planoNome">Nome da atividade</label>
+            <input id="planoNome" type="text" placeholder="Ex.: Troca de óleo do motor" />
           </div>
 
           <div class="form-field col-4x">
-            <label>Tipo de controle</label>
+            <label for="planoBase">Tipo de controle</label>
             <select id="planoBase">
-              <option value="horas">Por horas</option>
-              <option value="dias">Por dias</option>
+              <option value="horas" selected>Por horas de motor</option>
+              <option value="dias">Por dias corridos</option>
             </select>
           </div>
 
           <div class="form-field col-4x">
-            <label>Intervalo</label>
-            <input id="planoIntervalo" type="number" step="0.1"/>
+            <label for="planoIntervalo">Intervalo</label>
+            <input id="planoIntervalo" type="number" step="0.1" min="0" placeholder="Ex.: 100" />
           </div>
 
           <div class="form-field col-4x">
-            <label>Primeira execução</label>
-            <input id="planoPrimeira" type="number" step="0.1"/>
+            <label for="planoPrimeira">Primeira execução</label>
+            <input id="planoPrimeira" type="number" step="0.1" min="0" placeholder="Opcional" />
           </div>
 
           <div class="form-field col-4x">
-            <label>Avisar antes</label>
-            <input id="planoAvisar" type="number" step="0.1"/>
+            <label for="planoAvisar">Avisar antes</label>
+            <input id="planoAvisar" type="number" step="0.1" min="0" placeholder="Opcional" />
           </div>
 
-          <div class="form-field col-4x">
-            <button class="btn-primary" type="submit">Adicionar</button>
+          <div class="form-field col-4x" style="align-self:flex-end;">
+            <button type="submit" class="btn-primary-sm">Adicionar atividade</button>
           </div>
         </div>
 
@@ -185,9 +331,8 @@
       </form>
     </div>
 
-    <div class="card-form col-6">
+    <div class="card-form col-12">
       <h3>Plano cadastrado</h3>
-
       <table class="table-mini">
         <thead>
           <tr>
@@ -196,132 +341,100 @@
             <th>Intervalo</th>
             <th>Primeira</th>
             <th>Avisar antes</th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="planoBody"></tbody>
       </table>
 
-      <div id="planoEmpty" class="msg-inline">Nenhuma atividade cadastrada.</div>
+      <div id="planoEmpty" class="msg-inline">
+        Nenhuma atividade cadastrada. Serão usadas as regras padrão.
+      </div>
     </div>
 
   </section>
 
 </div>
 
-<!-- ===================== MODAL AJUSTE DE OFFSET ===================== -->
-<div id="modalOffsetBg" class="modal-bg">
-  <div class="modal">
-    <h3>Ajustar horas da embarcação</h3>
-    <input id="inputOffset" type="number" step="0.1" placeholder="Digite o offset"/>
-    <div class="modal-btn-row">
-      <button class="btn btn-secondary" id="btnCancelarOffset">Cancelar</button>
-      <button class="btn btn-primary" id="btnSalvarOffset">Salvar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== SCRIPTS ===================== -->
+<!-- ====================================================
+      SCRIPT PRINCIPAL
+==================================================== -->
 <script>
   const ATIVO_ID = {{ ativo.id }};
-  const ENDPOINT_DADOS = `/api/ativos/${ATIVO_ID}/dados`;
+  const ENDPOINT_DADOS = `/api/ativos/${ATIVO_ID}/dados-v2`;
   const ENDPOINT_PREV = `/api/ativos/${ATIVO_ID}/preventiva`;
   const ENDPOINT_PLANO = `/api/ativos/${ATIVO_ID}/plano`;
-  const ENDPOINT_OFFSET = `/api/ativos/${ATIVO_ID}/offset`;
 
+  const mapFrame = document.getElementById("mapFrame");
+
+  const btnTabPainel = document.getElementById("btnTabPainel");
+  const btnTabPreventiva = document.getElementById("btnTabPreventiva");
   const viewPainel = document.getElementById("viewPainel");
   const viewPreventiva = document.getElementById("viewPreventiva");
-  const btnPainel = document.getElementById("btnTabPainel");
-  const btnPreventiva = document.getElementById("btnTabPreventiva");
 
-  btnPainel.onclick = () => {
-    btnPainel.classList.add("active");
-    btnPreventiva.classList.remove("active");
-    viewPainel.classList.remove("hidden");
-    viewPreventiva.classList.add("hidden");
-  };
-
-  btnPreventiva.onclick = () => {
-    btnPreventiva.classList.add("active");
-    btnPainel.classList.remove("active");
-    viewPainel.classList.add("hidden");
-    viewPreventiva.classList.remove("hidden");
-  };
-
-  /* =============== MODAL OFFSET =============== */
-  const modalBg = document.getElementById("modalOffsetBg");
-  const btnAjustar = document.getElementById("btnAjustarHoras");
-  const btnCancelar = document.getElementById("btnCancelarOffset");
-  const btnSalvar = document.getElementById("btnSalvarOffset");
-  const inputOffset = document.getElementById("inputOffset");
-
-  btnAjustar.onclick = () => {
-    inputOffset.value = "";
-    modalBg.style.display = "flex";
-  };
-
-  btnCancelar.onclick = () => {
-    modalBg.style.display = "none";
-  };
-
-  btnSalvar.onclick = async () => {
-    const val = parseFloat(inputOffset.value || 0);
-    if (isNaN(val)) {
-      alert("Digite um número válido");
-      return;
+  function setTab(tab){
+    if(tab === "painel"){
+      btnTabPainel.classList.add("active");
+      btnTabPreventiva.classList.remove("active");
+      viewPainel.classList.remove("hidden");
+      viewPreventiva.classList.add("hidden");
+    }else{
+      btnTabPainel.classList.remove("active");
+      btnTabPreventiva.classList.add("active");
+      viewPainel.classList.add("hidden");
+      viewPreventiva.classList.remove("hidden");
     }
+  }
 
-    try {
-      await fetch(ENDPOINT_OFFSET, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ offset: val })
-      });
-      modalBg.style.display = "none";
-      loadDados();
-    } catch (e) {
-      console.error("Erro ao salvar offset:", e);
-      alert("Erro ao salvar offset.");
+  btnTabPainel.addEventListener("click",()=>setTab("painel"));
+  btnTabPreventiva.addEventListener("click",()=>setTab("preventiva"));
+
+  function fmtHora(ts){
+    try{
+      return new Date(ts*1000).toLocaleString("pt-BR",{hour12:false});
+    }catch(e){
+      return "--";
     }
-  };
+  }
 
-  /* =============== CARREGAR DADOS DO PAINEL =============== */
   async function loadDados(){
     try{
       const r = await fetch(ENDPOINT_DADOS);
-      if (!r.ok) throw new Error("HTTP " + r.status);
+      if(!r.ok) throw new Error("HTTP "+r.status);
       const d = await r.json();
 
       document.getElementById("badgeImei").textContent = d.imei || "--";
+      document.getElementById("badgeUltima").textContent = "Última: " + fmtHora(d.servertime);
 
-      if (d.servertime) {
-        const dt = new Date(d.servertime * 1000);
-        document.getElementById("badgeUltima").textContent = "Última: " + dt.toLocaleString("pt-BR", {hour12:false});
-
-        const agora = Date.now() / 1000;
-        const dif = agora - d.servertime;
-        const online = dif < 300; 
-        document.getElementById("kpiMonitor").textContent = online ? "online" : "offline";
-      }
+      const on = !!d.monitor_online;
+      document.getElementById("kpiMonitor").textContent = on ? "online" : "offline";
 
       const motorOn = !!d.motor_ligado;
       document.getElementById("kpiMotor").textContent = motorOn ? "Ligado" : "Desligado";
       document.getElementById("dotMotor").className = "status-dot " + (motorOn ? "ok" : "bad");
       document.getElementById("kpiMotorHint").textContent = motorOn ? "Ignição ON" : "Ignição OFF";
 
-      const tensao = Number(d.tensao_bateria ?? 0);
+      const tensao = Number(d.tensao_bateria || 0);
       document.getElementById("kpiTensao").textContent = tensao.toFixed(2) + " V";
 
       let info = "—";
-      if (tensao === 0) info = "Sem leitura";
-      else if (tensao < 12.0) info = "Baixa";
-      else if (tensao < 12.3) info = "Meia carga";
+      if(tensao === 0) info = "Sem leitura";
+      else if(tensao < 12.0) info = "Baixa";
+      else if(tensao < 12.3) info = "Meia carga";
       else info = "OK";
       document.getElementById("kpiTensaoInfo").textContent = info;
 
-      document.getElementById("kpiHorasMotor").textContent = Number(d.horas_motor ?? 0).toFixed(2) + " h";
-      document.getElementById("kpiHorasEmbarcacao").textContent = Number(d.horas_embarcacao ?? 0).toFixed(2) + " h";
-      document.getElementById("kpiHorasParadas").textContent = Number(d.horas_paradas ?? 0).toFixed(2) + " h";
-      document.getElementById("kpiIgnicoes").textContent = Number(d.ignicoes ?? 0);
+      const hMotor = Number(d.horas_motor || 0);
+      document.getElementById("kpiHorasMotor").textContent = hMotor.toFixed(2) + " h";
+
+      const hEmb = Number(d.hora_embarcacao || 0);
+      document.getElementById("kpiHorasEmbarcacao").textContent = hEmb.toFixed(2) + " h";
+
+      const hParadas = Number(d.horas_paradas || 0);
+      document.getElementById("kpiHorasParadas").textContent = hParadas.toFixed(2) + " h";
+
+      const ign = Number(d.ignicoes || 0);
+      document.getElementById("kpiIgnicoes").textContent = ign.toString();
 
       const lat = d.latitude;
       const lon = d.longitude;
@@ -329,10 +442,11 @@
       document.getElementById("kpiLocalizacao").textContent =
         `Latitude: ${lat ?? "--"} — Longitude: ${lon ?? "--"}`;
 
-      const mapFrame = document.getElementById("mapFrame");
-      if (lat !== null && lat !== undefined && lon !== null && lon !== undefined) {
+      if(lat && lon){
         const url = `https://www.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
-        if (mapFrame.src !== url) mapFrame.src = url;
+        if(mapFrame.src !== url){
+          mapFrame.src = url;
+        }
       } else {
         mapFrame.src = "";
       }
@@ -342,112 +456,167 @@
     }
   }
 
-  /* =============== CARREGAR PLANO CADASTRADO =============== */
-  async function loadPlano() {
-    try {
-      const r = await fetch(ENDPOINT_PLANO);
-      if (!r.ok) throw new Error("HTTP " + r.status);
-
-      const d = await r.json();
-      const list = d.plano || [];
-
-      const tbody = document.getElementById("planoBody");
-      const emptyMsg = document.getElementById("planoEmpty");
-
-      if (list.length === 0) {
-        tbody.innerHTML = "";
-        emptyMsg.style.display = "block";
-        return;
-      }
-
-      emptyMsg.style.display = "none";
-      tbody.innerHTML = list.map(t => `
-        <tr>
-          <td>${t.nome}</td>
-          <td>${t.base}</td>
-          <td>${t.intervalo}</td>
-          <td>${t.primeira_execucao}</td>
-          <td>${t.avisar_antes}</td>
-        </tr>
-      `).join("");
-
-    } catch (e) {
-      console.error("Erro ao carregar plano:", e);
-    }
-  }
-
-  /* =============== CARREGAR PRÓXIMAS PREVENTIVAS =============== */
   async function loadPreventiva(){
     try{
       const r = await fetch(ENDPOINT_PREV);
-      if (!r.ok) throw new Error("HTTP " + r.status);
+      if(!r.ok) throw new Error("HTTP "+r.status);
       const d = await r.json();
-      const list = d.tarefas || [];
+      const tarefas = d.tarefas || [];
 
-      const render = (arr, target) => {
-        target.innerHTML = arr.length
-          ? arr.map(t => `• ${t.nome} (${Number(t.faltam ?? 0).toFixed(1)} ${t.base === 'dias' ? 'd' : 'h'})`).join("<br>")
-          : "--";
+      const render = (lista, target) => {
+        if(!lista.length){
+          target.innerHTML = "--";
+          return;
+        }
+        target.innerHTML = lista
+          .slice(0,5)
+          .map(t => `• ${t.nome} (${t.faltam.toFixed(1)} ${t.base === "dias" ? "d" : "h"})`)
+          .join("<br>");
       };
 
-      render(list, document.getElementById("listaAtividadesPainel"));
-      render(list, document.getElementById("listaAtividadesPrev"));
+      render(tarefas, document.getElementById("listaAtividadesPainel"));
+      render(tarefas, document.getElementById("listaAtividadesPrev"));
 
     }catch(e){
       console.error("Erro preventiva:", e);
     }
   }
 
-  /* =============== ATIVAÇÃO =============== */
-  loadDados();
-  loadPlano();
-  loadPreventiva();
+  async function loadPlano(){
+    try{
+      const r = await fetch(ENDPOINT_PLANO);
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      const d = await r.json();
+      const itens = d.itens || [];
 
-  setInterval(() => {
-    loadDados();
-    loadPlano();
-    loadPreventiva();
-  }, 30000);
+      const body = document.getElementById("planoBody");
+      const empty = document.getElementById("planoEmpty");
 
-  /* =============== SUBMIT DO FORM =============== */
-  document.getElementById("formPlano").onsubmit = async (ev) => {
+      if(!itens.length){
+        body.innerHTML = "";
+        empty.style.display = "block";
+        return;
+      }
+
+      empty.style.display = "none";
+      body.innerHTML = itens.map(item => `
+        <tr>
+          <td>${item.nome}</td>
+          <td><span class="badge-chip">${item.base}</span></td>
+          <td>${item.intervalo}</td>
+          <td>${item.primeira ?? "—"}</td>
+          <td>${item.avisar ?? "—"}</td>
+          <td>
+            <button type="button" class="btn-primary-sm btn-remove-plano" data-id="${item.id}">
+              Remover
+            </button>
+          </td>
+        </tr>
+      `).join("");
+
+      document.querySelectorAll(".btn-remove-plano").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-id");
+          if(!id) return;
+          if(!confirm("Remover esta atividade?")) return;
+
+          try{
+            const resp = await fetch(`${ENDPOINT_PLANO}/${id}`, { method:"DELETE" });
+            if(!resp.ok) throw new Error("HTTP "+resp.status);
+            await loadPlano();
+            await loadPreventiva();
+          }catch(e){
+            console.error("Erro ao remover item do plano:", e);
+            alert("Erro ao remover atividade.");
+          }
+        });
+      });
+
+    }catch(e){
+      console.error("Erro ao carregar plano:", e);
+    }
+  }
+
+  document.getElementById("formPlano").addEventListener("submit", async (ev)=>{
     ev.preventDefault();
+    const msg = document.getElementById("planoMsg");
+    msg.textContent = "";
 
     const nome = document.getElementById("planoNome").value.trim();
     const base = document.getElementById("planoBase").value;
-    const intervalo = parseFloat(document.getElementById("planoIntervalo").value);
-    const primeira = parseFloat(document.getElementById("planoPrimeira").value);
-    const avisar = parseFloat(document.getElementById("planoAvisar").value);
+    const intervalo = Number(document.getElementById("planoIntervalo").value);
+    const primeiraRaw = document.getElementById("planoPrimeira").value;
+    const avisarRaw = document.getElementById("planoAvisar").value;
 
-    if (!nome) {
-      alert("Nome obrigatório");
+    if(!nome || !intervalo || intervalo <= 0){
+      msg.textContent = "Informe pelo menos o nome e o intervalo.";
       return;
     }
 
-    try {
-      await fetch(ENDPOINT_PLANO, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          nome,
-          base,
-          intervalo,
-          primeira_execucao: primeira,
-          avisar_antes: avisar
-        })
+    const payload = {
+      nome,
+      base,
+      intervalo,
+      primeira: primeiraRaw ? Number(primeiraRaw) : null,
+      avisar: avisarRaw ? Number(avisarRaw) : null,
+    };
+
+    try{
+      const resp = await fetch(ENDPOINT_PLANO, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify(payload),
       });
+      if(!resp.ok){
+        const txt = await resp.text();
+        console.error("Erro plano:", resp.status, txt);
+        throw new Error("HTTP "+resp.status);
+      }
 
-      document.getElementById("planoMsg").textContent =
-        "Atividade adicionada com sucesso.";
+      document.getElementById("planoNome").value = "";
+      document.getElementById("planoIntervalo").value = "";
+      document.getElementById("planoPrimeira").value = "";
+      document.getElementById("planoAvisar").value = "";
 
-      loadPlano();
-      loadPreventiva();
+      msg.textContent = "Atividade adicionada com sucesso.";
+      await loadPlano();
+      await loadPreventiva();
 
-    } catch (e) {
-      console.error("Erro ao adicionar plano:", e);
-      alert("Erro ao criar atividade.");
+    }catch(e){
+      console.error("Erro ao salvar plano:", e);
+      msg.textContent = "Erro ao salvar atividade. Tente novamente.";
     }
-  };
+  });
+
+  // Botão AJUSTAR – por enquanto só coleta o valor e deixa pronto
+  // pra chamar o endpoint de ajuste (vamos fazer isso no próximo passo).
+  document.getElementById("btnAjustarHoras").addEventListener("click", async ()=>{
+    const atualTxt = document.getElementById("kpiHorasEmbarcacao").textContent.replace(" h","").trim();
+    const valorStr = prompt("Informe a hora atual da embarcação (horímetro do painel):", atualTxt || "");
+    if(valorStr === null) return;
+
+    const valor = Number((valorStr || "").replace(",","."));
+    if(isNaN(valor) || valor < 0){
+      alert("Valor inválido.");
+      return;
+    }
+
+    // TODO: ligar em um endpoint tipo POST /api/ativos/<id>/ajustar-horas
+    console.log("Valor informado para ajuste de horímetro:", valor);
+
+    alert("Valor registrado. No próximo passo vamos persistir isso no servidor.");
+  });
+
+  // Carga inicial
+  loadDados();
+  loadPreventiva();
+  loadPlano();
+
+  // Refresh periódico
+  setInterval(() => {
+    loadDados();
+    loadPreventiva();
+  }, 30000);
 </script>
 
 {% endblock %}
