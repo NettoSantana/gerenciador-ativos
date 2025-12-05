@@ -1,6 +1,1 @@
-﻿refactor: painel completo refeito e preventivas corrigidas
-- refeito painel.html do zero, versão final
-- adicionada função loadPlano()
-- endpoint /plano integrado ao painel
-- cadastro e listagem de preventivas funcionando
-- melhorias gerais no monitoramento, ignições, status e UI
+﻿Corrige contagem de ignições (transição 0→1) e horas paradas, estabiliza leitura.
