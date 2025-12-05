@@ -369,8 +369,17 @@
       const servertime = d.servertime ? new Date(d.servertime*1000).toLocaleString("pt-BR",{hour12:false}) : "--";
       document.getElementById("badgeUltima").textContent = "Última: " + servertime;
 
-      const online = !!d.monitor_online;
-      document.getElementById("kpiMonitor").textContent = online ? "online" : "offline";
+      let statusOnline = "offline";
+
+if (d.servertime) {
+    const agora = Date.now() / 1000;  // em segundos
+    const dif = agora - d.servertime; // diferença em segundos
+
+    // Considera online se recebeu dado nos últimos 5 minutos
+    statusOnline = dif < 300 ? "online" : "offline";
+}
+
+document.getElementById("kpiMonitor").textContent = statusOnline;
 
       const motorOn = !!d.motor_ligado;
       document.getElementById("kpiMotor").textContent = motorOn ? "Ligado" : "Desligado";
