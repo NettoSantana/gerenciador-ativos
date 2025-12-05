@@ -37,33 +37,35 @@ def dados_do_ativo(ativo_id):
     except BrasilSatError as exc:
         return jsonify({"erro": f"Falha ao obter dados da BrasilSat: {exc}"}), 500
 
-    # --- (3) Normalizar motor ligado ---
+    # --- (3) Normalizar estado do motor ---
     motor_raw = tele.get("motor_ligado")
     motor_ligado = True if str(motor_raw) in ["1", "true", "True"] else False
 
-    # --- (4) Horas do motor e offset ---
+    # --- (4) Calcular horas ---
     horas_motor = tele.get("horas_motor") or 0
     offset = ativo.horas_offset or 0
-
-    # soma real:
     horas_embarcacao = offset + horas_motor
 
     # --- (5) Horas paradas ---
-    # se motor liga → zera
     if motor_ligado:
         horas_paradas = 0
     else:
-        # pode expandir depois com cálculo delta
         horas_paradas = ativo.horas_paradas or 0
 
-    # --- (6) Montar payload final ---
+    # --- (6) Detectar IGNIÇÃO ---
+    ignicoes = ativo.total_ignicoes or 0
+    estado_anterior = ativo.ultimo_estado_motor or 0
+
+    if estado_anterior == 0 and motor_ligado:
+        ignicoes += 1  # IGNIÇÃO DETECTADA
+
+    # --- (7) Montar payload ---
     payload = {
         "ativo_id": ativo.id,
         "nome": ativo.nome,
         "categoria": ativo.categoria,
         "imei": imei,
 
-        # telemetria
         "motor_ligado": motor_ligado,
         "tensao_bateria": tele.get("tensao_bateria"),
         "servertime": tele.get("servertime"),
@@ -79,13 +81,16 @@ def dados_do_ativo(ativo_id):
         "offset": offset,
         "horas_embarcacao": horas_embarcacao,
         "horas_paradas": horas_paradas,
-        "horas_totais": horas_motor,   # compatível com V1
+        "horas_totais": horas_motor,
 
-        # unidade base
+        # IGNIÇÕES
+        "ignicoes": ignicoes,
+
+        # unidade
         "unidade_base": ativo.categoria or "h",
     }
 
-    # --- (7) Atualizar banco ---
+    # --- (8) Salvar no banco ---
     try:
         ativo.horas_sistema = horas_motor
         ativo.ultima_atualizacao = tele.get("servertime")
@@ -94,10 +99,10 @@ def dados_do_ativo(ativo_id):
         ativo.latitude = tele.get("latitude")
         ativo.longitude = tele.get("longitude")
         ativo.tensao_bateria = tele.get("tensao_bateria")
+        ativo.total_ignicoes = ignicoes
 
         db.session.commit()
-
-    except Exception:
-        pass
+    except Exception as e:
+        print("ERRO AO SALVAR:", e)
 
     return jsonify(payload)

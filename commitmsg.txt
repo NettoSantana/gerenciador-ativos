@@ -1,5 +1,4 @@
-﻿fix: server.py refeito e adicionada rota /fix-db
-- recriação completa do server.py
-- adicionada rota /fix-db para criar coluna horas_offset no Railway
-- mantém toda a estrutura anterior intacta
-- prepara o sistema para salvar ajustes de horímetro corretamente
+﻿fix: ajuste do status de monitoramento no painel
+- substituído monitor_online inexistente por cálculo baseado no servertime
+- corrigido status offline permanente
+- frontend agora determina online/offline de forma confiável (últimos 5 minutos)
