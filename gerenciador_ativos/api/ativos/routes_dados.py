@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify
 from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import Ativo
 
+# integração BrasilSat
 from gerenciador_ativos.api.monitoramento.brasilsat import (
     get_telemetria_por_imei,
     BrasilSatError,
@@ -23,83 +24,82 @@ def dados_do_ativo(ativo_id):
 
     imei = ativo.imei
     if not imei:
-        return jsonify({"erro": "Ativo sem IMEI cadastrado"}), 400
+        return jsonify({"erro": "Ativo não possui IMEI cadastrado"}), 400
 
+    # Buscar telemetria BrasilSat
     try:
         tele = get_telemetria_por_imei(imei)
     except BrasilSatError as exc:
-        return jsonify({"erro": f"Erro BrasilSat: {exc}"}), 500
+        return jsonify({"erro": f"Falha ao obter dados da BrasilSat: {exc}"}), 500
 
-    # ------------------------------
-    # ESTADO DO MOTOR
-    # ------------------------------
+    # Normalizar motor
     motor_raw = tele.get("motor_ligado")
     motor_ligado = True if str(motor_raw) in ["1", "true", "True"] else False
-    estado_atual = 1 if motor_ligado else 0
+    motor_atual = 1 if motor_ligado else 0
 
-    # leia o estado anterior do banco corretamente
-    estado_anterior = ativo.ultimo_estado_motor  
-    if estado_anterior is None:
-        estado_anterior = 0
-
-    # ------------------------------
-    # IGNIÇÃO CORRETA CRESCENTE
-    # ------------------------------
-    ignicoes = ativo.total_ignicoes or 0
-
-    # soma só SE houve transição 0→1
-    if estado_anterior == 0 and estado_atual == 1:
-        ignicoes += 1
-
-    # ------------------------------
-    # HORAS / LOCALIZAÇÃO
-    # ------------------------------
+    # Horas de motor
     horas_motor = tele.get("horas_motor") or 0
     offset = ativo.horas_offset or 0
     horas_embarcacao = offset + horas_motor
 
-    if estado_atual == 0:
-        horas_paradas = ativo.horas_paradas or 0
-    else:
-        horas_paradas = 0
+    # Horas paradas
+    horas_paradas = ativo.horas_paradas or 0
+    if motor_atual == 0:
+        horas_paradas += 0.01  # incrementa apenas com motor OFF
 
-    # ------------------------------
-    # SALVAR CORRETAMENTE
-    # ------------------------------
-    ativo.ultimo_estado_motor = estado_atual
-    ativo.total_ignicoes = ignicoes
-    ativo.horas_sistema = horas_motor
-    ativo.horas_paradas = horas_paradas
-    ativo.latitude = tele.get("latitude")
-    ativo.longitude = tele.get("longitude")
-    ativo.tensao_bateria = tele.get("tensao_bateria")
-    ativo.ultima_atualizacao = tele.get("servertime")
+    # ============================
+    #   IGNIÇÕES — LÓGICA CORRETA
+    # ============================
+    estado_ant = ativo.ultimo_estado_motor or 0
+    ignicoes = ativo.total_ignicoes or 0
 
-    db.session.commit()
+    # Se mudou de 0 → 1 → soma 1
+    if estado_ant == 0 and motor_atual == 1:
+        ignicoes += 1
 
-    # ------------------------------
-    # RESPOSTA
-    # ------------------------------
+    # ============================
+
+    # Montar payload para enviar ao painel
     payload = {
         "ativo_id": ativo.id,
         "nome": ativo.nome,
+        "categoria": ativo.categoria,
         "imei": imei,
 
         "motor_ligado": motor_ligado,
+        "tensao_bateria": tele.get("tensao_bateria"),
+        "servertime": tele.get("servertime"),
         "horas_motor": horas_motor,
-        "offset": offset,
-        "horas_embarcacao": horas_embarcacao,
-        "horas_paradas": horas_paradas,
 
         "latitude": tele.get("latitude"),
         "longitude": tele.get("longitude"),
         "velocidade": tele.get("velocidade"),
         "direcao": tele.get("direcao"),
 
-        "tensao_bateria": tele.get("tensao_bateria"),
-        "servertime": tele.get("servertime"),
+        "offset": offset,
+        "horas_embarcacao": horas_embarcacao,
+        "horas_paradas": horas_paradas,
+        "horas_totais": horas_motor,
 
         "ignicoes": ignicoes,
+        "unidade_base": ativo.categoria or "h",
     }
+
+    # SALVAR EM BANCO
+    try:
+        ativo.horas_sistema = horas_motor
+        ativo.ultima_atualizacao = tele.get("servertime")
+
+        ativo.ultimo_estado_motor = motor_atual
+        ativo.total_ignicoes = ignicoes
+        ativo.horas_paradas = horas_paradas
+
+        ativo.latitude = tele.get("latitude")
+        ativo.longitude = tele.get("longitude")
+        ativo.tensao_bateria = tele.get("tensao_bateria")
+
+        db.session.commit()
+    except Exception as e:
+        print("ERRO AO SALVAR:", e)
 
     return jsonify(payload)
