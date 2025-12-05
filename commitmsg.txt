@@ -1,1 +1,1 @@
-﻿Corrige ignições sem afetar horas, sem resetar dados, e sem alterar painel.
+﻿Corrige ignições: soma somente em transições 0→1, sem afetar horas ou painel.
