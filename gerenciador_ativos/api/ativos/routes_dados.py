@@ -35,7 +35,7 @@ def dados_do_ativo(ativo_id):
         return jsonify({"erro": f"Falha ao obter dados da BrasilSat: {exc}"}), 500
 
     # -------------------------
-    # MOTOR (normalizado)
+    # MOTOR
     # -------------------------
     motor_raw = tele.get("motor_ligado")
     motor_ligado = True if str(motor_raw) in ["1", "true", "True"] else False
@@ -43,18 +43,27 @@ def dados_do_ativo(ativo_id):
     estado_ant = ativo.ultimo_estado_motor or 0
 
     # -------------------------
-    # IGNIÇÕES CUMULATIVAS
+    # IGNIÇÕES
     # -------------------------
     ignicoes = ativo.total_ignicoes or 0
-
-    # mudou de DESLIGADO → LIGADO
     if estado_ant == 0 and motor_atual == 1:
         ignicoes += 1
 
     # -------------------------
-    # HORAS
+    # HORAS MOTOR (CÁLCULO REAL)
     # -------------------------
-    horas_motor = tele.get("horas_motor") or 0
+    horas_sistema = ativo.horas_sistema or 0
+
+    if motor_ligado:
+        # soma ~0.01h por ciclo (ajuste conforme frequência real de leitura)
+        horas_sistema += 0.01
+
+    # horas_motor exibido ao usuário
+    horas_motor = horas_sistema
+
+    # -------------------------
+    # HORAS EMBARCAÇÃO
+    # -------------------------
     offset = ativo.horas_offset or 0
     horas_emb = offset + horas_motor
 
@@ -64,10 +73,8 @@ def dados_do_ativo(ativo_id):
     horas_paradas = ativo.horas_paradas or 0
 
     if motor_atual == 0:
-        # soma lentamente enquanto desligado
         horas_paradas += 0.01
     else:
-        # motor ligado → zera paradas sem afetar cálculo geral
         horas_paradas = 0
 
     # -------------------------
