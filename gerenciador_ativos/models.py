@@ -1,119 +1,106 @@
-from flask import Blueprint, jsonify
+from gerenciador_ativos.extensions import db from werkzeug.security import generate_password_hash, check_password_hash from datetime import datetime # -------------------------------------------------------- # USUÁRIO DO SISTEMA # admin / gerente / cliente # -------------------------------------------------------- class Usuario(db.Model): __tablename__ = "usuarios" id = db.Column(db.Integer, primary_key=True) nome = db.Column(db.String(120), nullable=False) email = db.Column(db.String(120), unique=True, nullable=False) senha_hash = db.Column(db.String(255), nullable=False) tipo = db.Column(db.String(50), default="gerente") ativo = db.Column(db.Boolean, default=True) cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=True) # -------------------------- # Métodos de senha corretos # -------------------------- def set_password(self, senha): self.senha_hash = generate_password_hash(senha) def check_password(self, senha): return check_password_hash(self.senha_hash, senha) # -------------------------- # Auxiliar # -------------------------- def is_interno(self): return self.tipo in ["admin", "gerente"] def __repr__(self): return f"<Usuario {self.email}>" # -------------------------------------------------------- # CLIENTES (PF / PJ) # -------------------------------------------------------- class Cliente(db.Model): __tablename__ = "clientes" id = db.Column(db.Integer, primary_key=True) tipo = db.Column(db.String(50), nullable=False) # PF ou PJ nome = db.Column(db.String(120), nullable=False) cpf_cnpj = db.Column(db.String(30), nullable=True) telefone = db.Column(db.String(50), nullable=True) email = db.Column(db.String(120), nullable=True) endereco = db.Column(db.String(255), nullable=True) observacoes = db.Column(db.Text, nullable=True) ativo = db.Column(db.Boolean, default=True) usuarios = db.relationship("Usuario", backref="cliente", lazy=True) ativos = db.relationship("Ativo", backref="cliente", lazy=True) def __repr__(self): return f"<Cliente {self.nome}>" # -------------------------------------------------------- # ATIVOS (embarcações, máquinas etc.) # -------------------------------------------------------- class Ativo(db.Model): __tablename__ = "ativos" id = db.Column(db.Integer, primary_key=True) cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=False) nome = db.Column(db.String(120), nullable=False) categoria = db.Column(db.String(120), nullable=True) imei = db.Column(db.String(50), nullable=True) observacoes = db.Column(db.Text, nullable=True) # TELEMETRIA AVANÇADA horas_offset = db.Column(db.Float, default=0.0) horas_sistema = db.Column(db.Float, default=0.0) horas_paradas = db.Column(db.Float, default=0.0) ultimo_estado_motor = db.Column(db.Integer, default=0) # 0 desligado / 1 ligado total_ignicoes = db.Column(db.Integer, default=0) ultima_atualizacao = db.Column(db.Integer, nullable=True) # localização latitude = db.Column(db.Float, nullable=True) longitude = db.Column(db.Float, nullable=True) # bateria — NOVO CAMPO tensao_bateria = db.Column(db.Float, default=0.0) ativo = db.Column(db.Boolean, default=True) criado_em = db.Column(db.DateTime, default=datetime.utcnow) def __repr__(self): return f"<Ativo {self.nome}>"from gerenciador_ativos.extensions import db from werkzeug.security import generate_password_hash, check_password_hash from datetime import datetime # -------------------------------------------------------- # USUÁRIO DO SISTEMA # admin / gerente / cliente # -------------------------------------------------------- class Usuario(db.Model): __tablename__ = "usuarios" id = db.Column(db.Integer, primary_key=True) nome = db.Column(db.String(120), nullable=False) email = db.Column(db.String(120), unique=True, nullable=False) senha_hash = db.Column(db.String(255), nullable=False) tipo = db.Column(db.String(50), default="gerente") ativo = db.Column(db.Boolean, default=True) cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=True) # -------------------------- # Métodos de senha corretos # -------------------------- def set_password(self, senha): self.senha_hash = generate_password_hash(senha) def check_password(self, senha): return check_password_hash(self.senha_hash, senha) # -------------------------- # Auxiliar # -------------------------- def is_interno(self): return self.tipo in ["admin", "gerente"] def __repr__(self): return f"<Usuario {self.email}>" # -------------------------------------------------------- # CLIENTES (PF / PJ) # -------------------------------------------------------- class Cliente(db.Model): __tablename__ = "clientes" id = db.Column(db.Integer, primary_key=True) tipo = db.Column(db.String(50), nullable=False) # PF ou PJ nome = db.Column(db.String(120), nullable=False) cpf_cnpj = db.Column(db.String(30), nullable=True) telefone = db.Column(db.String(50), nullable=True) email = db.Column(db.String(120), nullable=True) endereco = db.Column(db.String(255), nullable=True) observacoes = db.Column(db.Text, nullable=True) ativo = db.Column(db.Boolean, default=True) usuarios = db.relationship("Usuario", backref="cliente", lazy=True) ativos = db.relationship("Ativo", backref="cliente", lazy=True) def __repr__(self): return f"<Cliente {self.nome}>" # -------------------------------------------------------- # ATIVOS (embarcações, máquinas etc.) # -------------------------------------------------------- class Ativo(db.Model): __tablename__ = "ativos" id = db.Column(db.Integer, primary_key=True) cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=False) nome = db.Column(db.String(120), nullable=False) categoria = db.Column(db.String(120), nullable=True) imei = db.Column(db.String(50), nullable=True) observacoes = db.Column(db.Text, nullable=True) # TELEMETRIA AVANÇADA horas_offset = db.Column(db.Float, default=0.0) horas_sistema = db.Column(db.Float, default=0.0) horas_paradas = db.Column(db.Float, default=0.0) ultimo_estado_motor = db.Column(db.Integer, default=0) # 0 desligado / 1 ligado total_ignicoes = db.Column(db.Integer, default=0) ultima_atualizacao = db.Column(db.Integer, nullable=True) # localização latitude = db.Column(db.Float, nullable=True) longitude = db.Column(db.Float, nullable=True) # bateria — NOVO CAMPO tensao_bateria = db.Column(db.Float, default=0.0) ativo = db.Column(db.Boolean, default=True) criado_em = db.Column(db.DateTime, default=datetime.utcnow) def __repr__(self): return f"<Ativo {self.nome}>"from gerenciador_ativos.extensions import db from werkzeug.security import generate_password_hash, check_password_hash from datetime import datetime # -------------------------------------------------------- # USUÁRIO DO SISTEMA # admin / gerente / cliente # -------------------------------------------------------- class Usuario(db.Model): __tablename__ = "usuarios" id = db.Column(db.Integer, primary_key=True) nome = db.Column(db.String(120), nullable=False) email = db.Column(db.String(120), unique=True, nullable=False) senha_hash = db.Column(db.String(255), nullable=False) tipo = db.Column(db.String(50), default="gerente") ativo = db.Column(db.Boolean, default=True) cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=True) # -------------------------- # Métodos de senha corretos # -------------------------- def set_password(self, senha): self.senha_hash = generate_password_hash(senha) def check_password(self, senha): return check_password_hash(self.senha_hash, senha) # -------------------------- # Auxiliar # -------------------------- def is_interno(self): return self.tipo in ["admin", "gerente"] def __repr__(self): return f"<Usuario {self.email}>" # -------------------------------------------------------- # CLIENTES (PF / PJ) # -------------------------------------------------------- class Cliente(db.Model): __tablename__ = "clientes" id = db.Column(db.Integer, primary_key=True) tipo = db.Column(db.String(50), nullable=False) # PF ou PJ nome = db.Column(db.String(120), nullable=False) cpf_cnpj = db.Column(db.String(30), nullable=True) telefone = db.Column(db.String(50), nullable=True) email = db.Column(db.String(120), nullable=True) endereco = db.Column(db.String(255), nullable=True) observacoes = db.Column(db.Text, nullable=True) ativo = db.Column(db.Boolean, default=True) usuarios = db.relationship("Usuario", backref="cliente", lazy=True) ativos = db.relationship("Ativo", backref="cliente", lazy=True) def __repr__(self): return f"<Cliente {self.nome}>" # -------------------------------------------------------- # ATIVOS (embarcações, máquinas etc.) # -------------------------------------------------------- class Ativo(db.Model): __tablename__ = "ativos" id = db.Column(db.Integer, primary_key=True) cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=False) nome = db.Column(db.String(120), nullable=False) categoria = db.Column(db.String(120), nullable=True) imei = db.Column(db.String(50), nullable=True) observacoes = db.Column(db.Text, nullable=True) # TELEMETRIA AVANÇADA horas_offset = db.Column(db.Float, default=0.0) horas_sistema = db.Column(db.Float, default=0.0) horas_paradas = db.Column(db.Float, default=0.0) ultimo_estado_motor = db.Column(db.Integer, default=0) # 0 desligado / 1 ligado total_ignicoes = db.Column(db.Integer, default=0) ultima_atualizacao = db.Column(db.Integer, nullable=True) # localização latitude = db.Column(db.Float, nullable=True) longitude = db.Column(db.Float, nullable=True) # bateria — NOVO CAMPO tensao_bateria = db.Column(db.Float, default=0.0) ativo = db.Column(db.Boolean, default=True) criado_em = db.Column(db.DateTime, default=datetime.utcnow) def __repr__(self): return f"<Ativo {self.nome}>"from gerenciador_ativos.extensions import db from werkzeug.security import generate_password_hash, check_password_hash from datetime import datetime # -------------------------------------------------------- # USUÁRIO DO SISTEMA # admin / gerente / cliente # -------------------------------------------------------- class Usuario(db.Model): __tablename__ = "usuarios" id = db.Column(db.Integer, primary_key=True) nome = db.Column(db.String(120), nullable=False) email = db.Column(db.String(120), unique=True, nullable=False) senha_hash = db.Column(db.String(255), nullable=False) tipo = db.Column(db.String(50), default="gerente") ativo = db.Column(db.Boolean, default=True) cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=True) # -------------------------- # Métodos de senha corretos # -------------------------- def set_password(self, senha): self.senha_hash = generate_password_hash(senha) def check_password(self, senha): return check_password_hash(self.senha_hash, senha) # -------------------------- # Auxiliar # -------------------------- def is_interno(self): return self.tipo in ["admin", "gerente"] def __repr__(self): return f"<Usuario {self.email}>" # -------------------------------------------------------- # CLIENTES (PF / PJ) # -------------------------------------------------------- class Cliente(db.Model): __tablename__ = "clientes" id = db.Column(db.Integer, primary_key=True) tipo = db.Column(db.String(50), nullable=False) # PF ou PJ nome = db.Column(db.String(120), nullable=False) cpf_cnpj = db.Column(db.String(30), nullable=True) telefone = db.Column(db.String(50), nullable=True) email = db.Column(db.String(120), nullable=True) endereco = db.Column(db.String(255), nullable=True) observacoes = db.Column(db.Text, nullable=True) ativo = db.Column(db.Boolean, default=True) usuarios = db.relationship("Usuario", backref="cliente", lazy=True) ativos = db.relationship("Ativo", backref="cliente", lazy=True) def __repr__(self): return f"<Cliente {self.nome}>" # -------------------------------------------------------- # ATIVOS (embarcações, máquinas etc.) # -------------------------------------------------------- class Ativo(db.Model): __tablename__ = "ativos" id = db.Column(db.Integer, primary_key=True) cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=False) nome = db.Column(db.String(120), nullable=False) categoria = db.Column(db.String(120), nullable=True) imei = db.Column(db.String(50), nullable=True) observacoes = db.Column(db.Text, nullable=True) # TELEMETRIA AVANÇADA horas_offset = db.Column(db.Float, default=0.0) horas_sistema = db.Column(db.Float, default=0.0) horas_paradas = db.Column(db.Float, default=0.0) ultimo_estado_motor = db.Column(db.Integer, default=0) # 0 desligado / 1 ligado total_ignicoes = db.Column(db.Integer, default=0) ultima_atualizacao = db.Column(db.Integer, nullable=True) # localização latitude = db.Column(db.Float, nullable=True) longitude = db.Column(db.Float, nullable=True) # bateria — NOVO CAMPO tensao_bateria = db.Column(db.Float, default=0.0) ativo = db.Column(db.Boolean, default=True) criado_em = db.Column(db.DateTime, default=datetime.utcnow) def __repr__(self): return f"<Ativo {self.nome}>"RETORNEI E VOLTOU, SEGUE CODIGO ATUAL Q FUNCIONA:
+
+
 from gerenciador_ativos.extensions import db
-from gerenciador_ativos.models import Ativo
-
-# integração BrasilSat
-from gerenciador_ativos.api.monitoramento.brasilsat import (
-    get_telemetria_por_imei,
-    BrasilSatError,
-)
-
-api_ativos_dados_bp = Blueprint(
-    "api_ativos_dados",
-    __name__,
-    url_prefix="/api/ativos"
-)
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 
-@api_ativos_dados_bp.get("/<int:ativo_id>/dados")
-def dados_do_ativo(ativo_id):
+# --------------------------------------------------------
+# USUÁRIO DO SISTEMA
+# admin / gerente / cliente
+# --------------------------------------------------------
+class Usuario(db.Model):
+    __tablename__ = "usuarios"
 
-    # -------------------------------
-    # 1) Buscar ativo no banco
-    # -------------------------------
-    ativo = Ativo.query.get(ativo_id)
-    if not ativo:
-        return jsonify({"erro": "Ativo não encontrado"}), 404
+    id = db.Column(db.Integer, primary_key=True)
 
-    if not ativo.imei:
-        return jsonify({"erro": "Ativo não possui IMEI cadastrado"}), 400
+    nome = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    senha_hash = db.Column(db.String(255), nullable=False)
 
-    # -------------------------------
-    # 2) Buscar telemetria BrasilSat
-    # -------------------------------
-    try:
-        tele = get_telemetria_por_imei(ativo.imei)
-    except BrasilSatError as exc:
-        return jsonify({"erro": f"Erro ao obter dados da BrasilSat: {exc}"}), 500
+    tipo = db.Column(db.String(50), default="gerente")
+    ativo = db.Column(db.Boolean, default=True)
 
-    # -------------------------------
-    # 3) Normalizar estado do motor
-    # -------------------------------
-    motor_raw = tele.get("motor_ligado")
-    motor_ligado = True if str(motor_raw) in ["1", "true", "True"] else False
-    motor_atual = 1 if motor_ligado else 0
-    motor_anterior = ativo.ultimo_estado_motor or 0
+    cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=True)
 
-    # -------------------------------
-    # 4) Horas do motor / embarcação
-    # -------------------------------
-    horas_motor = tele.get("horas_motor") or 0
-    offset = ativo.horas_offset or 0
-    horas_embarcacao = offset + horas_motor
+    # --------------------------
+    # Métodos de senha corretos
+    # --------------------------
+    def set_password(self, senha):
+        self.senha_hash = generate_password_hash(senha)
 
-    # -------------------------------
-    # 5) Horas Paradas — LÓGICA CORRETA
-    # -------------------------------
-    if motor_atual == 1:
-        # Motor LIGOU → zera horas paradas
-        horas_paradas = 0
-    else:
-        # Motor DESLIGADO → acumula lentamente
-        horas_paradas = (ativo.horas_paradas or 0) + 0.01
+    def check_password(self, senha):
+        return check_password_hash(self.senha_hash, senha)
 
-    # -------------------------------
-    # 6) Ignições — SOMENTE quando 0→1
-    # -------------------------------
-    ignicoes = ativo.total_ignicoes or 0
-    if motor_anterior == 0 and motor_atual == 1:
-        ignicoes += 1
+    # --------------------------
+    # Auxiliar
+    # --------------------------
+    def is_interno(self):
+        return self.tipo in ["admin", "gerente"]
 
-    # -------------------------------
-    # 7) Montar payload (resposta API)
-    # -------------------------------
-    payload = {
-        "ativo_id": ativo.id,
-        "nome": ativo.nome,
-        "categoria": ativo.categoria,
-        "imei": ativo.imei,
+    def __repr__(self):
+        return f"<Usuario {self.email}>"
 
-        "motor_ligado": motor_ligado,
-        "tensao_bateria": tele.get("tensao_bateria"),
-        "servertime": tele.get("servertime"),
 
-        "horas_motor": horas_motor,
-        "offset": offset,
-        "horas_embarcacao": horas_embarcacao,
-        "horas_paradas": horas_paradas,
-        "horas_totais": horas_motor,
+# --------------------------------------------------------
+# CLIENTES (PF / PJ)
+# --------------------------------------------------------
+class Cliente(db.Model):
+    __tablename__ = "clientes"
 
-        "latitude": tele.get("latitude"),
-        "longitude": tele.get("longitude"),
-        "velocidade": tele.get("velocidade"),
-        "direcao": tele.get("direcao"),
+    id = db.Column(db.Integer, primary_key=True)
 
-        "ignicoes": ignicoes,
-        "unidade_base": ativo.categoria or "h",
-    }
+    tipo = db.Column(db.String(50), nullable=False)  # PF ou PJ
+    nome = db.Column(db.String(120), nullable=False)
+    cpf_cnpj = db.Column(db.String(30), nullable=True)
+    telefone = db.Column(db.String(50), nullable=True)
+    email = db.Column(db.String(120), nullable=True)
+    endereco = db.Column(db.String(255), nullable=True)
+    observacoes = db.Column(db.Text, nullable=True)
 
-    # -------------------------------
-    # 8) Salvar valores persistentes
-    # -------------------------------
-    try:
-        ativo.horas_sistema = horas_motor
-        ativo.ultima_atualizacao = tele.get("servertime")
+    ativo = db.Column(db.Boolean, default=True)
 
-        ativo.ultimo_estado_motor = motor_atual
-        ativo.total_ignicoes = ignicoes
-        ativo.horas_paradas = horas_paradas
+    usuarios = db.relationship("Usuario", backref="cliente", lazy=True)
+    ativos = db.relationship("Ativo", backref="cliente", lazy=True)
 
-        ativo.latitude = tele.get("latitude")
-        ativo.longitude = tele.get("longitude")
-        ativo.tensao_bateria = tele.get("tensao_bateria")
+    def __repr__(self):
+        return f"<Cliente {self.nome}>"
 
-        db.session.commit()
 
-    except Exception as e:
-        print("ERRO AO SALVAR:", e)
+# --------------------------------------------------------
+# ATIVOS (embarcações, máquinas etc.)
+# --------------------------------------------------------
+class Ativo(db.Model):
+    __tablename__ = "ativos"
 
-    return jsonify(payload)
+    id = db.Column(db.Integer, primary_key=True)
+
+    cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=False)
+
+    nome = db.Column(db.String(120), nullable=False)
+    categoria = db.Column(db.String(120), nullable=True)
+    imei = db.Column(db.String(50), nullable=True)
+    observacoes = db.Column(db.Text, nullable=True)
+
+    # TELEMETRIA AVANÇADA
+    horas_offset = db.Column(db.Float, default=0.0)
+    horas_sistema = db.Column(db.Float, default=0.0)
+    horas_paradas = db.Column(db.Float, default=0.0)
+    ultimo_estado_motor = db.Column(db.Integer, default=0)  # 0 desligado / 1 ligado
+    total_ignicoes = db.Column(db.Integer, default=0)
+    ultima_atualizacao = db.Column(db.Integer, nullable=True)
+
+
+    # localização
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
+
+    # bateria — NOVO CAMPO
+    tensao_bateria = db.Column(db.Float, default=0.0)
+
+    ativo = db.Column(db.Boolean, default=True)
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Ativo {self.nome}>"
