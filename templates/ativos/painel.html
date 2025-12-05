@@ -4,119 +4,51 @@
 {% block content %}
 <div class="page">
 
+  <!-- ===================== STYLE ===================== -->
   <style>
-    .painel-header-top{
-      display:flex;justify-content:space-between;align-items:flex-start;
-      gap:16px;flex-wrap:wrap;margin-bottom:12px;
-    }
-    .painel-titulo h1{
-      margin:0;font-size:24px;font-weight:700;
-    }
-    .painel-titulo .sub{
-      margin-top:4px;font-size:13px;color:#94a3b8;
-    }
-    .pill-strip{
-      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
-    }
-    .pill-badge{
-      padding:6px 10px;border-radius:999px;font-size:12px;
-      background:#020617;border:1px solid #1f2937;color:#e5e7eb;
-    }
+    .painel-header-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:12px;}
+    .painel-titulo h1{margin:0;font-size:24px;font-weight:700;}
+    .painel-titulo .sub{margin-top:4px;font-size:13px;color:#94a3b8;}
+    .pill-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .pill-badge{padding:6px 10px;border-radius:999px;font-size:12px;background:#020617;border:1px solid #1f2937;color:#e5e7eb;}
 
-    .tab-row{
-      display:flex;gap:10px;margin:20px 0;
-    }
-    .tab-btn{
-      padding:10px 18px;border-radius:999px;font-size:14px;
-      border:1px solid #1f2937;background:#0f172a;color:#e5e7eb;
-      cursor:pointer;transition:.2s;
-    }
-    .tab-btn.active{
-      color:#38bdf8;border-color:#38bdf8;
-      box-shadow:0 0 0 1px rgba(56,189,248,.3);
-    }
+    .tab-row{display:flex;gap:10px;margin:20px 0;}
+    .tab-btn{padding:10px 18px;border-radius:999px;font-size:14px;border:1px solid #1f2937;background:#0f172a;color:#e5e7eb;cursor:pointer;transition:.2s;}
+    .tab-btn.active{color:#38bdf8;border-color:#38bdf8;box-shadow:0 0 0 1px rgba(56,189,248,.3);}
 
-    .grid-painel{
-      display:grid;
-      grid-template-columns:repeat(12,1fr);
-      gap:16px;
-    }
-    @media (max-width:900px){
-      .col-4{grid-column:span 12;}
-      .col-6{grid-column:span 12;}
-      .col-12{grid-column:span 12;}
-    }
-    @media (min-width:901px){
-      .col-4{grid-column:span 4;}
-      .col-6{grid-column:span 6;}
-      .col-12{grid-column:span 12;}
-    }
+    .grid-painel{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;}
+    @media (max-width:900px){.col-4{grid-column:span 12;} .col-6{grid-column:span 12;} .col-12{grid-column:span 12;}}
+    @media (min-width:901px){.col-4{grid-column:span 4;} .col-6{grid-column:span 6;} .col-12{grid-column:span 12;}}
 
-    .card-kpi, .card-form{
-      background:#0b1220;
-      border-radius:16px;
-      border:1px solid #1f2937;
-      padding:20px;
-      box-shadow:0 10px 25px rgba(0,0,0,.3);
-    }
-    .card-kpi h2, .card-form h3{
-      margin:0 0 10px;color:#38bdf8;font-size:15px;text-transform:uppercase;
-    }
-    .kpi-value{
-      font-size:30px;font-weight:800;margin-bottom:6px;color:#e2e8f0;
-    }
+    .card-kpi,.card-form{background:#0b1220;border-radius:16px;border:1px solid #1f2937;padding:20px;box-shadow:0 10px 25px rgba(0,0,0,.3);}
+    .card-kpi h2,.card-form h3{margin:0 0 10px;color:#38bdf8;font-size:15px;text-transform:uppercase;}
+    .kpi-value{font-size:30px;font-weight:800;margin-bottom:6px;color:#e2e8f0;}
     .kpi-helper{font-size:13px;color:#9ca3af;}
 
     .status-row{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:13px;}
-    .status-dot{
-      width:10px;height:10px;border-radius:999px;background:#4b5563;
-    }
+    .status-dot{width:10px;height:10px;border-radius:999px;background:#4b5563;}
     .status-dot.ok{background:#22c55e;}
     .status-dot.bad{background:#ef4444;}
 
     .hidden{display:none;}
 
-    .map-frame{
-      width:100%;height:300px;border:0;border-radius:12px;margin-top:8px;
-    }
+    .map-frame{width:100%;height:300px;border:0;border-radius:12px;margin-top:8px;}
 
     .form-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;}
     .form-field{display:flex;flex-direction:column;font-size:13px;color:#e5e7eb;}
-    .form-field input, .form-field select{
-      padding:8px;border-radius:8px;border:1px solid #1f2937;
-      background:#0f172a;color:#e5e7eb;margin-top:4px;
-    }
-    .col-12x{grid-column:span 12;}
-    .col-4x{grid-column:span 4;}
+    .form-field input,.form-field select{padding:8px;border-radius:8px;border:1px solid #1f2937;background:#0f172a;color:#e5e7eb;margin-top:4px;}
+    .col-12x{grid-column:span 12;} .col-4x{grid-column:span 4;}
 
-    .table-mini{
-      width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;
-    }
-    .table-mini th, .table-mini td{
-      padding:8px;border-bottom:1px solid #1f2937;color:#e5e7eb;
-    }
+    .table-mini{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;}
+    .table-mini th,.table-mini td{padding:8px;border-bottom:1px solid #1f2937;color:#e5e7eb;}
     .msg-inline{margin-top:10px;color:#94a3b8;font-size:13px;}
 
-    /* MODAL */
-    .modal-bg{
-      position:fixed;top:0;left:0;width:100%;height:100%;
-      background:rgba(0,0,0,0.6);display:none;justify-content:center;align-items:center;
-      z-index:9999;
-    }
-    .modal{
-      background:#0f172a;padding:24px;border-radius:16px;width:350px;
-      border:1px solid #1f2937;box-shadow:0 5px 20px rgba(0,0,0,.5);
-    }
+    .modal-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;justify-content:center;align-items:center;z-index:9999;}
+    .modal{background:#0f172a;padding:24px;border-radius:16px;width:350px;border:1px solid #1f2937;box-shadow:0 5px 20px rgba(0,0,0,.5);}
     .modal h3{margin:0 0 12px;color:#38bdf8;font-size:17px;}
-    .modal input{
-      width:100%;padding:10px;border-radius:10px;border:1px solid #1f2937;
-      background:#0b1220;color:#fff;margin-bottom:12px;
-    }
+    .modal input{width:100%;padding:10px;border-radius:10px;border:1px solid #1f2937;background:#0b1220;color:#fff;margin-bottom:12px;}
     .modal-btn-row{display:flex;justify-content:flex-end;gap:10px;}
-    .btn{
-      padding:8px 14px;border-radius:8px;font-size:14px;cursor:pointer;
-      border:none;
-    }
+    .btn{padding:8px 14px;border-radius:8px;font-size:14px;cursor:pointer;border:none;}
     .btn-primary{background:#38bdf8;color:#000;font-weight:600;}
     .btn-secondary{background:#1e293b;color:#e2e8f0;}
   </style>
@@ -152,7 +84,7 @@
     </div>
 
     <div class="card-kpi col-4">
-      <h2>_
+      <h2>Horas motor</h2>
       <div class="kpi-value" id="kpiHorasMotor">0.00 h</div>
       <div class="kpi-helper">Total consolidado</div>
     </div>
@@ -211,11 +143,6 @@
   ========================================================== -->
   <section id="viewPreventiva" class="grid-painel hidden">
 
-    <div class="card-kpi col-6">
-      <h2>Próximas atividades</h2>
-      <div id="listaAtividadesPrev" class="kpi-helper">--</div>
-    </div>
-
     <div class="card-form col-6">
       <h3>Cadastrar atividade de preventiva</h3>
 
@@ -250,7 +177,7 @@
           </div>
 
           <div class="form-field col-4x">
-            <button class="btn-primary-sm" type="submit">Adicionar</button>
+            <button class="btn-primary" type="submit">Adicionar</button>
           </div>
         </div>
 
@@ -258,8 +185,9 @@
       </form>
     </div>
 
-    <div class="card-form col-12">
+    <div class="card-form col-6">
       <h3>Plano cadastrado</h3>
+
       <table class="table-mini">
         <thead>
           <tr>
@@ -356,30 +284,24 @@
     }
   };
 
-  /* =============== CARREGAR DADOS =============== */
+  /* =============== CARREGAR DADOS DO PAINEL =============== */
   async function loadDados(){
     try{
       const r = await fetch(ENDPOINT_DADOS);
       if (!r.ok) throw new Error("HTTP " + r.status);
       const d = await r.json();
 
-      const imei = d.imei || "--";
-      document.getElementById("badgeImei").textContent = imei;
+      document.getElementById("badgeImei").textContent = d.imei || "--";
 
-      const servertime = d.servertime ? new Date(d.servertime*1000).toLocaleString("pt-BR",{hour12:false}) : "--";
-      document.getElementById("badgeUltima").textContent = "Última: " + servertime;
+      if (d.servertime) {
+        const dt = new Date(d.servertime * 1000);
+        document.getElementById("badgeUltima").textContent = "Última: " + dt.toLocaleString("pt-BR", {hour12:false});
 
-      let statusOnline = "offline";
-
-if (d.servertime) {
-    const agora = Date.now() / 1000;  // em segundos
-    const dif = agora - d.servertime; // diferença em segundos
-
-    // Considera online se recebeu dado nos últimos 5 minutos
-    statusOnline = dif < 300 ? "online" : "offline";
-}
-
-document.getElementById("kpiMonitor").textContent = statusOnline;
+        const agora = Date.now() / 1000;
+        const dif = agora - d.servertime;
+        const online = dif < 300; 
+        document.getElementById("kpiMonitor").textContent = online ? "online" : "offline";
+      }
 
       const motorOn = !!d.motor_ligado;
       document.getElementById("kpiMotor").textContent = motorOn ? "Ligado" : "Desligado";
@@ -388,6 +310,7 @@ document.getElementById("kpiMonitor").textContent = statusOnline;
 
       const tensao = Number(d.tensao_bateria ?? 0);
       document.getElementById("kpiTensao").textContent = tensao.toFixed(2) + " V";
+
       let info = "—";
       if (tensao === 0) info = "Sem leitura";
       else if (tensao < 12.0) info = "Baixa";
@@ -395,32 +318,21 @@ document.getElementById("kpiMonitor").textContent = statusOnline;
       else info = "OK";
       document.getElementById("kpiTensaoInfo").textContent = info;
 
-      const hMotor = Number(d.horas_motor ?? 0);
-      document.getElementById("kpiHorasMotor").textContent = hMotor.toFixed(2) + " h";
-
-      const hEmb = Number(d.horas_embarcacao ?? 0);
-      document.getElementById("kpiHorasEmbarcacao").textContent = hEmb.toFixed(2) + " h";
-
-      const hParadas = Number(d.horas_paradas ?? 0);
-      document.getElementById("kpiHorasParadas").textContent = hParadas.toFixed(2) + " h";
-
-      const ign = Number(d.ignicoes ?? 0);
-      document.getElementById("kpiIgnicoes").textContent = ign.toString();
+      document.getElementById("kpiHorasMotor").textContent = Number(d.horas_motor ?? 0).toFixed(2) + " h";
+      document.getElementById("kpiHorasEmbarcacao").textContent = Number(d.horas_embarcacao ?? 0).toFixed(2) + " h";
+      document.getElementById("kpiHorasParadas").textContent = Number(d.horas_paradas ?? 0).toFixed(2) + " h";
+      document.getElementById("kpiIgnicoes").textContent = Number(d.ignicoes ?? 0);
 
       const lat = d.latitude;
       const lon = d.longitude;
 
-      const latText = (lat !== null && lat !== undefined) ? lat : "--";
-      const lonText = (lon !== null && lon !== undefined) ? lon : "--";
       document.getElementById("kpiLocalizacao").textContent =
-        `Latitude: ${latText} — Longitude: ${lonText}`;
+        `Latitude: ${lat ?? "--"} — Longitude: ${lon ?? "--"}`;
 
       const mapFrame = document.getElementById("mapFrame");
       if (lat !== null && lat !== undefined && lon !== null && lon !== undefined) {
         const url = `https://www.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
-        if (mapFrame.src !== url) {
-          mapFrame.src = url;
-        }
+        if (mapFrame.src !== url) mapFrame.src = url;
       } else {
         mapFrame.src = "";
       }
@@ -430,6 +342,41 @@ document.getElementById("kpiMonitor").textContent = statusOnline;
     }
   }
 
+  /* =============== CARREGAR PLANO CADASTRADO =============== */
+  async function loadPlano() {
+    try {
+      const r = await fetch(ENDPOINT_PLANO);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+
+      const d = await r.json();
+      const list = d.plano || [];
+
+      const tbody = document.getElementById("planoBody");
+      const emptyMsg = document.getElementById("planoEmpty");
+
+      if (list.length === 0) {
+        tbody.innerHTML = "";
+        emptyMsg.style.display = "block";
+        return;
+      }
+
+      emptyMsg.style.display = "none";
+      tbody.innerHTML = list.map(t => `
+        <tr>
+          <td>${t.nome}</td>
+          <td>${t.base}</td>
+          <td>${t.intervalo}</td>
+          <td>${t.primeira_execucao}</td>
+          <td>${t.avisar_antes}</td>
+        </tr>
+      `).join("");
+
+    } catch (e) {
+      console.error("Erro ao carregar plano:", e);
+    }
+  }
+
+  /* =============== CARREGAR PRÓXIMAS PREVENTIVAS =============== */
   async function loadPreventiva(){
     try{
       const r = await fetch(ENDPOINT_PREV);
@@ -451,12 +398,56 @@ document.getElementById("kpiMonitor").textContent = statusOnline;
     }
   }
 
+  /* =============== ATIVAÇÃO =============== */
   loadDados();
+  loadPlano();
   loadPreventiva();
+
   setInterval(() => {
     loadDados();
+    loadPlano();
     loadPreventiva();
   }, 30000);
+
+  /* =============== SUBMIT DO FORM =============== */
+  document.getElementById("formPlano").onsubmit = async (ev) => {
+    ev.preventDefault();
+
+    const nome = document.getElementById("planoNome").value.trim();
+    const base = document.getElementById("planoBase").value;
+    const intervalo = parseFloat(document.getElementById("planoIntervalo").value);
+    const primeira = parseFloat(document.getElementById("planoPrimeira").value);
+    const avisar = parseFloat(document.getElementById("planoAvisar").value);
+
+    if (!nome) {
+      alert("Nome obrigatório");
+      return;
+    }
+
+    try {
+      await fetch(ENDPOINT_PLANO, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          nome,
+          base,
+          intervalo,
+          primeira_execucao: primeira,
+          avisar_antes: avisar
+        })
+      });
+
+      document.getElementById("planoMsg").textContent =
+        "Atividade adicionada com sucesso.";
+
+      loadPlano();
+      loadPreventiva();
+
+    } catch (e) {
+      console.error("Erro ao adicionar plano:", e);
+      alert("Erro ao criar atividade.");
+    }
+  };
 </script>
 
 {% endblock %}

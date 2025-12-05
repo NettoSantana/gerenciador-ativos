@@ -1,4 +1,5 @@
-﻿fix: ajuste do status de monitoramento no painel
-- substituído monitor_online inexistente por cálculo baseado no servertime
-- corrigido status offline permanente
-- frontend agora determina online/offline de forma confiável (últimos 5 minutos)
+﻿fix: implementação do contador de ignições e retorno no endpoint /dados
+- adicionada lógica de detecção de ignição (transição OFF → ON)
+- total_ignicoes agora é persistido no banco
+- endpoint /dados passa a retornar campo 'ignicoes'
+- correções gerais de atualização de estado do motor e horas
