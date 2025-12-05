@@ -152,7 +152,7 @@
     </div>
 
     <div class="card-kpi col-4">
-      <h2>Horas de motor</h2>
+      <h2>_
       <div class="kpi-value" id="kpiHorasMotor">0.00 h</div>
       <div class="kpi-helper">Total consolidado</div>
     </div>
@@ -389,7 +389,7 @@
       const hMotor = Number(d.horas_motor ?? 0);
       document.getElementById("kpiHorasMotor").textContent = hMotor.toFixed(2) + " h";
 
-      const hEmb = Number(d.hora_embarcacao ?? 0);
+      const hEmb = Number(d.horas_embarcacao ?? 0);
       document.getElementById("kpiHorasEmbarcacao").textContent = hEmb.toFixed(2) + " h";
 
       const hParadas = Number(d.horas_paradas ?? 0);

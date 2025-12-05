@@ -1,4 +1,5 @@
-﻿fix: registra rotas de offset na API de ativos
-- adiciona import do módulo offset em api_ativos/__init__.py
-- garante que POST /api/ativos/<id>/offset seja registrado pelo Flask
-- botão 'Ajustar' do painel passa a persistir horas_offset corretamente
+﻿fix: server.py refeito e adicionada rota /fix-db
+- recriação completa do server.py
+- adicionada rota /fix-db para criar coluna horas_offset no Railway
+- mantém toda a estrutura anterior intacta
+- prepara o sistema para salvar ajustes de horímetro corretamente
