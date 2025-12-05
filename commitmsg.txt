@@ -1,1 +1,1 @@
-﻿Corrige contagem de ignições (transição 0→1) e horas paradas, estabiliza leitura.
+﻿Corrige ignições sem afetar horas, sem resetar dados, e sem alterar painel.
