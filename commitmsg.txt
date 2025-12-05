@@ -1,4 +1,6 @@
-﻿fix: brasilSat - atualização completa para /api/track/info
-- agora retorna latitude e longitude corretamente
-- normalização revisada
-- painel passa a exibir mapa e coordenadas
+﻿fix: monitoramento - reescrita total do routes.py
+- alinhado com novo brasilsat.py
+- corrige latitude/longitude
+- corrige motor_ligado e tensao_bateria
+- corrige horas_motor
+- painel volta a exibir localização, estado e métricas
