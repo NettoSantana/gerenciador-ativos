@@ -48,8 +48,12 @@ def _md5(s: str) -> str:
 def _obter_access_token() -> str:
     """
     Obtém um access_token na BrasilSat.
-    Endpoint:
+
+    Endpoint típico:
         GET /api/authorization?time=...&account=...&signature=...
+
+    A resposta costuma ter o formato:
+        {"code": 0, "record": {"access_token": "...", "expire_time": 1710000000}}
     """
 
     if not ACCOUNT or not PASSWORD:
@@ -68,12 +72,12 @@ def _obter_access_token() -> str:
     try:
         resp = requests.get(url, params=params, timeout=10)
     except requests.RequestException as exc:
-        raise BrasilSatError(f"Falha de rede ao autenticar: {exc}") from exc
+        raise BrasilSatError(f"Falha de rede ao autenticar na BrasilSat: {exc}") from exc
 
     try:
         data = resp.json()
-    except Exception:
-        raise BrasilSatError(f"Resposta inválida: {resp.text}")
+    except ValueError as exc:
+        raise BrasilSatError(f"Resposta inválida da BrasilSat em /authorization: {resp.text}") from exc
 
     if data.get("code") != 0:
         raise BrasilSatError(f"Erro na autorização BrasilSat: {data}")
@@ -82,20 +86,18 @@ def _obter_access_token() -> str:
     token = record.get("access_token")
 
     if not token:
-        raise BrasilSatError(f"access_token ausente: {data}")
+        raise BrasilSatError(f"access_token não encontrado na resposta de autorização: {data}")
 
     return token
 
 
 # --------------------------------------------------
-# Track por IMEI (COM LOCALIZAÇÃO)
+# Track por IMEI
 # --------------------------------------------------
 
 def _buscar_track_bruto(imei: str) -> Dict[str, Any]:
     """
-    Versão oficial que usa o endpoint COMPLETO:
-        /api/track/info
-    Este endpoint traz latitude, longitude, velocidade etc.
+    Busca o último track da BrasilSat para o IMEI informado e retorna o JSON bruto.
     """
 
     if not imei:
@@ -103,9 +105,7 @@ def _buscar_track_bruto(imei: str) -> Dict[str, Any]:
 
     access_token = _obter_access_token()
 
-    #🔥 AQUI ESTÁ A CORREÇÃO REAL
-    url = f"{BASE_URL}/api/track/info"
-
+    url = f"{BASE_URL}/api/track"
     params = {
         "access_token": access_token,
         "imeis": imei,
@@ -114,20 +114,21 @@ def _buscar_track_bruto(imei: str) -> Dict[str, Any]:
     try:
         resp = requests.get(url, params=params, timeout=15)
     except requests.RequestException as exc:
-        raise BrasilSatError(f"Falha de rede em /api/track/info: {exc}") from exc
+        raise BrasilSatError(f"Falha de rede ao buscar track da BrasilSat: {exc}") from exc
 
     try:
         data = resp.json()
-    except ValueError:
-        raise BrasilSatError(f"Resposta inválida da BrasilSat em /track/info: {resp.text}")
+    except ValueError as exc:
+        raise BrasilSatError(f"Resposta inválida da BrasilSat em /track: {resp.text}") from exc
 
     if data.get("code") != 0:
-        raise BrasilSatError(f"Erro BrasilSat /track/info: {data}")
+        raise BrasilSatError(f"Erro na chamada /track BrasilSat: {data}")
 
     records = data.get("record") or []
     if not records:
-        raise BrasilSatError(f"Nenhum registro retornado para IMEI {imei}: {data}")
+        raise BrasilSatError(f"Nenhum registro de track retornado para IMEI {imei}: {data}")
 
+    # A BrasilSat costuma devolver uma lista, pegamos o primeiro
     return records[0]
 
 
@@ -137,72 +138,58 @@ def _buscar_track_bruto(imei: str) -> Dict[str, Any]:
 
 def _normalizar_track_bruto(record: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Converte o JSON bruto em um dicionário padronizado.
-    Agora inclui latitude, longitude, velocidade e direção.
+    Normaliza o registro bruto em um dicionário mais amigável
+    para o restante do sistema.
+
+    Agora inclui também latitude, longitude, velocidade e curso
+    (quando disponíveis na BrasilSat).
     """
 
     imei = record.get("imei")
 
-    # -------------------------
-    # STATUS DO MOTOR
-    # -------------------------
-    accstatus = record.get("accstatus")
-    acctime_s = record.get("acctime", 0)
+    # ---- STATUS MOTOR ----
+    accstatus = record.get("accstatus")         # 0/1
+    acctime_s = record.get("acctime", 0)        # seg com ignição ligada
     externalpower_v = record.get("externalpower")
     servertime = record.get("servertime")
 
-    # -------------------------
-    # LOCALIZAÇÃO
-    # -------------------------
-    lat = (
-        record.get("latitude")
-        or record.get("lat")
-        or record.get("gpslat")
-        or None
-    )
-
-    lon = (
-        record.get("longitude")
-        or record.get("lng")
-        or record.get("lon")
-        or record.get("gpslon")
-        or None
-    )
+    # ---- LOCALIZAÇÃO ----
+    lat = record.get("latitude") or record.get("lat") or None
+    lon = record.get("longitude") or record.get("lng") or record.get("lon") or None
 
     speed = record.get("speed") or record.get("gps_speed") or None
     course = record.get("course") or record.get("direction") or None
 
-    # -------------------------
-    # Conversões
-    # -------------------------
+    # Conversões básicas
     try:
         acctime_s = float(acctime_s)
-    except:
-        acctime_s = 0
+    except Exception:
+        acctime_s = 0.0
 
     horas_motor = acctime_s / 3600.0
 
     try:
         tensao_bateria = float(externalpower_v) if externalpower_v is not None else None
-    except:
+    except Exception:
         tensao_bateria = None
 
     motor_ligado = bool(accstatus == 1)
 
-    # Latitude / longitude
+    # Latitude / Longitude
     try:
-        lat = float(lat)
-    except:
+        lat = float(lat) if lat is not None else None
+    except Exception:
         lat = None
 
     try:
-        lon = float(lon)
-    except:
+        lon = float(lon) if lon is not None else None
+    except Exception:
         lon = None
 
+    # Velocidade
     try:
-        speed = float(speed)
-    except:
+        speed = float(speed) if speed is not None else None
+    except Exception:
         speed = None
 
     return {
@@ -215,13 +202,12 @@ def _normalizar_track_bruto(record: Dict[str, Any]) -> Dict[str, Any]:
         "tensao_bateria": tensao_bateria,
         "servertime": servertime,
 
-        # 🔥 CAMPOS QUE INTERESSAM AO SEU PAINEL
+        # ---- CAMPOS NOVOS ----
         "latitude": lat,
         "longitude": lon,
         "velocidade": speed,
         "direcao": course,
 
-        # Útil para debug quando precisar
         "raw": record,
     }
 
@@ -231,6 +217,17 @@ def _normalizar_track_bruto(record: Dict[str, Any]) -> Dict[str, Any]:
 # --------------------------------------------------
 
 def get_telemetria_por_imei(imei: str) -> Dict[str, Any]:
+    """
+    Função pública usada pelo restante da aplicação.
+
+    Retorna um dicionário com:
+      - horas_motor
+      - tensao_bateria
+      - motor_ligado
+      - servertime
+      - latitude / longitude / velocidade / direcao
+      - raw (registro original)
+    """
     bruto = _buscar_track_bruto(imei)
     return _normalizar_track_bruto(bruto)
 
@@ -248,7 +245,8 @@ if __name__ == "__main__":
             dados = get_telemetria_por_imei(imei_teste)
             print("Telemetria BrasilSat OK:")
             for k, v in dados.items():
-                if k != "raw":
-                    print(f" - {k}: {v}")
+                if k == "raw":
+                    continue
+                print(f" - {k}: {v}")
         except BrasilSatError as exc:
             print(f"Erro ao obter telemetria: {exc}")
