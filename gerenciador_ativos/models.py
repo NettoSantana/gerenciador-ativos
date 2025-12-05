@@ -86,7 +86,8 @@ class Ativo(db.Model):
     horas_paradas = db.Column(db.Float, default=0.0)
     ultimo_estado_motor = db.Column(db.Integer, default=0)  # 0 desligado / 1 ligado
     total_ignicoes = db.Column(db.Integer, default=0)
-    ultima_atualizacao = db.Column(db.DateTime, nullable=True)
+    ultima_atualizacao = db.Column(db.Integer, nullable=True)
+
 
     # localização
     latitude = db.Column(db.Float, nullable=True)
