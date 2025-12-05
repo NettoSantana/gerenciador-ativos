@@ -1,6 +1,5 @@
-﻿fix: monitoramento - reescrita total do routes.py
-- alinhado com novo brasilsat.py
-- corrige latitude/longitude
-- corrige motor_ligado e tensao_bateria
-- corrige horas_motor
-- painel volta a exibir localização, estado e métricas
+﻿feat: rota de ajuste de horímetro
+- adicionada POST /api/ativos/<id>/offset
+- salva horas_offset no banco
+- integra com cálculo existente em /dados
+- corrige funcionamento do botão 'Ajustar' no Painel
