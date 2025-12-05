@@ -1,6 +1,6 @@
-﻿feat: adicionar botão Excluir no plano de preventiva
+﻿feat(responsividade): ajustar menu superior no mobile
 
-- mantida estrutura original do painel.html
-- adicionada coluna 'Ações' na tabela de plano
-- criado botão 'Excluir' por linha
-- chamada DELETE em /api/ativos/<id>/plano/<id>
+- adicionada responsividade no base.html
+- menu vertical no celular (<640px)
+- sem impactar layout no desktop
+- melhora navegação e evita overflow lateral
