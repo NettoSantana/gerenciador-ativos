@@ -1,6 +1,5 @@
-﻿feat(responsividade): ajustar menu superior no mobile
+﻿feat(responsividade): adicionar wrapper rolável para tabelas no mobile
 
-- adicionada responsividade no base.html
-- menu vertical no celular (<640px)
-- sem impactar layout no desktop
-- melhora navegação e evita overflow lateral
+- aplicado wrapper-table-mobile no lista.html
+- largura mínima da tabela para evitar quebra
+- scroll horizontal suave em telas menores que 640px

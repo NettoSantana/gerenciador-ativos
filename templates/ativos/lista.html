@@ -4,6 +4,20 @@
 {% block content %}
 <div class="page">
 
+  <style>
+    /* Responsividade apenas para telas pequenas */
+    @media (max-width: 640px) {
+      .wrapper-table-mobile {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .wrapper-table-mobile table {
+        min-width: 650px;
+      }
+    }
+  </style>
+
   <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
     <h1>Ativos</h1>
     <a href="{{ url_for('ativos.novo') }}" class="btn-primary">Novo Ativo</a>
@@ -11,55 +25,53 @@
 
   <div class="card" style="width:100%; max-width:100%; padding:0;">
 
-    <table class="table" style="width:100%; border-collapse: collapse;">
-      <thead>
-        <tr>
-          <th style="padding:14px 20px;">Cliente</th>
-          <th style="padding:14px 20px;">Nome</th>
-          <th style="padding:14px 20px;">Categoria</th>
-          <th style="padding:14px 20px;">Status</th>
-          <th style="padding:14px 20px;">Ações</th>
-        </tr>
-      </thead>
+    <!-- WRAPPER PARA MOBILE -->
+    <div class="wrapper-table-mobile">
 
-      <tbody>
-        {% for a in ativos %}
-        <tr style="border-top:1px solid rgba(148,163,184,0.18);">
-          <td style="padding:14px 20px;">{{ a.cliente.nome if a.cliente else '-' }}</td>
-          <td style="padding:14px 20px;">{{ a.nome }}</td>
-          <td style="padding:14px 20px;">{{ a.categoria }}</td>
+      <table class="table" style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="padding:14px 20px;">Cliente</th>
+            <th style="padding:14px 20px;">Nome</th>
+            <th style="padding:14px 20px;">Categoria</th>
+            <th style="padding:14px 20px;">Status</th>
+            <th style="padding:14px 20px;">Ações</th>
+          </tr>
+        </thead>
 
-          <td style="padding:14px 20px;">
-            <span class="chip"
-              style="background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.4); color:#22c55e;">
-              Ativo
-            </span>
-          </td>
+        <tbody>
+          {% for a in ativos %}
+          <tr style="border-top:1px solid rgba(148,163,184,0.18);">
+            
+            <td style="padding:14px 20px;">{{ a.cliente.nome if a.cliente else '-' }}</td>
+            <td style="padding:14px 20px;">{{ a.nome }}</td>
+            <td style="padding:14px 20px;">{{ a.categoria }}</td>
 
-          <td style="padding:14px 20px; display:flex; gap:10px;">
+            <td style="padding:14px 20px;">
+              <span class="chip"
+                style="background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.4); color:#22c55e;">
+                Ativo
+              </span>
+            </td>
 
-            <!-- NOVO: Botão Painel -->
-            <a href="{{ url_for('ativos.painel', id=a.id) }}" class="btn-ghost">
-              Painel
-            </a>
+            <td style="padding:14px 20px; display:flex; gap:10px;">
 
-            <a href="{{ url_for('ativos.editar', id=a.id) }}" class="btn-ghost">
-              Editar
-            </a>
+              <a href="{{ url_for('ativos.painel', id=a.id) }}" class="btn-ghost">Painel</a>
+              <a href="{{ url_for('ativos.editar', id=a.id) }}" class="btn-ghost">Editar</a>
 
-            <form action="{{ url_for('ativos.excluir', id=a.id) }}" method="POST"
-              onsubmit="return confirm('Tem certeza que deseja excluir este ativo?')">
-              <button type="submit" class="btn-ghost" style="color:#ef4444;">
-                Excluir
-              </button>
-            </form>
+              <form action="{{ url_for('ativos.excluir', id=a.id) }}" method="POST"
+                    onsubmit="return confirm('Tem certeza que deseja excluir este ativo?');">
+                <button type="submit" class="btn-ghost" style="color:#ef4444;">Excluir</button>
+              </form>
 
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
 
-    </table>
+      </table>
+
+    </div> <!-- wrapper -->
 
   </div>
 
