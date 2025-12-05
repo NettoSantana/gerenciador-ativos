@@ -5,6 +5,7 @@ from datetime import datetime
 
 # --------------------------------------------------------
 # USUÁRIO DO SISTEMA
+# admin / gerente / cliente
 # --------------------------------------------------------
 class Usuario(db.Model):
     __tablename__ = "usuarios"
@@ -20,12 +21,18 @@ class Usuario(db.Model):
 
     cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=True)
 
+    # --------------------------
+    # Métodos de senha corretos
+    # --------------------------
     def set_password(self, senha):
         self.senha_hash = generate_password_hash(senha)
 
     def check_password(self, senha):
         return check_password_hash(self.senha_hash, senha)
 
+    # --------------------------
+    # Auxiliar
+    # --------------------------
     def is_interno(self):
         return self.tipo in ["admin", "gerente"]
 
@@ -34,14 +41,14 @@ class Usuario(db.Model):
 
 
 # --------------------------------------------------------
-# CLIENTES
+# CLIENTES (PF / PJ)
 # --------------------------------------------------------
 class Cliente(db.Model):
     __tablename__ = "clientes"
 
     id = db.Column(db.Integer, primary_key=True)
 
-    tipo = db.Column(db.String(50), nullable=False)
+    tipo = db.Column(db.String(50), nullable=False)  # PF ou PJ
     nome = db.Column(db.String(120), nullable=False)
     cpf_cnpj = db.Column(db.String(30), nullable=True)
     telefone = db.Column(db.String(50), nullable=True)
@@ -59,7 +66,7 @@ class Cliente(db.Model):
 
 
 # --------------------------------------------------------
-# ATIVOS — TELEMETRIA, HORAS, PARADAS, IGNIÇÕES
+# ATIVOS (embarcações, máquinas etc.)
 # --------------------------------------------------------
 class Ativo(db.Model):
     __tablename__ = "ativos"
@@ -67,6 +74,7 @@ class Ativo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=False)
+
     nome = db.Column(db.String(120), nullable=False)
     categoria = db.Column(db.String(120), nullable=True)
     imei = db.Column(db.String(50), nullable=True)
@@ -76,19 +84,16 @@ class Ativo(db.Model):
     horas_offset = db.Column(db.Float, default=0.0)
     horas_sistema = db.Column(db.Float, default=0.0)
     horas_paradas = db.Column(db.Float, default=0.0)
-
-    # NOVO — necessário para cálculo correto
-    horas_motor_ultima = db.Column(db.Float, default=0.0)
-
-    ultimo_estado_motor = db.Column(db.Integer, default=0)  # 0 / 1
+    ultimo_estado_motor = db.Column(db.Integer, default=0)  # 0 desligado / 1 ligado
     total_ignicoes = db.Column(db.Integer, default=0)
     ultima_atualizacao = db.Column(db.Integer, nullable=True)
+
 
     # localização
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
 
-    # bateria
+    # bateria — NOVO CAMPO
     tensao_bateria = db.Column(db.Float, default=0.0)
 
     ativo = db.Column(db.Boolean, default=True)
