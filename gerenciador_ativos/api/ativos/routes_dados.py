@@ -17,12 +17,7 @@ api_ativos_dados_bp = Blueprint(
 
 @api_ativos_dados_bp.get("/<int:ativo_id>/dados")
 def dados_do_ativo(ativo_id):
-    """
-    Retorna dados completos e corrigidos de telemetria
-    para o painel (motor, horas, offset, localização, etc.)
-    """
 
-    # --- (1) Buscar ativo ---
     ativo = Ativo.query.get(ativo_id)
     if not ativo:
         return jsonify({"erro": "Ativo não encontrado"}), 404
@@ -31,35 +26,40 @@ def dados_do_ativo(ativo_id):
     if not imei:
         return jsonify({"erro": "Ativo não possui IMEI cadastrado"}), 400
 
-    # --- (2) Buscar telemetria da BrasilSat ---
+    # Buscar telemetria BrasilSat
     try:
         tele = get_telemetria_por_imei(imei)
     except BrasilSatError as exc:
         return jsonify({"erro": f"Falha ao obter dados da BrasilSat: {exc}"}), 500
 
-    # --- (3) Normalizar estado do motor ---
+    # Normalizar motor
     motor_raw = tele.get("motor_ligado")
     motor_ligado = True if str(motor_raw) in ["1", "true", "True"] else False
+    motor_atual = 1 if motor_ligado else 0
 
-    # --- (4) Calcular horas ---
+    # Horas de motor
     horas_motor = tele.get("horas_motor") or 0
     offset = ativo.horas_offset or 0
     horas_embarcacao = offset + horas_motor
 
-    # --- (5) Horas paradas ---
-    if motor_ligado:
-        horas_paradas = 0
-    else:
-        horas_paradas = ativo.horas_paradas or 0
+    # Horas paradas
+    horas_paradas = ativo.horas_paradas or 0
+    if motor_atual == 0:
+        horas_paradas += 0.01  # incrementa apenas com motor OFF
 
-    # --- (6) Detectar IGNIÇÃO ---
+    # ============================
+    #   IGNIÇÕES — LÓGICA CORRETA
+    # ============================
+    estado_ant = ativo.ultimo_estado_motor or 0
     ignicoes = ativo.total_ignicoes or 0
-    estado_anterior = ativo.ultimo_estado_motor or 0
 
-    if estado_anterior == 0 and motor_ligado:
-        ignicoes += 1  # IGNIÇÃO DETECTADA
+    # Se mudou de 0 → 1 → soma 1
+    if estado_ant == 0 and motor_atual == 1:
+        ignicoes += 1
 
-    # --- (7) Montar payload ---
+    # ============================
+
+    # Montar payload para enviar ao painel
     payload = {
         "ativo_id": ativo.id,
         "nome": ativo.nome,
@@ -71,35 +71,32 @@ def dados_do_ativo(ativo_id):
         "servertime": tele.get("servertime"),
         "horas_motor": horas_motor,
 
-        # localização
         "latitude": tele.get("latitude"),
         "longitude": tele.get("longitude"),
         "velocidade": tele.get("velocidade"),
         "direcao": tele.get("direcao"),
 
-        # cálculos internos
         "offset": offset,
         "horas_embarcacao": horas_embarcacao,
         "horas_paradas": horas_paradas,
         "horas_totais": horas_motor,
 
-        # IGNIÇÕES
         "ignicoes": ignicoes,
-
-        # unidade
         "unidade_base": ativo.categoria or "h",
     }
 
-    # --- (8) Salvar no banco ---
+    # SALVAR EM BANCO
     try:
         ativo.horas_sistema = horas_motor
         ativo.ultima_atualizacao = tele.get("servertime")
-        ativo.ultimo_estado_motor = 1 if motor_ligado else 0
+
+        ativo.ultimo_estado_motor = motor_atual
+        ativo.total_ignicoes = ignicoes
         ativo.horas_paradas = horas_paradas
+
         ativo.latitude = tele.get("latitude")
         ativo.longitude = tele.get("longitude")
         ativo.tensao_bateria = tele.get("tensao_bateria")
-        ativo.total_ignicoes = ignicoes
 
         db.session.commit()
     except Exception as e:
