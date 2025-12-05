@@ -37,15 +37,13 @@ def dados_do_ativo(ativo_id):
     motor_ligado = True if str(motor_raw) in ["1", "true", "True"] else False
     motor_atual = 1 if motor_ligado else 0
 
-    # Horas de motor
+    # Horas motor
     horas_motor = tele.get("horas_motor") or 0
     offset = ativo.horas_offset or 0
     horas_embarcacao = offset + horas_motor
 
-    # Horas paradas
+    # Horas paradas (NÃO SOMAR VIA GET!)
     horas_paradas = ativo.horas_paradas or 0
-    if motor_atual == 0:
-        horas_paradas += 0.01  # incrementa apenas com motor OFF
 
     # ============================
     #   IGNIÇÕES — LÓGICA CORRETA
@@ -53,7 +51,7 @@ def dados_do_ativo(ativo_id):
     estado_ant = ativo.ultimo_estado_motor or 0
     ignicoes = ativo.total_ignicoes or 0
 
-    # Se mudou de 0 → 1 → soma 1
+    # Somar só quando muda 0 → 1
     if estado_ant == 0 and motor_atual == 1:
         ignicoes += 1
 
@@ -92,6 +90,8 @@ def dados_do_ativo(ativo_id):
 
         ativo.ultimo_estado_motor = motor_atual
         ativo.total_ignicoes = ignicoes
+
+        # salvar horas paradas somente quando outro endpoint tratar isso
         ativo.horas_paradas = horas_paradas
 
         ativo.latitude = tele.get("latitude")
