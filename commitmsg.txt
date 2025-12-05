@@ -1,6 +1,5 @@
-﻿feat: painel do ativo refeito
-- tabs funcionando
-- modal de ajuste de offset implementado
-- endpoint POST /offset integrado
-- layout corrigido e estabilizado
-- preventiva funcionando corretamente
+﻿fix: painel - correção da localização e campos numéricos
+- protege todos os .toFixed() com Number(...) e default 0
+- evita quebra de JS quando backend manda null/undefined
+- localização agora só carrega mapa se tiver lat/lon válidos
+- texto de lat/lon mostra '--' quando não houver coordenadas
