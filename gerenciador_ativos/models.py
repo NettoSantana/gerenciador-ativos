@@ -21,18 +21,12 @@ class Usuario(db.Model):
 
     cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=True)
 
-    # --------------------------
-    # Métodos de senha corretos
-    # --------------------------
     def set_password(self, senha):
         self.senha_hash = generate_password_hash(senha)
 
     def check_password(self, senha):
         return check_password_hash(self.senha_hash, senha)
 
-    # --------------------------
-    # Auxiliar
-    # --------------------------
     def is_interno(self):
         return self.tipo in ["admin", "gerente"]
 
@@ -48,7 +42,7 @@ class Cliente(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    tipo = db.Column(db.String(50), nullable=False)  # PF ou PJ
+    tipo = db.Column(db.String(50), nullable=False)
     nome = db.Column(db.String(120), nullable=False)
     cpf_cnpj = db.Column(db.String(30), nullable=True)
     telefone = db.Column(db.String(50), nullable=True)
@@ -80,25 +74,38 @@ class Ativo(db.Model):
     imei = db.Column(db.String(50), nullable=True)
     observacoes = db.Column(db.Text, nullable=True)
 
-    # TELEMETRIA AVANÇADA
+    # TELEMETRIA
     horas_offset = db.Column(db.Float, default=0.0)
     horas_sistema = db.Column(db.Float, default=0.0)
     horas_paradas = db.Column(db.Float, default=0.0)
-    ultimo_estado_motor = db.Column(db.Integer, default=0)  # 0 desligado / 1 ligado
+    ultimo_estado_motor = db.Column(db.Integer, default=0)
     total_ignicoes = db.Column(db.Integer, default=0)
     ultima_atualizacao = db.Column(db.Integer, nullable=True)
-
 
     # localização
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
 
-    # bateria — NOVO CAMPO
+    # bateria
     tensao_bateria = db.Column(db.Float, default=0.0)
+
+    # 🔥 CONSUMO (ESTIMATIVO)
+    consumo_litros_hora = db.Column(db.Float, default=0.0)
 
     ativo = db.Column(db.Boolean, default=True)
     criado_em = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # --------------------------
+    # MÉTODOS DE NEGÓCIO
+    # --------------------------
+    def horas_motor(self):
+        return round((self.horas_sistema or 0.0), 2)
+
+    def consumo_medio(self):
+        return round((self.consumo_litros_hora or 0.0), 2)
+
+    def consumo_estimado(self):
+        return round(self.horas_motor() * self.consumo_medio(), 2)
+
     def __repr__(self):
         return f"<Ativo {self.nome}>"
-
