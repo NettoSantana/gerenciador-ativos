@@ -16,7 +16,7 @@ def lista():
     return render_template("ativos/lista.html", ativos=ativos)
 
 
-# PAINEL (AGORA EXISTE!)
+# PAINEL
 @ativos_bp.route("/painel/<int:id>")
 @login_required
 @gerente_required
@@ -39,13 +39,23 @@ def novo():
         cliente_id = int(request.form.get("cliente_id"))
         observacoes = request.form.get("observacoes")
 
-        criar_ativo(nome, categoria, imei, cliente_id, observacoes)
+        # 🔥 NOVO CAMPO
+        consumo_litros_hora = float(request.form.get("consumo_litros_hora") or 0)
+
+        criar_ativo(
+            nome=nome,
+            categoria=categoria,
+            imei=imei,
+            cliente_id=cliente_id,
+            observacoes=observacoes,
+            consumo_litros_hora=consumo_litros_hora
+        )
         return redirect(url_for("ativos.lista"))
 
     return render_template("ativos/novo.html", clientes=clientes)
 
 
-# EDITAR
+# EDITAR ATIVO
 @ativos_bp.route("/editar/<int:id>", methods=["GET", "POST"])
 @login_required
 @gerente_required
@@ -60,10 +70,25 @@ def editar(id):
         cliente_id = int(request.form.get("cliente_id"))
         observacoes = request.form.get("observacoes")
 
-        atualizar_ativo(ativo, nome, categoria, imei, cliente_id, observacoes)
+        # 🔥 NOVO CAMPO
+        consumo_litros_hora = float(request.form.get("consumo_litros_hora") or 0)
+
+        atualizar_ativo(
+            ativo=ativo,
+            nome=nome,
+            categoria=categoria,
+            imei=imei,
+            cliente_id=cliente_id,
+            observacoes=observacoes,
+            consumo_litros_hora=consumo_litros_hora
+        )
         return redirect(url_for("ativos.lista"))
 
-    return render_template("ativos/editar.html", ativo=ativo, clientes=clientes)
+    return render_template(
+        "ativos/editar.html",
+        ativo=ativo,
+        clientes=clientes
+    )
 
 
 # EXCLUIR
