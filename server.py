@@ -67,7 +67,7 @@ def create_app():
             print(">>> Banco já existe — não será recriado.")
 
     # ----------------------------------------------------------------------
-    # 🔥 ROTA PARA CRIAR A COLUNA horas_offset NO RAILWAY (UMA VEZ SÓ)
+    # 🔥 ROTA PARA CRIAR A COLUNA horas_offset (UMA VEZ SÓ)
     # ----------------------------------------------------------------------
     @app.route("/fix-db")
     def fix_db():
@@ -84,6 +84,27 @@ def create_app():
             return "Coluna horas_offset criada com sucesso!"
         except Exception as e:
             return f"Erro ao criar coluna: {e}"
+
+    # ----------------------------------------------------------------------
+    # 🔥 ROTA PARA CRIAR A COLUNA consumo_litros_hora (UMA VEZ SÓ)
+    # ----------------------------------------------------------------------
+    @app.route("/fix-db-consumo")
+    def fix_db_consumo():
+        import sqlite3
+
+        db_path = os.path.join(os.getcwd(), "instance", "gerenciador_ativos.db")
+
+        try:
+            conn = sqlite3.connect(db_path)
+            cur = conn.cursor()
+            cur.execute(
+                "ALTER TABLE ativos ADD COLUMN consumo_litros_hora REAL DEFAULT 0.0;"
+            )
+            conn.commit()
+            conn.close()
+            return "Coluna consumo_litros_hora criada com sucesso!"
+        except Exception as e:
+            return f"Erro ao criar coluna (provavelmente já existe): {e}"
 
     return app
 
