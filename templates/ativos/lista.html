@@ -5,7 +5,6 @@
 <div class="page">
 
   <style>
-    /* Responsividade apenas para telas pequenas */
     @media (max-width: 640px) {
       .wrapper-table-mobile {
         width: 100%;
@@ -25,7 +24,6 @@
 
   <div class="card" style="width:100%; max-width:100%; padding:0;">
 
-    <!-- WRAPPER PARA MOBILE -->
     <div class="wrapper-table-mobile">
 
       <table class="table" style="width:100%; border-collapse: collapse;">
@@ -56,13 +54,22 @@
 
             <td style="padding:14px 20px; display:flex; gap:10px;">
 
-              <!-- 🔥 AQUI ESTÁ A CORREÇÃO -->
-              <a href="{{ url_for('painel_ativos.painel', id=a.id) }}" class="btn-ghost">Painel</a>
-              <a href="{{ url_for('ativos.editar', id=a.id) }}" class="btn-ghost">Editar</a>
+              <!-- Painel -->
+              <a href="{{ url_for('painel_ativos.painel', id=a.id) }}" class="btn-ghost">
+                Painel
+              </a>
 
-              <form action="{{ url_for('ativos.excluir', id=a.id) }}" method="POST"
+              <!-- Editar (CORRIGIDO) -->
+              <a href="{{ url_for('ativos.editar', ativo_id=a.id) }}" class="btn-ghost">
+                Editar
+              </a>
+
+              <!-- Excluir -->
+              <form action="{{ url_for('ativos.excluir', ativo_id=a.id) }}" method="POST"
                     onsubmit="return confirm('Tem certeza que deseja excluir este ativo?');">
-                <button type="submit" class="btn-ghost" style="color:#ef4444;">Excluir</button>
+                <button type="submit" class="btn-ghost" style="color:#ef4444;">
+                  Excluir
+                </button>
               </form>
 
             </td>
