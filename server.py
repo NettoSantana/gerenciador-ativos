@@ -86,7 +86,7 @@ def create_app():
 
         if os.path.exists(DB_PATH):
             print(">>> Banco existente — validando schema")
-            ensure_sqlite_schema(DB_PATH)
+           # ensure_sqlite_schema(DB_PATH)
         else:
             print(">>> ATENÇÃO: banco ainda não existe (nenhuma criação automática será feita)")
 
