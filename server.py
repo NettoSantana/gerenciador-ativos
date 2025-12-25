@@ -3,8 +3,8 @@ from flask import Flask
 from gerenciador_ativos.config import Config
 from gerenciador_ativos.extensions import db
 
-# ✅ IMPORT CENTRALIZADO DOS MODELS
-from gerenciador_ativos.models import Usuario
+# ✅ IMPORT DIRETO DO DOMÍNIO (SEM PASSAR PELO HUB models)
+from gerenciador_ativos.usuarios.models import Usuario
 
 # importa modelos de preventiva para aparecer nas tabelas
 from gerenciador_ativos import preventiva_models  # noqa
@@ -54,7 +54,6 @@ def create_app():
             print(">>> Banco não encontrado — criando novo banco...")
             db.create_all()
 
-            # cria admin apenas na criação do banco
             admin = Usuario(
                 nome="Administrador",
                 email="admin@admin.com",
@@ -113,7 +112,6 @@ def create_app():
     return app
 
 
-# garante o diretório instance ANTES de iniciar o app
 os.makedirs("instance", exist_ok=True)
 
 app = create_app()
