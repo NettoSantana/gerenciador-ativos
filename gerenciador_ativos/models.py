@@ -80,7 +80,9 @@ class Ativo(db.Model):
     imei = db.Column(db.String(50), nullable=True)
     observacoes = db.Column(db.Text, nullable=True)
 
-    # TELEMETRIA AVANÇADA
+    # --------------------------
+    # TELEMETRIA
+    # --------------------------
     horas_offset = db.Column(db.Float, default=0.0)
     horas_sistema = db.Column(db.Float, default=0.0)
     horas_paradas = db.Column(db.Float, default=0.0)
@@ -88,12 +90,21 @@ class Ativo(db.Model):
     total_ignicoes = db.Column(db.Integer, default=0)
     ultima_atualizacao = db.Column(db.Integer, nullable=True)
 
+    # --------------------------
+    # CONSUMO MÉDIO
+    # litros por hora de motor ligado
+    # --------------------------
+    consumo_lph = db.Column(db.Float, default=0.0)
 
-    # localização
+    # --------------------------
+    # LOCALIZAÇÃO
+    # --------------------------
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
 
-    # bateria — NOVO CAMPO
+    # --------------------------
+    # BATERIA
+    # --------------------------
     tensao_bateria = db.Column(db.Float, default=0.0)
 
     ativo = db.Column(db.Boolean, default=True)
@@ -101,4 +112,3 @@ class Ativo(db.Model):
 
     def __repr__(self):
         return f"<Ativo {self.nome}>"
-
