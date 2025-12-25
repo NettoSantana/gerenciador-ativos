@@ -183,14 +183,18 @@
       <div class="kpi-value" id="kpiHorasMotor">0.00 h</div>
       <div class="kpi-helper">Total consolidado</div>
     </div>
+      <!-- ✅ CARD CONSUMO ESTIMADO (AGORA FUNCIONAL) -->
+    <a href="/ativos/{{ ativo.id }}/consumo"
+       class="card-kpi col-4"
+       style="display:block;text-decoration:none;">
+     <h2>Consumo estimado</h2>
+     <div class="kpi-value" id="kpiConsumo">
+     {{ consumo_lph if consumo_lph is not none else '--' }} L/h
+     </div>
+     <div class="kpi-helper">Ver histórico detalhado</div>
+     </a>
 
-    <!-- ✅ NOVO CARD (clicável / link morto por enquanto) -->
-    <a href="#" class="card-kpi col-4" style="display:block;text-decoration:none;">
-      <h2>Consumo estimado</h2>
-      <div class="kpi-value" id="kpiConsumo">-- L/h</div>
-      <div class="kpi-helper">Estimativa média</div>
-    </a>
-
+ 
     <div class="card-kpi col-4">
       <h2>Tensão bateria</h2>
       <div class="kpi-value" id="kpiTensao">0.00 V</div>

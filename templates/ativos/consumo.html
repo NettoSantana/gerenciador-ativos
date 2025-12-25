@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Consumo — {{ ativo.nome }}{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <h1>Consumo do Ativo</h1>
+      <p class="muted">Ativo: {{ ativo.nome }}</p>
+    </div>
+    <a href="/ativos/{{ ativo.id }}/painel" class="btn-ghost">← Voltar ao painel</a>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Horas de motor</th>
+          <th>Consumo médio (L/h)</th>
+          <th>Consumo total estimado (L)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ horas_motor }}</td>
+          <td>{{ consumo_lph }}</td>
+          <td>{{ consumo_total }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="muted" style="margin-top:10px;">
+      * Valores estimados com base no tempo total de funcionamento do motor.
+    </p>
+  </div>
+
+</div>
+{% endblock %}
