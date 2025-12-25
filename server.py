@@ -77,6 +77,28 @@ def create_app():
     # inicializa SQLAlchemy
     db.init_app(app)
 
+    # --------------------------------------------------
+    # INIT CONTROLADO DO BANCO (SEM SHELL)
+    # --------------------------------------------------
+    if os.environ.get("RUN_DB_INIT") == "1":
+        with app.app_context():
+            print(">>> INIT_DB: criando tabelas no volume")
+            db.create_all()
+
+            admin = Usuario.query.filter_by(email="admin@admin.com").first()
+            if not admin:
+                admin = Usuario(
+                    nome="Administrador",
+                    email="admin@admin.com",
+                    tipo="admin",
+                    ativo=True
+                )
+                admin.set_password("admin123")
+                db.session.add(admin)
+                db.session.commit()
+
+            print(">>> INIT_DB: finalizado com sucesso")
+
     # registra blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboards_bp)
@@ -90,7 +112,7 @@ def create_app():
     app.register_blueprint(api_ativos_bp)
 
     # --------------------------------------------------
-    # STARTUP SEGURO (NUNCA CRIA BANCO)
+    # STARTUP SEGURO (NUNCA CRIA BANCO SOZINHO)
     # --------------------------------------------------
     with app.app_context():
         print(">>> Usando banco em:", DB_PATH)
