@@ -26,6 +26,10 @@ def ensure_sqlite_schema(db_path: str):
     Garante que colunas novas existam no SQLite
     sem apagar dados existentes.
     """
+    if not os.path.exists(db_path):
+        # banco ainda não existe → não valida schema
+        return
+
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
 
@@ -45,20 +49,21 @@ def ensure_sqlite_schema(db_path: str):
 def create_app():
     app = Flask(__name__, static_folder="static", template_folder="templates")
 
-    # --------------------------
-    # CONFIGURAÇÃO DO SQLITE NO VOLUME
-    # --------------------------
+    # --------------------------------------------------
+    # SQLITE FIXO NO VOLUME DO RAILWAY
+    # --------------------------------------------------
     INSTANCE_PATH = "/app/instance"
     os.makedirs(INSTANCE_PATH, exist_ok=True)
 
     DB_PATH = os.path.join(INSTANCE_PATH, "gerenciador_ativos.db")
+
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # carrega configs adicionais (SECRET_KEY etc)
+    # configs gerais (SECRET_KEY etc)
     app.config.from_object(Config)
 
-    # inicializa banco
+    # inicializa SQLAlchemy
     db.init_app(app)
 
     # registra blueprints
@@ -73,24 +78,17 @@ def create_app():
     app.register_blueprint(api_ativos_dados_bp)
     app.register_blueprint(api_ativos_bp)
 
+    # --------------------------------------------------
+    # STARTUP SEGURO (NUNCA CRIA BANCO)
+    # --------------------------------------------------
     with app.app_context():
-        if not os.path.exists(DB_PATH):
-            print(">>> Banco não encontrado — criando novo banco...")
-            db.create_all()
+        print(">>> Usando banco em:", DB_PATH)
 
-            admin = Usuario(
-                nome="Administrador",
-                email="admin@admin.com",
-                tipo="admin",
-                ativo=True
-            )
-            admin.set_password("admin123")
-            db.session.add(admin)
-            db.session.commit()
-            print(">>> Usuário admin criado")
-        else:
+        if os.path.exists(DB_PATH):
             print(">>> Banco existente — validando schema")
             ensure_sqlite_schema(DB_PATH)
+        else:
+            print(">>> ATENÇÃO: banco ainda não existe (nenhuma criação automática será feita)")
 
     return app
 
