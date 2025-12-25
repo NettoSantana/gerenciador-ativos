@@ -4,7 +4,8 @@
 {% block content %}
 <div class="page">
 
-  <div style="display:flex;justify-content:space-between;align-items:center;">
+  <!-- HEADER -->
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
     <div>
       <h1>Histórico de Consumo</h1>
       <p class="muted">Ativo: {{ ativo.nome }}</p>
@@ -12,39 +13,60 @@
     <a href="/ativos/{{ ativo.id }}/painel" class="btn-ghost">← Voltar ao painel</a>
   </div>
 
-  <!-- FILTRO -->
-  <form method="get" style="margin:20px 0;display:flex;gap:12px;flex-wrap:wrap;">
-    <input type="date" name="inicio" value="{{ request.args.get('inicio','') }}">
-    <input type="date" name="fim" value="{{ request.args.get('fim','') }}">
-    <button class="btn-primary" type="submit">Buscar</button>
-  </form>
+  <!-- CARD FULL WIDTH -->
+  <div class="card" style="width:100%;margin-top:20px;padding:24px;">
 
-  <!-- TABELA FULL WIDTH -->
-  <div class="card" style="width:100%;">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Horas de motor</th>
-          <th>Consumo médio (L/h)</th>
-          <th>Consumo total (L)</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for r in registros %}
-        <tr>
-          <td>{{ r.data_referencia.strftime('%d/%m/%Y') }}</td>
-          <td>{{ r.horas_motor }}</td>
-          <td>{{ r.consumo_lph }}</td>
-          <td>{{ r.consumo_total }}</td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="4">Nenhum registro encontrado</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <!-- FILTRO (INTEGRADO AO CARD) -->
+    <form method="get"
+          style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin-bottom:20px;">
+
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <label class="muted">Data inicial</label>
+        <input type="date"
+               name="inicio"
+               value="{{ request.args.get('inicio','') }}">
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <label class="muted">Data final</label>
+        <input type="date"
+               name="fim"
+               value="{{ request.args.get('fim','') }}">
+      </div>
+
+      <button class="btn-primary" type="submit" style="height:40px;">
+        Buscar
+      </button>
+    </form>
+
+    <!-- TABELA -->
+    <div style="overflow-x:auto;">
+      <table class="table" style="width:100%;">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Horas de motor</th>
+            <th>Consumo médio (L/h)</th>
+            <th>Consumo total (L)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in registros %}
+          <tr>
+            <td>{{ r.data_referencia.strftime('%d/%m/%Y') }}</td>
+            <td>{{ r.horas_motor }}</td>
+            <td>{{ r.consumo_lph }}</td>
+            <td>{{ r.consumo_total }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" class="muted">Nenhum registro encontrado</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
   </div>
 
 </div>
