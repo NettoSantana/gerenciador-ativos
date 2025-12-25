@@ -1,5 +1,1 @@
-﻿feat(responsividade): adicionar wrapper rolável para tabelas no mobile
-
-- aplicado wrapper-table-mobile no lista.html
-- largura mínima da tabela para evitar quebra
-- scroll horizontal suave em telas menores que 640px
+﻿fix: corrige caminho real do model Usuario (usuarios/model.py)

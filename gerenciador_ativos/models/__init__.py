@@ -1,3 +1,4 @@
-# Models transversais (não pertencem a um domínio específico)
-
-from gerenciador_ativos.models.consumo_diario import ConsumoDiario
+from .usuario import Usuario
+from .clientes import Cliente
+from .ativos import Ativo
+from .consumo_diario import ConsumoDiario

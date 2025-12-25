@@ -1,13 +1,7 @@
-from gerenciador_ativos.extensions import db
-from gerenciador_ativos.usuarios.model import Usuario
+from gerenciador_ativos.models.usuario import Usuario
 
 
 def autenticar_usuario(email, senha):
-    """
-    Autentica usuário pelo email e senha.
-    Retorna o usuário se válido, senão None.
-    """
-
     usuario = Usuario.query.filter_by(email=email, ativo=True).first()
 
     if not usuario:
