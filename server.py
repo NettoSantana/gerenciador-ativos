@@ -44,6 +44,18 @@ def ensure_sqlite_schema(db_path: str):
 
 def create_app():
     app = Flask(__name__, static_folder="static", template_folder="templates")
+
+    # --------------------------
+    # CONFIGURAÇÃO DO SQLITE NO VOLUME
+    # --------------------------
+    INSTANCE_PATH = "/app/instance"
+    os.makedirs(INSTANCE_PATH, exist_ok=True)
+
+    DB_PATH = os.path.join(INSTANCE_PATH, "gerenciador_ativos.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    # carrega configs adicionais (SECRET_KEY etc)
     app.config.from_object(Config)
 
     # inicializa banco
@@ -62,12 +74,7 @@ def create_app():
     app.register_blueprint(api_ativos_bp)
 
     with app.app_context():
-        instance_path = os.path.join(os.getcwd(), "instance")
-        os.makedirs(instance_path, exist_ok=True)
-
-        db_path = os.path.join(instance_path, "gerenciador_ativos.db")
-
-        if not os.path.exists(db_path):
+        if not os.path.exists(DB_PATH):
             print(">>> Banco não encontrado — criando novo banco...")
             db.create_all()
 
@@ -83,13 +90,10 @@ def create_app():
             print(">>> Usuário admin criado")
         else:
             print(">>> Banco existente — validando schema")
-            ensure_sqlite_schema(db_path)
+            ensure_sqlite_schema(DB_PATH)
 
     return app
 
-
-# garante diretório instance antes de subir
-os.makedirs("instance", exist_ok=True)
 
 app = create_app()
 
