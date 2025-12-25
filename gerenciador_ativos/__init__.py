@@ -1,1 +1,0 @@
-from gerenciador_ativos.models.consumo_diario import ConsumoDiario
