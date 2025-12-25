@@ -1,11 +1,10 @@
 from gerenciador_ativos.extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, date
 
 
 # --------------------------------------------------------
 # USUÁRIO DO SISTEMA
-# admin / gerente / cliente
 # --------------------------------------------------------
 class Usuario(db.Model):
     __tablename__ = "usuarios"
@@ -21,18 +20,12 @@ class Usuario(db.Model):
 
     cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=True)
 
-    # --------------------------
-    # Métodos de senha corretos
-    # --------------------------
     def set_password(self, senha):
         self.senha_hash = generate_password_hash(senha)
 
     def check_password(self, senha):
         return check_password_hash(self.senha_hash, senha)
 
-    # --------------------------
-    # Auxiliar
-    # --------------------------
     def is_interno(self):
         return self.tipo in ["admin", "gerente"]
 
@@ -41,14 +34,14 @@ class Usuario(db.Model):
 
 
 # --------------------------------------------------------
-# CLIENTES (PF / PJ)
+# CLIENTES
 # --------------------------------------------------------
 class Cliente(db.Model):
     __tablename__ = "clientes"
 
     id = db.Column(db.Integer, primary_key=True)
 
-    tipo = db.Column(db.String(50), nullable=False)  # PF ou PJ
+    tipo = db.Column(db.String(50), nullable=False)
     nome = db.Column(db.String(120), nullable=False)
     cpf_cnpj = db.Column(db.String(30), nullable=True)
     telefone = db.Column(db.String(50), nullable=True)
@@ -66,7 +59,7 @@ class Cliente(db.Model):
 
 
 # --------------------------------------------------------
-# ATIVOS (embarcações, máquinas etc.)
+# ATIVOS
 # --------------------------------------------------------
 class Ativo(db.Model):
     __tablename__ = "ativos"
@@ -80,31 +73,22 @@ class Ativo(db.Model):
     imei = db.Column(db.String(50), nullable=True)
     observacoes = db.Column(db.Text, nullable=True)
 
-    # --------------------------
     # TELEMETRIA
-    # --------------------------
     horas_offset = db.Column(db.Float, default=0.0)
     horas_sistema = db.Column(db.Float, default=0.0)
     horas_paradas = db.Column(db.Float, default=0.0)
-    ultimo_estado_motor = db.Column(db.Integer, default=0)  # 0 desligado / 1 ligado
+    ultimo_estado_motor = db.Column(db.Integer, default=0)
     total_ignicoes = db.Column(db.Integer, default=0)
     ultima_atualizacao = db.Column(db.Integer, nullable=True)
 
-    # --------------------------
     # CONSUMO MÉDIO
-    # litros por hora de motor ligado
-    # --------------------------
     consumo_lph = db.Column(db.Float, default=0.0)
 
-    # --------------------------
     # LOCALIZAÇÃO
-    # --------------------------
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
 
-    # --------------------------
     # BATERIA
-    # --------------------------
     tensao_bateria = db.Column(db.Float, default=0.0)
 
     ativo = db.Column(db.Boolean, default=True)
@@ -112,3 +96,30 @@ class Ativo(db.Model):
 
     def __repr__(self):
         return f"<Ativo {self.nome}>"
+
+
+# --------------------------------------------------------
+# HISTÓRICO DIÁRIO DE CONSUMO
+# --------------------------------------------------------
+class ConsumoDiario(db.Model):
+    __tablename__ = "consumo_diario"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    ativo_id = db.Column(db.Integer, db.ForeignKey("ativos.id"), nullable=False)
+    data_referencia = db.Column(db.Date, nullable=False)
+
+    horas_motor = db.Column(db.Float, default=0.0)
+    consumo_lph = db.Column(db.Float, default=0.0)
+    consumo_total = db.Column(db.Float, default=0.0)
+
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+
+    ativo = db.relationship("Ativo", backref="historico_consumo")
+
+    __table_args__ = (
+        db.UniqueConstraint("ativo_id", "data_referencia", name="uix_consumo_dia"),
+    )
+
+    def __repr__(self):
+        return f"<ConsumoDiario ativo={self.ativo_id} data={self.data_referencia}>"
