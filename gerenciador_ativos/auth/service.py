@@ -1,4 +1,4 @@
-from gerenciador_ativos.usuarios.models import Usuario
+from gerenciador_ativos.models.usuario import Usuario
 
 
 def autenticar_usuario(email, senha):
