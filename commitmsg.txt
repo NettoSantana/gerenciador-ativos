@@ -1,5 +1,5 @@
-﻿feat(responsividade): aplicar wrapper rolável para tabelas de Clientes e Ativos
+﻿fix(dev): garante coluna consumo_lph no SQLite no startup
 
-- adicionada responsividade mobile nas páginas lista.html de clientes e ativos
-- uso de wrapper-table-mobile com scroll horizontal
-- versão desktop permanecendo inalterada
+- cria coluna consumo_lph se não existir
+- elimina erro 500 por schema desatualizado
+- mantém dados existentes
