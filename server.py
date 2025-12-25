@@ -23,16 +23,27 @@ from gerenciador_ativos.api.ativos import api_ativos_bp
 
 def ensure_sqlite_schema(db_path: str):
     """
-    Garante que colunas novas existam no SQLite
-    sem apagar dados existentes.
+    Migração segura de schema SQLite:
+    - só roda se o banco existir
+    - só roda se a tabela existir
+    - nunca quebra o startup
     """
     if not os.path.exists(db_path):
-        # banco ainda não existe → não valida schema
         return
 
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
 
+    # verifica se a tabela 'ativos' existe
+    cur.execute("""
+        SELECT name FROM sqlite_master
+        WHERE type='table' AND name='ativos';
+    """)
+    if not cur.fetchone():
+        conn.close()
+        return
+
+    # lista colunas existentes
     cur.execute("PRAGMA table_info(ativos);")
     colunas = [row[1] for row in cur.fetchall()]
 
@@ -60,7 +71,7 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # configs gerais (SECRET_KEY etc)
+    # configs gerais
     app.config.from_object(Config)
 
     # inicializa SQLAlchemy
@@ -86,7 +97,7 @@ def create_app():
 
         if os.path.exists(DB_PATH):
             print(">>> Banco existente — validando schema")
-           # ensure_sqlite_schema(DB_PATH)
+            ensure_sqlite_schema(DB_PATH)
         else:
             print(">>> ATENÇÃO: banco ainda não existe (nenhuma criação automática será feita)")
 
