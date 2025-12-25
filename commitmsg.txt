@@ -1,5 +1,5 @@
-﻿fix(dev): garante coluna consumo_lph no SQLite no startup
+﻿feat(ui): adiciona card de consumo estimado (LPH) no painel do ativo
 
-- cria coluna consumo_lph se não existir
-- elimina erro 500 por schema desatualizado
-- mantém dados existentes
+- exibe consumo_lph vindo da API
+- fallback seguro para 0.00
+- sem impacto em outros cards
