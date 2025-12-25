@@ -3,8 +3,8 @@ from flask import Flask
 from gerenciador_ativos.config import Config
 from gerenciador_ativos.extensions import db
 
-# 🔥 IMPORT CORRETO DO USUÁRIO
-from gerenciador_ativos.usuarios.models import Usuario
+# ✅ IMPORT CENTRALIZADO DOS MODELS
+from gerenciador_ativos.models import Usuario
 
 # importa modelos de preventiva para aparecer nas tabelas
 from gerenciador_ativos import preventiva_models  # noqa
