@@ -1,1 +1,7 @@
-﻿fix: corrige caminho real do model Usuario (usuarios/model.py)
+﻿fix: centraliza model Usuario em gerenciador_ativos/models
+
+- cria models/usuario.py
+- remove imports circulares
+- ajusta auth/service.py
+- ajusta models/__init__.py
+- corrige server.py

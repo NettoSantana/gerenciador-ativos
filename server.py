@@ -3,11 +3,8 @@ from flask import Flask
 from gerenciador_ativos.config import Config
 from gerenciador_ativos.extensions import db
 
-# ✅ IMPORT CORRETO DO MODEL
-from gerenciador_ativos.models.usuario import Usuario
-
-# importa modelos de preventiva
-from gerenciador_ativos import preventiva_models  # noqa
+# 🔥 IMPORT DIRETO DO MODEL CERTO
+from gerenciador_ativos.usuarios.models import Usuario
 
 # Blueprints
 from gerenciador_ativos.auth.routes import auth_bp
@@ -28,6 +25,7 @@ def create_app():
 
     db.init_app(app)
 
+    # Blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboards_bp)
     app.register_blueprint(usuarios_bp)
@@ -39,6 +37,7 @@ def create_app():
     app.register_blueprint(api_ativos_dados_bp)
     app.register_blueprint(api_ativos_bp)
 
+    # Banco
     with app.app_context():
         instance_path = os.path.join(os.getcwd(), "instance")
         os.makedirs(instance_path, exist_ok=True)
@@ -46,7 +45,6 @@ def create_app():
         db_path = os.path.join(instance_path, "gerenciador_ativos.db")
 
         if not os.path.exists(db_path):
-            print(">>> Criando banco...")
             db.create_all()
 
             admin = Usuario(
@@ -59,13 +57,10 @@ def create_app():
             db.session.add(admin)
             db.session.commit()
 
-            print(">>> Admin criado: admin@admin.com / admin123")
-
     return app
 
 
 os.makedirs("instance", exist_ok=True)
-
 app = create_app()
 
 if __name__ == "__main__":
