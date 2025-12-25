@@ -2,7 +2,9 @@ import os
 from flask import Flask
 from gerenciador_ativos.config import Config
 from gerenciador_ativos.extensions import db
-from gerenciador_ativos.models import Usuario
+
+# 🔥 IMPORT CORRETO DO USUÁRIO
+from gerenciador_ativos.usuarios.models import Usuario
 
 # importa modelos de preventiva para aparecer nas tabelas
 from gerenciador_ativos import preventiva_models  # noqa
@@ -78,12 +80,14 @@ def create_app():
         try:
             conn = sqlite3.connect(db_path)
             cur = conn.cursor()
-            cur.execute("ALTER TABLE ativos ADD COLUMN horas_offset REAL DEFAULT 0;")
+            cur.execute(
+                "ALTER TABLE ativos ADD COLUMN horas_offset REAL DEFAULT 0;"
+            )
             conn.commit()
             conn.close()
             return "Coluna horas_offset criada com sucesso!"
         except Exception as e:
-            return f"Erro ao criar coluna: {e}"
+            return f"Erro ao criar coluna (provavelmente já existe): {e}"
 
     # ----------------------------------------------------------------------
     # 🔥 ROTA PARA CRIAR A COLUNA consumo_litros_hora (UMA VEZ SÓ)
