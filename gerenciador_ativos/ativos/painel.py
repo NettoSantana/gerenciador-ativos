@@ -4,8 +4,26 @@ from gerenciador_ativos.auth.decorators import login_required
 
 painel_bp = Blueprint("painel_ativos", __name__, url_prefix="/ativos/painel")
 
+
 @painel_bp.route("/<int:id>")
 @login_required
 def painel(id):
     ativo = Ativo.query.get_or_404(id)
-    return render_template("ativos/painel.html", ativo=ativo)
+
+    # --------------------------
+    # Cálculos consolidados
+    # --------------------------
+    horas_offset = ativo.horas_offset or 0.0
+    horas_sistema = ativo.horas_sistema or 0.0
+    horas_motor = horas_offset + horas_sistema
+
+    consumo_lph = ativo.consumo_lph or 0.0
+    consumo_total = horas_motor * consumo_lph
+
+    return render_template(
+        "ativos/painel.html",
+        ativo=ativo,
+        horas_motor=round(horas_motor, 2),
+        consumo_lph=round(consumo_lph, 2),
+        consumo_total=round(consumo_total, 2),
+    )
