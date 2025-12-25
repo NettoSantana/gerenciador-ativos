@@ -1,5 +1,6 @@
-﻿feat(ui): adiciona card de consumo estimado (LPH) no painel do ativo
+﻿feat(dev): adiciona card de consumo estimado no painel do ativo
 
-- exibe consumo_lph vindo da API
-- fallback seguro para 0.00
-- sem impacto em outros cards
+- mantém estrutura original do painel
+- apenas acrescenta novo card visual
+- card clicável com link morto (href="#")
+- sem refatorações ou remoções

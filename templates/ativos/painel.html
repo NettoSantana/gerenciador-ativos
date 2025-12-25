@@ -184,6 +184,13 @@
       <div class="kpi-helper">Total consolidado</div>
     </div>
 
+    <!-- ✅ NOVO CARD (clicável / link morto por enquanto) -->
+    <a href="#" class="card-kpi col-4" style="display:block;text-decoration:none;">
+      <h2>Consumo estimado</h2>
+      <div class="kpi-value" id="kpiConsumo">-- L/h</div>
+      <div class="kpi-helper">Estimativa média</div>
+    </a>
+
     <div class="card-kpi col-4">
       <h2>Tensão bateria</h2>
       <div class="kpi-value" id="kpiTensao">0.00 V</div>
@@ -213,7 +220,6 @@
       <div class="kpi-value" id="kpiHorasParadas">0.00 h</div>
       <div class="kpi-helper">Motor OFF</div>
     </div>
-
     <div class="card-kpi col-4">
       <h2>Ignições</h2>
       <div class="kpi-value" id="kpiIgnicoes">0</div>
@@ -406,7 +412,6 @@
 
       const tensao = Number(d.tensao_bateria ?? 0);
       document.getElementById("kpiTensao").textContent = tensao.toFixed(2) + " V";
-
       let info = "—";
       if (tensao === 0) info = "Sem leitura";
       else if (tensao < 12.0) info = "Baixa";
@@ -415,6 +420,14 @@
       document.getElementById("kpiTensaoInfo").textContent = info;
 
       document.getElementById("kpiHorasMotor").textContent = Number(d.horas_motor ?? 0).toFixed(2) + " h";
+
+      /* ✅ NOVO KPI: consumo estimado */
+      if (d.consumo_lph !== undefined && d.consumo_lph !== null && d.consumo_lph !== "") {
+        document.getElementById("kpiConsumo").textContent = Number(d.consumo_lph).toFixed(2) + " L/h";
+      } else {
+        document.getElementById("kpiConsumo").textContent = "-- L/h";
+      }
+
       document.getElementById("kpiHorasEmbarcacao").textContent = Number(d.horas_embarcacao ?? 0).toFixed(2) + " h";
       document.getElementById("kpiHorasParadas").textContent = Number(d.horas_paradas ?? 0).toFixed(2) + " h";
       document.getElementById("kpiIgnicoes").textContent = Number(d.ignicoes ?? 0);
