@@ -1,14 +1,15 @@
-from typing import Optional
-from gerenciador_ativos.models import Usuario
+from gerenciador_ativos.extensions import db
+from gerenciador_ativos.usuarios.models import Usuario
 
 
-def autenticar_usuario(email: str, senha: str) -> Optional[Usuario]:
-    """Retorna o usuário se login OK, senão None."""
-    email = (email or "").strip().lower()
-    if not email or not senha:
-        return None
+def autenticar_usuario(email, senha):
+    """
+    Autentica usuário pelo email e senha.
+    Retorna o usuário se válido, senão None.
+    """
 
     usuario = Usuario.query.filter_by(email=email, ativo=True).first()
+
     if not usuario:
         return None
 
