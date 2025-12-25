@@ -184,13 +184,6 @@
       <div class="kpi-helper">Total consolidado</div>
     </div>
 
-    <!-- 🔥 NOVO CARD – CONSUMO MÉDIO ESTIMADO -->
-    <div class="card-kpi col-4">
-      <h2>Consumo médio estimado</h2>
-      <div class="kpi-value">{{ ativo.consumo_medio() }} L/h</div>
-      <div class="kpi-helper">Total estimado: {{ ativo.consumo_estimado() }} L</div>
-    </div>
-
     <div class="card-kpi col-4">
       <h2>Tensão bateria</h2>
       <div class="kpi-value" id="kpiTensao">0.00 V</div>
@@ -402,7 +395,7 @@
 
         const agora = Date.now() / 1000;
         const dif = agora - d.servertime;
-        const online = dif < 300;
+        const online = dif < 300; 
         document.getElementById("kpiMonitor").textContent = online ? "online" : "offline";
       }
 

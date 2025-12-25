@@ -1,7 +1,5 @@
-﻿fix: centraliza model Usuario em gerenciador_ativos/models
+﻿feat(responsividade): aplicar wrapper rolável para tabelas de Clientes e Ativos
 
-- cria models/usuario.py
-- remove imports circulares
-- ajusta auth/service.py
-- ajusta models/__init__.py
-- corrige server.py
+- adicionada responsividade mobile nas páginas lista.html de clientes e ativos
+- uso de wrapper-table-mobile com scroll horizontal
+- versão desktop permanecendo inalterada
