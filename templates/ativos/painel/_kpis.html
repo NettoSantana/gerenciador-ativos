@@ -1,0 +1,45 @@
+<div class="grid-kpis">
+
+  <div class="kpi-card">
+    <h4>STATUS MONITORAMENTO</h4>
+    <div class="kpi-main">{{ ativo.status or "--" }}</div>
+    <span>Situação geral</span>
+  </div>
+
+  <div class="kpi-card">
+    <h4>HORAS MOTOR</h4>
+    <div class="kpi-main">{{ horas_motor }} h</div>
+    <span>Total consolidado</span>
+  </div>
+
+  <div class="kpi-card">
+    <h4>CONSUMO ESTIMADO</h4>
+    <div class="kpi-main">
+      {% if consumo_total is not none %}
+        {{ consumo_total }} L
+      {% else %}
+        --
+      {% endif %}
+    </div>
+    <a href="{{ url_for('painel_ativos.consumo', id=ativo.id) }}">Ver histórico detalhado</a>
+  </div>
+
+  <div class="kpi-card">
+    <h4>TENSÃO BATERIA</h4>
+    <div class="kpi-main">{{ ativo.tensao_bateria or "0.00" }} V</div>
+    <span>{{ ativo.status_bateria or "--" }}</span>
+  </div>
+
+  <div class="kpi-card">
+    <h4>MOTOR</h4>
+    <div class="kpi-main">{{ "Ligado" if ativo.motor_ligado else "--" }}</div>
+    <span>Ignição</span>
+  </div>
+
+  <div class="kpi-card">
+    <h4>HORAS DA EMBARCAÇÃO</h4>
+    <div class="kpi-main">{{ ativo.horas_offset + ativo.horas_sistema }} h</div>
+    <span>Offset + motor</span>
+  </div>
+
+</div>
