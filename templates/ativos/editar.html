@@ -1,37 +1,49 @@
 {% extends "base.html" %}
+
 {% block title %}Editar Ativo{% endblock %}
 
 {% block content %}
-<h2>Editar Ativo</h2>
+<div class="container">
+  <h2>Editar Ativo</h2>
 
-<form method="POST" class="form-card">
+  <form method="POST">
+    <div class="form-group">
+      <label>Nome do Ativo</label>
+      <input
+        type="text"
+        name="nome"
+        class="form-control"
+        value="{{ ativo.nome }}"
+        required
+      >
+    </div>
 
-  <label>Cliente</label>
-  <select name="cliente_id" required>
-    {% for c in clientes %}
-      <option value="{{ c.id }}" {% if c.id == ativo.cliente_id %}selected{% endif %}>
-        {{ c.nome }}
-      </option>
-    {% endfor %}
-  </select>
+    <div class="form-group">
+      <label>Descrição</label>
+      <input
+        type="text"
+        name="descricao"
+        class="form-control"
+        value="{{ ativo.descricao }}"
+      >
+    </div>
 
-  <label>Nome</label>
-  <input type="text" name="nome" value="{{ ativo.nome }}" required>
+    <div class="form-group">
+      <label>Consumo médio do fabricante (L/h)</label>
+      <input
+        type="number"
+        name="consumo_lph"
+        class="form-control"
+        step="0.01"
+        min="0"
+        value="{{ ativo.consumo_lph }}"
+        required
+      >
+    </div>
 
-  <label>Categoria</label>
-  <select name="categoria">
-    <option {% if ativo.categoria == 'Náutica' %}selected{% endif %}>Náutica</option>
-    <option {% if ativo.categoria == 'Industrial' %}selected{% endif %}>Industrial</option>
-    <option {% if ativo.categoria == 'Outro' %}selected{% endif %}>Outro</option>
-  </select>
-
-  <label>IMEI</label>
-  <input type="text" name="imei" value="{{ ativo.imei }}">
-
-  <label>Observações</label>
-  <textarea name="observacoes"></textarea>
-
-  <button type="submit" class="btn-primary">Salvar</button>
-
-</form>
+    <button type="submit" class="btn btn-success mt-3">
+      Atualizar
+    </button>
+  </form>
+</div>
 {% endblock %}

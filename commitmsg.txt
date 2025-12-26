@@ -1,6 +1,1 @@
-﻿feat(dev): adiciona card de consumo estimado no painel do ativo
-
-- mantém estrutura original do painel
-- apenas acrescenta novo card visual
-- card clicável com link morto (href="#")
-- sem refatorações ou remoções
+﻿feat: cria partial _kpis.html para painel do ativo com consumo calculado no backend
