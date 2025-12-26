@@ -183,16 +183,17 @@
       <div class="kpi-value" id="kpiHorasMotor">0.00 h</div>
       <div class="kpi-helper">Total consolidado</div>
     </div>
-      <!-- ✅ CARD CONSUMO ESTIMADO (AGORA FUNCIONAL) -->
+
+    <!-- ✅ CARD CONSUMO ESTIMADO (TOTAL EM LITROS) -->
     <a href="/ativos/{{ ativo.id }}/consumo"
        class="card-kpi col-4"
        style="display:block;text-decoration:none;">
-     <h2>Consumo estimado</h2>
-     <div class="kpi-value" id="kpiConsumo">
-     {{ consumo_lph if consumo_lph is not none else '--' }} L/h
-     </div>
-     <div class="kpi-helper">Ver histórico detalhado</div>
-     </a>
+      <h2>Consumo estimado</h2>
+      <div class="kpi-value" id="kpiConsumo">
+        {{ consumo_total if consumo_total is not none else '--' }} L
+      </div>
+      <div class="kpi-helper">Ver histórico detalhado</div>
+    </a>
 
  
     <div class="card-kpi col-4">
@@ -425,11 +426,11 @@
 
       document.getElementById("kpiHorasMotor").textContent = Number(d.horas_motor ?? 0).toFixed(2) + " h";
 
-      /* ✅ NOVO KPI: consumo estimado */
-      if (d.consumo_lph !== undefined && d.consumo_lph !== null && d.consumo_lph !== "") {
-        document.getElementById("kpiConsumo").textContent = Number(d.consumo_lph).toFixed(2) + " L/h";
+      /* ✅ KPI: consumo estimado TOTAL (litros acumulados) */
+      if (d.consumo_total !== undefined && d.consumo_total !== null) {
+        document.getElementById("kpiConsumo").textContent = Number(d.consumo_total).toFixed(2) + " L";
       } else {
-        document.getElementById("kpiConsumo").textContent = "-- L/h";
+        document.getElementById("kpiConsumo").textContent = "-- L";
       }
 
       document.getElementById("kpiHorasEmbarcacao").textContent = Number(d.horas_embarcacao ?? 0).toFixed(2) + " h";
