@@ -157,7 +157,7 @@
                   <option value="{{ value }}">{{ label }}</option>
                 {% endfor %}
               {% else %}
-                <option value="Naútica">Náutica</option>
+                <option value="Nautica">Náutica</option>
                 <option value="Industrial">Industrial</option>
                 <option value="Veicular">Veicular</option>
                 <option value="Outro">Outro</option>
@@ -180,12 +180,15 @@
               type="number"
               step="0.01"
               min="0"
-              placeholder="Ex.: 2.5"
+              placeholder="Ex.: 2.50"
               required
             >
+            <div class="hint-obs">
+              Este valor é usado para calcular o consumo total com base nas horas de motor.
+            </div>
           </div>
 
-          <!-- (Opcional) campo extra: identificador interno -->
+          <!-- Tag interna -->
           <div class="field-ativo col-4x">
             <label for="tag_interna">Tag / Identificação interna</label>
             <input id="tag_interna" name="tag_interna" type="text" placeholder="Opcional">
