@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Geral — TV{% endblock %}
+
+{% block content %}
+<div class="tv-dashboard">
+
+  <style>
+    /* ====== BASE TV ====== */
+    body {
+      background: #020617;
+    }
+
+    .tv-dashboard {
+      width: 100vw;
+      height: 100vh;
+      padding: 24px 32px;
+      box-sizing: border-box;
+      color: #e5e7eb;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .tv-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .tv-header h1 {
+      font-size: 28px;
+      margin: 0;
+      letter-spacing: 0.04em;
+    }
+
+    .tv-header .tv-clock {
+      font-size: 18px;
+      color: #9ca3af;
+    }
+
+    /* ====== TABELA ====== */
+    .tv-table-wrap {
+      width: 100%;
+      height: calc(100vh - 110px);
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid #1f2937;
+      background: #020617;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #020617;
+    }
+
+    thead th {
+      padding: 14px 12px;
+      text-align: left;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #020617;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #020617;
+    }
+
+    tbody td {
+      padding: 16px 12px;
+      font-size: 18px;
+      font-weight: 500;
+      color: #e5e7eb;
+    }
+
+    /* ====== STATUS ====== */
+    .status-ok {
+      color: #22c55e;
+      font-weight: 700;
+    }
+
+    .status-warn {
+      color: #facc15;
+      font-weight: 700;
+    }
+
+    .status-bad {
+      color: #ef4444;
+      font-weight: 700;
+    }
+
+    /* ====== RESPONSIVO TV ====== */
+    @media (max-width: 1280px) {
+      tbody td {
+        font-size: 16px;
+      }
+      thead th {
+        font-size: 13px;
+      }
+    }
+  </style>
+
+  <!-- ====== HEADER ====== -->
+  <div class="tv-header">
+    <h1>Dashboard Geral — Operação</h1>
+    <div class="tv-clock" id="tvClock">--:--</div>
+  </div>
+
+  <!-- ====== TABELA ====== -->
+  <div class="tv-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Embarcação</th>
+          <th>Cotista (dia)</th>
+          <th>Horas</th>
+          <th>Lavagem interna</th>
+          <th>Pendências</th>
+          <th>Bateria</th>
+        </tr>
+      </thead>
+      <tbody id="tvTableBody">
+        <!-- dados entram aqui -->
+        <tr>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  /* Relógio simples para TV */
+  function atualizarRelogio(){
+    const el = document.getElementById("tvClock");
+    const agora = new Date();
+    const h = String(agora.getHours()).padStart(2, "0");
+    const m = String(agora.getMinutes()).padStart(2, "0");
+    el.textContent = `${h}:${m}`;
+  }
+
+  atualizarRelogio();
+  setInterval(atualizarRelogio, 10000);
+</script>
+{% endblock %}
