@@ -314,7 +314,6 @@
   </section>
 
 </div>
-
 <!-- ===================== MODAL AJUSTE DE OFFSET ===================== -->
 <div id="modalOffsetBg" class="modal-bg">
   <div class="modal">
@@ -339,6 +338,19 @@
   const viewPreventiva = document.getElementById("viewPreventiva");
   const btnPainel = document.getElementById("btnTabPainel");
   const btnPreventiva = document.getElementById("btnTabPreventiva");
+
+  // === helpers anti-NaN / anti-null ===
+  function toNumber(val, fallback = null) {
+    if (val === null || val === undefined) return fallback;
+    if (typeof val === "string" && val.trim() === "") return fallback;
+    const n = Number(val);
+    return Number.isFinite(n) ? n : fallback;
+  }
+  function fmtFixed(val, digits = 2, fallbackText = "--") {
+    const n = toNumber(val, null);
+    if (n === null) return fallbackText;
+    return n.toFixed(digits);
+  }
 
   btnPainel.onclick = () => {
     btnPainel.classList.add("active");
@@ -371,8 +383,8 @@
   };
 
   btnSalvar.onclick = async () => {
-    const val = parseFloat(inputOffset.value || 0);
-    if (isNaN(val)) {
+    const val = toNumber(inputOffset.value, null);
+    if (val === null) {
       alert("Digite um número válido");
       return;
     }
@@ -406,7 +418,7 @@
 
         const agora = Date.now() / 1000;
         const dif = agora - d.servertime;
-        const online = dif < 300; 
+        const online = dif < 300;
         document.getElementById("kpiMonitor").textContent = online ? "online" : "offline";
       }
 
@@ -415,7 +427,7 @@
       document.getElementById("dotMotor").className = "status-dot " + (motorOn ? "ok" : "bad");
       document.getElementById("kpiMotorHint").textContent = motorOn ? "Ignição ON" : "Ignição OFF";
 
-      const tensao = Number(d.tensao_bateria ?? 0);
+      const tensao = toNumber(d.tensao_bateria, 0);
       document.getElementById("kpiTensao").textContent = tensao.toFixed(2) + " V";
       let info = "—";
       if (tensao === 0) info = "Sem leitura";
@@ -424,18 +436,19 @@
       else info = "OK";
       document.getElementById("kpiTensaoInfo").textContent = info;
 
-      document.getElementById("kpiHorasMotor").textContent = Number(d.horas_motor ?? 0).toFixed(2) + " h";
+      document.getElementById("kpiHorasMotor").textContent = fmtFixed(d.horas_motor, 2, "0.00") + " h";
 
-      /* ✅ KPI: consumo estimado TOTAL (litros acumulados) */
-      if (d.consumo_total !== undefined && d.consumo_total !== null) {
-        document.getElementById("kpiConsumo").textContent = Number(d.consumo_total).toFixed(2) + " L";
-      } else {
+      /* ✅ KPI: consumo estimado TOTAL (litros acumulados) — blindado contra NaN */
+      const consumoTotal = toNumber(d.consumo_total, null);
+      if (consumoTotal === null) {
         document.getElementById("kpiConsumo").textContent = "-- L";
+      } else {
+        document.getElementById("kpiConsumo").textContent = consumoTotal.toFixed(2) + " L";
       }
 
-      document.getElementById("kpiHorasEmbarcacao").textContent = Number(d.horas_embarcacao ?? 0).toFixed(2) + " h";
-      document.getElementById("kpiHorasParadas").textContent = Number(d.horas_paradas ?? 0).toFixed(2) + " h";
-      document.getElementById("kpiIgnicoes").textContent = Number(d.ignicoes ?? 0);
+      document.getElementById("kpiHorasEmbarcacao").textContent = fmtFixed(d.horas_embarcacao, 2, "0.00") + " h";
+      document.getElementById("kpiHorasParadas").textContent = fmtFixed(d.horas_paradas, 2, "0.00") + " h";
+      document.getElementById("kpiIgnicoes").textContent = String(toNumber(d.ignicoes, 0));
 
       const lat = d.latitude;
       const lon = d.longitude;
@@ -507,7 +520,6 @@
       console.error("Erro ao carregar plano:", e);
     }
   }
-
   /* =============== CARREGAR PRÓXIMAS PREVENTIVAS =============== */
   async function loadPreventiva(){
     try{

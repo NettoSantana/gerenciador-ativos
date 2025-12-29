@@ -22,6 +22,9 @@ from gerenciador_ativos.api.ativos.routes_dados import api_ativos_dados_bp
 from gerenciador_ativos.api.monitoramento.routes import monitoramento_bp
 from gerenciador_ativos.api.ativos import api_ativos_bp
 
+# 🔥 NOVO: API DO DASHBOARD GERAL (TV)
+from gerenciador_ativos.api.dashboard.routes import dashboard_api_bp
+
 
 def ensure_sqlite_schema(db_path: str):
     if not os.path.exists(db_path):
@@ -54,11 +57,10 @@ def create_app():
     app = Flask(__name__, static_folder="static", template_folder="templates")
 
     # --------------------------------------------------
-    # CONFIG (🔥 CORREÇÃO CRÍTICA)
+    # CONFIG
     # --------------------------------------------------
     app.config.from_object(Config)
 
-    # GARANTE SECRET_KEY SEMPRE
     app.config["SECRET_KEY"] = getattr(
         Config,
         "SECRET_KEY",
@@ -121,6 +123,9 @@ def create_app():
     app.register_blueprint(monitoramento_bp)
     app.register_blueprint(api_ativos_dados_bp)
     app.register_blueprint(api_ativos_bp)
+
+    # 🔥 REGISTRO DA API DO DASHBOARD GERAL
+    app.register_blueprint(dashboard_api_bp)
 
     # --------------------------------------------------
     # STARTUP
