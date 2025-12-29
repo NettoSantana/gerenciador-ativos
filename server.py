@@ -24,9 +24,6 @@ from gerenciador_ativos.api.ativos import api_ativos_bp
 
 
 def ensure_sqlite_schema(db_path: str):
-    """
-    Migração segura de schema SQLite
-    """
     if not os.path.exists(db_path):
         return
 
@@ -45,7 +42,6 @@ def ensure_sqlite_schema(db_path: str):
     colunas = [row[1] for row in cur.fetchall()]
 
     if "consumo_lph" not in colunas:
-        print(">>> Criando coluna consumo_lph")
         cur.execute(
             "ALTER TABLE ativos ADD COLUMN consumo_lph REAL DEFAULT 0;"
         )
@@ -58,12 +54,19 @@ def create_app():
     app = Flask(__name__, static_folder="static", template_folder="templates")
 
     # --------------------------------------------------
-    # CONFIG
+    # CONFIG (🔥 CORREÇÃO CRÍTICA)
     # --------------------------------------------------
     app.config.from_object(Config)
 
+    # GARANTE SECRET_KEY SEMPRE
+    app.config["SECRET_KEY"] = getattr(
+        Config,
+        "SECRET_KEY",
+        os.environ.get("SECRET_KEY", "dev-secret-key-fixo")
+    )
+
     # --------------------------------------------------
-    # SQLITE FIXO NO VOLUME DO RAILWAY
+    # SQLITE
     # --------------------------------------------------
     INSTANCE_PATH = "/app/instance"
     os.makedirs(INSTANCE_PATH, exist_ok=True)
@@ -86,11 +89,10 @@ def create_app():
         return Usuario.query.get(int(user_id))
 
     # --------------------------------------------------
-    # INIT CONTROLADO DO BANCO
+    # INIT DB
     # --------------------------------------------------
     if os.environ.get("RUN_DB_INIT") == "1":
         with app.app_context():
-            print(">>> INIT_DB: criando tabelas no volume")
             db.create_all()
 
             admin = Usuario.query.filter_by(email="admin@admin.com").first()
@@ -104,8 +106,6 @@ def create_app():
                 admin.set_password("admin123")
                 db.session.add(admin)
                 db.session.commit()
-
-            print(">>> INIT_DB: finalizado com sucesso")
 
     # --------------------------------------------------
     # BLUEPRINTS
@@ -123,10 +123,9 @@ def create_app():
     app.register_blueprint(api_ativos_bp)
 
     # --------------------------------------------------
-    # STARTUP SEGURO
+    # STARTUP
     # --------------------------------------------------
     with app.app_context():
-        print(">>> Usando banco em:", DB_PATH)
         if os.path.exists(DB_PATH):
             ensure_sqlite_schema(DB_PATH)
 
