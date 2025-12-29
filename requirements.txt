@@ -5,3 +5,4 @@ waitress==2.1.2
 
 # --- Adicionado para integração BrasilSat ---
 requests==2.31.0
+Flask-Login
