@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify
+from gerenciador_ativos.models import Ativo
 
 dashboard_api_bp = Blueprint(
     "dashboard_api",
@@ -11,19 +12,27 @@ dashboard_api_bp = Blueprint(
 def dashboard_geral_api():
     """
     Endpoint dedicado para o Dashboard Geral (TV).
-    Retorna JSON pronto para consumo visual.
-    (dados mockados neste primeiro passo)
+
+    Dados reais neste passo:
+    - Embarcação: Ativo.nome
+    - Horas: campo existente no model (ou placeholder)
+    - Bateria: tensão da bateria no ativo (ou placeholder)
+
+    Demais campos permanecem como placeholder.
     """
 
-    dados = [
-        {
-            "embarcacao": "—",
+    ativos = Ativo.query.filter_by(ativo=True).all()
+
+    dados = []
+
+    for ativo in ativos:
+        dados.append({
+            "embarcacao": ativo.nome,
             "cotista_dia": "—",
-            "horas": "—",
+            "horas": getattr(ativo, "horas_uso", "—"),
             "lavagem_interna": "—",
             "pendencias": "—",
-            "bateria": "—"
-        }
-    ]
+            "bateria": getattr(ativo, "tensao_bateria", "—")
+        })
 
     return jsonify(dados)
