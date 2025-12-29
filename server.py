@@ -11,6 +11,7 @@ from gerenciador_ativos import preventiva_models  # noqa
 # Blueprints
 from gerenciador_ativos.auth.routes import auth_bp
 from gerenciador_ativos.dashboards.routes import dashboards_bp
+from gerenciador_ativos.dashboards.geral import dashboard_geral_bp
 from gerenciador_ativos.usuarios.routes import usuarios_bp
 from gerenciador_ativos.clientes.routes import clientes_bp
 from gerenciador_ativos.ativos.routes import ativos_bp
@@ -102,6 +103,7 @@ def create_app():
     # registra blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboards_bp)
+    app.register_blueprint(dashboard_geral_bp)
     app.register_blueprint(usuarios_bp)
     app.register_blueprint(clientes_bp)
     app.register_blueprint(ativos_bp)
