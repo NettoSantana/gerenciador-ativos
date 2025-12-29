@@ -52,10 +52,6 @@
       border-collapse: collapse;
     }
 
-    thead {
-      background: #020617;
-    }
-
     thead th {
       padding: 14px 12px;
       text-align: left;
@@ -71,7 +67,6 @@
       border-right: none;
     }
 
-    /* ====== CORPO ====== */
     tbody tr {
       border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     }
@@ -94,32 +89,6 @@
 
     tbody td:last-child {
       border-right: none;
-    }
-
-    /* ====== STATUS ====== */
-    .status-ok {
-      color: #22c55e;
-      font-weight: 700;
-    }
-
-    .status-warn {
-      color: #facc15;
-      font-weight: 700;
-    }
-
-    .status-bad {
-      color: #ef4444;
-      font-weight: 700;
-    }
-
-    /* ====== RESPONSIVO TV ====== */
-    @media (max-width: 1280px) {
-      tbody td {
-        font-size: 16px;
-      }
-      thead th {
-        font-size: 13px;
-      }
     }
   </style>
 
@@ -144,12 +113,7 @@
       </thead>
       <tbody id="tvTableBody">
         <tr>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
+          <td colspan="6">Carregando...</td>
         </tr>
       </tbody>
     </table>
@@ -166,7 +130,45 @@
     el.textContent = `${h}:${m}`;
   }
 
+  async function carregarDados(){
+    const tbody = document.getElementById("tvTableBody");
+    tbody.innerHTML = "<tr><td colspan='6'>Carregando...</td></tr>";
+
+    try {
+      const resp = await fetch("/api/dashboard-geral");
+      const dados = await resp.json();
+
+      tbody.innerHTML = "";
+
+      if (!dados.length) {
+        tbody.innerHTML = "<tr><td colspan='6'>Sem dados</td></tr>";
+        return;
+      }
+
+      dados.forEach(item => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${item.embarcacao}</td>
+          <td>${item.cotista_dia}</td>
+          <td>${item.horas}</td>
+          <td>${item.lavagem_interna}</td>
+          <td>${item.pendencias}</td>
+          <td>${item.bateria}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+    } catch (e) {
+      tbody.innerHTML = "<tr><td colspan='6'>Erro ao carregar dados</td></tr>";
+    }
+  }
+
   atualizarRelogio();
+  carregarDados();
+
   setInterval(atualizarRelogio, 10000);
+  setInterval(carregarDados, 30000); // atualiza dados a cada 30s
 </script>
 {% endblock %}
