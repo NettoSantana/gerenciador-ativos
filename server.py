@@ -1,6 +1,7 @@
 import os
 import sqlite3
 from flask import Flask
+from flask_login import LoginManager
 from gerenciador_ativos.config import Config
 from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import Usuario
@@ -24,10 +25,7 @@ from gerenciador_ativos.api.ativos import api_ativos_bp
 
 def ensure_sqlite_schema(db_path: str):
     """
-    Migração segura de schema SQLite:
-    - só roda se o banco existir
-    - só roda se a tabela existir
-    - nunca quebra o startup
+    Migração segura de schema SQLite
     """
     if not os.path.exists(db_path):
         return
@@ -35,7 +33,6 @@ def ensure_sqlite_schema(db_path: str):
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
 
-    # verifica se a tabela 'ativos' existe
     cur.execute("""
         SELECT name FROM sqlite_master
         WHERE type='table' AND name='ativos';
@@ -44,7 +41,6 @@ def ensure_sqlite_schema(db_path: str):
         conn.close()
         return
 
-    # lista colunas existentes
     cur.execute("PRAGMA table_info(ativos);")
     colunas = [row[1] for row in cur.fetchall()]
 
@@ -62,24 +58,35 @@ def create_app():
     app = Flask(__name__, static_folder="static", template_folder="templates")
 
     # --------------------------------------------------
+    # CONFIG
+    # --------------------------------------------------
+    app.config.from_object(Config)
+
+    # --------------------------------------------------
     # SQLITE FIXO NO VOLUME DO RAILWAY
     # --------------------------------------------------
     INSTANCE_PATH = "/app/instance"
     os.makedirs(INSTANCE_PATH, exist_ok=True)
-
     DB_PATH = os.path.join(INSTANCE_PATH, "gerenciador_ativos.db")
 
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # configs gerais
-    app.config.from_object(Config)
-
-    # inicializa SQLAlchemy
+    # --------------------------------------------------
+    # EXTENSIONS
+    # --------------------------------------------------
     db.init_app(app)
 
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = "auth.login"
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return Usuario.query.get(int(user_id))
+
     # --------------------------------------------------
-    # INIT CONTROLADO DO BANCO (SEM SHELL)
+    # INIT CONTROLADO DO BANCO
     # --------------------------------------------------
     if os.environ.get("RUN_DB_INIT") == "1":
         with app.app_context():
@@ -100,7 +107,9 @@ def create_app():
 
             print(">>> INIT_DB: finalizado com sucesso")
 
-    # registra blueprints
+    # --------------------------------------------------
+    # BLUEPRINTS
+    # --------------------------------------------------
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboards_bp)
     app.register_blueprint(dashboard_geral_bp)
@@ -114,16 +123,12 @@ def create_app():
     app.register_blueprint(api_ativos_bp)
 
     # --------------------------------------------------
-    # STARTUP SEGURO (NUNCA CRIA BANCO SOZINHO)
+    # STARTUP SEGURO
     # --------------------------------------------------
     with app.app_context():
         print(">>> Usando banco em:", DB_PATH)
-
         if os.path.exists(DB_PATH):
-            print(">>> Banco existente — validando schema")
             ensure_sqlite_schema(DB_PATH)
-        else:
-            print(">>> ATENÇÃO: banco ainda não existe (nenhuma criação automática será feita)")
 
     return app
 
