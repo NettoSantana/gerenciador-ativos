@@ -37,9 +37,9 @@ def login():
 
         flash(f"Bem-vindo(a), {usuario.nome}!", "success")
 
-        # rota conforme o tipo
+        # 🔥 CORREÇÃO: rota válida
         if usuario.is_interno():
-            return redirect(url_for("dashboards.dashboard_gerente"))
+            return redirect(url_for("dashboard_geral.dashboard_geral"))
         else:
             return redirect(url_for("portal.dashboard_cliente"))
 
@@ -94,7 +94,7 @@ def register():
         ativo=True
     )
     db.session.add(cliente)
-    db.session.flush()  # garante ID imediato
+    db.session.flush()
 
     # ===========================
     # 2 — Criar USUÁRIO vinculado
@@ -102,7 +102,7 @@ def register():
     usuario = Usuario(
         nome=nome,
         email=email,
-        tipo="cliente",   # padrão para campanhas
+        tipo="cliente",
         ativo=True,
         cliente_id=cliente.id
     )
