@@ -89,7 +89,7 @@
           {% set tipo = session.get('user_tipo') %}
 
           {% if tipo in ['admin', 'gerente'] %}
-        <a href="{{ url_for('dashboard_geral.dashboard_geral') }}" class="btn-ghost">Home</a>
+        <a href="{{ url_for('dashboards.dashboard_gerente') }}" class="btn-ghost">Home</a>
           {% else %}
             <a href="{{ url_for('portal.dashboard_cliente') }}" class="btn-ghost">Home</a>
           {% endif %}
