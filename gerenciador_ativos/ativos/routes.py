@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for
 from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import Ativo, Cliente
 from gerenciador_ativos.ativos.service import criar_ativo, atualizar_ativo, excluir_ativo
+from gerenciador_ativos.ativos.utils import calcular_horas_motor
 from gerenciador_ativos.auth.decorators import login_required, gerente_required
 
 ativos_bp = Blueprint("ativos", __name__, url_prefix="/ativos")
@@ -16,13 +17,21 @@ def lista():
     return render_template("ativos/lista.html", ativos=ativos)
 
 
-# PAINEL (AGORA EXISTE!)
+# PAINEL
 @ativos_bp.route("/painel/<int:id>")
 @login_required
 @gerente_required
 def painel(id):
     ativo = Ativo.query.get_or_404(id)
-    return render_template("ativos/painel.html", ativo=ativo)
+
+    # 🔥 fonte única da verdade
+    horas_motor = calcular_horas_motor(ativo)
+
+    return render_template(
+        "ativos/painel.html",
+        ativo=ativo,
+        horas_motor=horas_motor
+    )
 
 
 # NOVO ATIVO
