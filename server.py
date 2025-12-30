@@ -11,7 +11,6 @@ from gerenciador_ativos import preventiva_models  # noqa
 
 # Blueprints
 from gerenciador_ativos.auth.routes import auth_bp
-from gerenciador_ativos.dashboards.routes import dashboards_bp
 from gerenciador_ativos.dashboards.geral import dashboard_geral_bp
 from gerenciador_ativos.usuarios.routes import usuarios_bp
 from gerenciador_ativos.clientes.routes import clientes_bp
@@ -22,7 +21,7 @@ from gerenciador_ativos.api.ativos.routes_dados import api_ativos_dados_bp
 from gerenciador_ativos.api.monitoramento.routes import monitoramento_bp
 from gerenciador_ativos.api.ativos import api_ativos_bp
 
-# 🔥 NOVO: API DO DASHBOARD GERAL (TV)
+# 🔥 API DO DASHBOARD GERAL (TV)
 from gerenciador_ativos.api.dashboard.routes import dashboard_api_bp
 
 
@@ -113,7 +112,6 @@ def create_app():
     # BLUEPRINTS
     # --------------------------------------------------
     app.register_blueprint(auth_bp)
-    app.register_blueprint(dashboards_bp)
     app.register_blueprint(dashboard_geral_bp)
     app.register_blueprint(usuarios_bp)
     app.register_blueprint(clientes_bp)
@@ -124,7 +122,7 @@ def create_app():
     app.register_blueprint(api_ativos_dados_bp)
     app.register_blueprint(api_ativos_bp)
 
-    # 🔥 REGISTRO DA API DO DASHBOARD GERAL
+    # 🔥 API DO DASHBOARD GERAL
     app.register_blueprint(dashboard_api_bp)
 
     # --------------------------------------------------
