@@ -149,12 +149,12 @@
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
-          <td>${item.embarcacao}</td>
-          <td>${item.cotista_dia}</td>
-          <td>${item.horas}</td>
-          <td>${item.lavagem_interna}</td>
-          <td>${item.pendencias}</td>
-          <td>${item.bateria}</td>
+          <td>${item.embarcacao ?? "—"}</td>
+          <td>${item.cotista_dia ?? "—"}</td>
+          <td>${item.horas ?? "—"}</td>
+          <td>${item.lavagem_interna ?? "—"}</td>
+          <td>${item.pendencias ?? "—"}</td>
+          <td>${item.bateria ?? "—"}</td>
         `;
 
         tbody.appendChild(tr);
