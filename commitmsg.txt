@@ -1,1 +1,3 @@
-﻿fix: corrige rota Home para dashboard_geral existente
+﻿fix: home do admin/gerente aponta para painel gerencial
+
+- Troca link Home (admin/gerente) de /dashboard-geral (TV) para /dashboard/gerente (Painel Gerencial)
