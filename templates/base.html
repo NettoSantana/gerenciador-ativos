@@ -16,22 +16,16 @@
     }
 
     @media (max-width: 640px) {
-      .logo-img {
-        height: 40px;
-      }
+      .logo-img { height: 40px; }
     }
 
-    .logo-text {
-      display: none;
-    }
+    .logo-text { display: none; }
 
     /* ============================
        AJUSTE DE RESPONSIVIDADE DO MENU
        SOMENTE MOBILE (< 640px)
        ============================ */
     @media (max-width: 640px) {
-
-      /* Container geral do topo */
       .topbar {
         flex-direction: column;
         align-items: center;
@@ -40,14 +34,12 @@
         text-align: center;
       }
 
-      /* Alinhar logo no centro */
       .topbar-left {
         width: 100%;
         display: flex;
         justify-content: center;
       }
 
-      /* Menu em coluna */
       .topbar-right {
         width: 100%;
         display: flex;
@@ -56,7 +48,6 @@
         align-items: center;
       }
 
-      /* Ajustar botões */
       .btn-ghost,
       .chip {
         width: 90%;
@@ -74,15 +65,12 @@
     <!-- ====================== HEADER ======================= -->
     <header class="topbar">
       <div class="topbar-left">
-
         <img src="{{ url_for('static', filename='logo.png') }}"
              alt="Electro Auto Náutica"
              class="logo-img">
-
       </div>
 
       <div class="topbar-right">
-
         {% if session.get('user_nome') %}
           <span class="chip">Olá, {{ session.get('user_nome') }}</span>
 
@@ -90,7 +78,7 @@
 
           {% if tipo in ['admin', 'gerente'] %}
             <!-- HOME DO ADMIN/GERENTE = PAINEL GERENCIAL -->
-            <a href="/dashboard-geral" class="btn-ghost">Home</a>
+            <a href="{{ url_for('dashboard_geral.dashboard_gerente') }}" class="btn-ghost">Home</a>
           {% else %}
             <a href="{{ url_for('portal.dashboard_cliente') }}" class="btn-ghost">Home</a>
           {% endif %}
@@ -106,7 +94,6 @@
         {% else %}
           <a href="{{ url_for('auth.login') }}" class="btn-ghost">Login</a>
         {% endif %}
-
       </div>
     </header>
     <!-- ====================== FIM HEADER ======================= -->

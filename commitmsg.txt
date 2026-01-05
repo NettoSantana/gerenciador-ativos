@@ -1,4 +1,7 @@
-﻿fix: cria rota /dashboard/gerente no blueprint dashboards/geral
+﻿fix: home do admin/gerente em /dashboard-geral e TV em /tv
 
-- Painel gerencial passa a existir e renderiza templates/dashboards/gerente.html
-- Envia contagens de clientes, ativos e preventivas para o template
+- /dashboard-geral agora renderiza dashboards/gerente.html (requer login + admin/gerente)
+- /dashboard/gerente agora redireciona para /dashboard-geral (compatibilidade)
+- /tv vira a rota pública da TV (painel_tv.html)
+- base.html: Home admin/gerente aponta para /dashboard-geral
+- gerente.html: botão Modo TV aponta para /tv

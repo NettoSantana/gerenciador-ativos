@@ -1,8 +1,20 @@
+from urllib.parse import urlparse, urljoin
+
 from flask import render_template, request, redirect, url_for, flash, session
+from flask_login import login_user, logout_user, current_user
+
 from gerenciador_ativos.auth import auth_bp
 from gerenciador_ativos.auth.service import autenticar_usuario
 from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import Usuario, Cliente
+
+
+def _is_safe_next_url(target: str) -> bool:
+    if not target:
+        return False
+    ref = urlparse(request.host_url)
+    test = urlparse(urljoin(request.host_url, target))
+    return test.scheme in ("http", "https") and ref.netloc == test.netloc
 
 
 # ============================================================
@@ -20,16 +32,26 @@ def index_redirect():
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    # se já está logado, manda pra home certa
+    if current_user.is_authenticated:
+        tipo = session.get("user_tipo")
+        if tipo in ["admin", "gerente"]:
+            return redirect(url_for("dashboard_geral.dashboard_gerente"))
+        return redirect(url_for("portal.dashboard_cliente"))
+
     if request.method == "POST":
-        email = request.form.get("email")
-        senha = request.form.get("senha")
+        email = (request.form.get("email") or "").strip().lower()
+        senha = request.form.get("senha") or ""
 
         usuario = autenticar_usuario(email, senha)
         if not usuario:
             flash("Usuário ou senha inválidos.", "danger")
             return render_template("auth/login.html")
 
-        # guarda dados na sessão
+        # 🔥 ESSENCIAL: autentica no Flask-Login (senão login_required vira loop)
+        login_user(usuario)
+
+        # mantém sessão para templates/menu
         session["user_id"] = usuario.id
         session["user_nome"] = usuario.nome
         session["user_tipo"] = usuario.tipo
@@ -37,11 +59,22 @@ def login():
 
         flash(f"Bem-vindo(a), {usuario.nome}!", "success")
 
-        # 🔥 CORREÇÃO: rota válida
-        if usuario.is_interno():
-            return redirect(url_for("dashboard_geral.dashboard_geral"))
+        # respeita o next quando for seguro
+        next_url = request.args.get("next") or request.form.get("next")
+        if next_url and _is_safe_next_url(next_url):
+            # cliente não pode cair em rota interna
+            if usuario.tipo == "cliente" and next_url.startswith("/dashboard"):
+                next_url = None
         else:
-            return redirect(url_for("portal.dashboard_cliente"))
+            next_url = None
+
+        # home padrão por perfil
+        if usuario.is_interno():
+            default_url = url_for("dashboard_geral.dashboard_gerente")
+        else:
+            default_url = url_for("portal.dashboard_cliente")
+
+        return redirect(next_url or default_url)
 
     return render_template("auth/login.html")
 
@@ -52,6 +85,7 @@ def login():
 
 @auth_bp.route("/logout")
 def logout():
+    logout_user()
     session.clear()
     flash("Você saiu do sistema.", "info")
     return redirect(url_for("auth.login"))
@@ -64,13 +98,11 @@ def logout():
 @auth_bp.route("/register", methods=["POST"])
 def register():
     """Cadastro simples para campanhas, com criação automática de cliente."""
-    
-    nome = request.form.get("nome", "").strip()
-    email = request.form.get("email", "").strip().lower()
-    senha = request.form.get("senha")
-    confirmar = request.form.get("confirmar")
+    nome = (request.form.get("nome") or "").strip()
+    email = (request.form.get("email") or "").strip().lower()
+    senha = request.form.get("senha") or ""
+    confirmar = request.form.get("confirmar") or ""
 
-    # validações básicas
     if not nome or not email or not senha:
         flash("Preencha todos os campos.", "danger")
         return redirect(url_for("auth.login"))
@@ -79,14 +111,11 @@ def register():
         flash("As senhas não coincidem.", "danger")
         return redirect(url_for("auth.login"))
 
-    # email duplicado
     if Usuario.query.filter_by(email=email).first():
         flash("Este e-mail já está cadastrado.", "warning")
         return redirect(url_for("auth.login"))
 
-    # ===========================
     # 1 — Criar CLIENTE automático
-    # ===========================
     cliente = Cliente(
         tipo="PF",
         nome=nome,
@@ -96,9 +125,7 @@ def register():
     db.session.add(cliente)
     db.session.flush()
 
-    # ===========================
     # 2 — Criar USUÁRIO vinculado
-    # ===========================
     usuario = Usuario(
         nome=nome,
         email=email,

@@ -25,10 +25,6 @@ def _safe_count(table_name: str) -> int:
 
 
 def _safe_count_preventivas() -> int:
-    """
-    Tenta achar uma tabela de preventivas (nome pode variar).
-    Prioriza 'preventivas' se existir. Senão pega a primeira que contenha 'prevent'.
-    """
     try:
         rows = db.session.execute(
             text("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE :p"),
@@ -48,22 +44,12 @@ def _safe_count_preventivas() -> int:
         return 0
 
 
-def _require_admin_or_gerente():
+@dashboard_geral_bp.route("/dashboard/gerente")
+@login_required
+def dashboard_gerente():
     tipo = session.get("user_tipo")
     if tipo not in ["admin", "gerente"]:
         return redirect(url_for("portal.dashboard_cliente"))
-    return None
-
-
-# ==============================
-# HOME DO ADMIN/GERENTE
-# ==============================
-@dashboard_geral_bp.route("/dashboard-geral")
-@login_required
-def dashboard_geral():
-    guard = _require_admin_or_gerente()
-    if guard:
-        return guard
 
     total_clientes = _safe_count("clientes")
     total_ativos_ativos = _safe_count("ativos")
@@ -77,20 +63,7 @@ def dashboard_geral():
     )
 
 
-# ==============================
-# ROTA ANTIGA (NÃO QUEBRA)
-# ==============================
-@dashboard_geral_bp.route("/dashboard/gerente")
-@login_required
-def dashboard_gerente():
-    # Mantém compatibilidade: qualquer lugar que ainda use /dashboard/gerente
-    # vai cair no HOME oficial (/dashboard-geral)
-    return redirect("/dashboard-geral")
-
-
-# ==============================
-# TELA TV (PÚBLICA)
-# ==============================
-@dashboard_geral_bp.route("/tv")
-def dashboard_tv():
+@dashboard_geral_bp.route("/dashboard-geral")
+def dashboard_geral():
+    # TV (sem login)
     return render_template("ativos/painel_tv.html")
