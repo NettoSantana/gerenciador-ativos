@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, session, redirect, url_for
-from flask_login import login_required
 from sqlalchemy import text
 
 from gerenciador_ativos.extensions import db
+from gerenciador_ativos.auth.decorators import login_required, gerente_required
 
 dashboard_geral_bp = Blueprint("dashboard_geral", __name__)
 
@@ -48,15 +48,11 @@ def _safe_count_preventivas() -> int:
         return 0
 
 
-# ============================================================
-# ✅ HOME (ADMIN/GERENTE) = PAINEL GERENCIAL
-# /dashboard-geral (principal)
-# /dashboard/gerente (alias)
-# ============================================================
-@dashboard_geral_bp.route("/dashboard-geral")
 @dashboard_geral_bp.route("/dashboard/gerente")
 @login_required
-def dashboard_geral():
+@gerente_required
+def dashboard_gerente():
+    # garante coerência mesmo se o decorator mudar no futuro
     tipo = session.get("user_tipo")
     if tipo not in ["admin", "gerente"]:
         return redirect(url_for("portal.dashboard_cliente"))
@@ -73,9 +69,7 @@ def dashboard_geral():
     )
 
 
-# ============================================================
-# ✅ TELA DA TV (SEM LOGIN) — separada do painel gerencial
-# ============================================================
-@dashboard_geral_bp.route("/tv")
-def painel_tv():
+@dashboard_geral_bp.route("/dashboard-geral")
+def dashboard_geral():
+    # TV (sem login)
     return render_template("ativos/painel_tv.html")
