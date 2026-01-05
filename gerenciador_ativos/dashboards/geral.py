@@ -25,6 +25,10 @@ def _safe_count(table_name: str) -> int:
 
 
 def _safe_count_preventivas() -> int:
+    """
+    Tenta achar uma tabela de preventivas (nome pode variar).
+    Prioriza 'preventivas' se existir. Senão pega a primeira que contenha 'prevent'.
+    """
     try:
         rows = db.session.execute(
             text("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE :p"),
@@ -44,9 +48,15 @@ def _safe_count_preventivas() -> int:
         return 0
 
 
+# ============================================================
+# ✅ HOME (ADMIN/GERENTE) = PAINEL GERENCIAL
+# /dashboard-geral (principal)
+# /dashboard/gerente (alias)
+# ============================================================
+@dashboard_geral_bp.route("/dashboard-geral")
 @dashboard_geral_bp.route("/dashboard/gerente")
 @login_required
-def dashboard_gerente():
+def dashboard_geral():
     tipo = session.get("user_tipo")
     if tipo not in ["admin", "gerente"]:
         return redirect(url_for("portal.dashboard_cliente"))
@@ -63,7 +73,9 @@ def dashboard_gerente():
     )
 
 
-@dashboard_geral_bp.route("/dashboard-geral")
-def dashboard_geral():
-    # TV (sem login)
+# ============================================================
+# ✅ TELA DA TV (SEM LOGIN) — separada do painel gerencial
+# ============================================================
+@dashboard_geral_bp.route("/tv")
+def painel_tv():
     return render_template("ativos/painel_tv.html")

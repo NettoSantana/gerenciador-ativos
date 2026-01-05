@@ -1,7 +1,6 @@
-﻿fix: home do admin/gerente em /dashboard-geral e TV em /tv
+﻿fix: login real com Flask-Login + home do admin para /dashboard/gerente
 
-- /dashboard-geral agora renderiza dashboards/gerente.html (requer login + admin/gerente)
-- /dashboard/gerente agora redireciona para /dashboard-geral (compatibilidade)
-- /tv vira a rota pública da TV (painel_tv.html)
-- base.html: Home admin/gerente aponta para /dashboard-geral
-- gerente.html: botão Modo TV aponta para /tv
+- Usa login_user/logout_user para evitar loop do login_required
+- Respeita next quando seguro
+- Garante rota /dashboard/gerente no dashboards/geral.py
+- Home (admin/gerente) aponta para Painel Gerencial
