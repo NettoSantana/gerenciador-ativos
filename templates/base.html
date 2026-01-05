@@ -90,7 +90,7 @@
 
           {% if tipo in ['admin', 'gerente'] %}
             <!-- HOME DO ADMIN/GERENTE = PAINEL GERENCIAL -->
-            <a href="/dashboard/gerente" class="btn-ghost">Home</a>
+            <a href="/dashboard-geral" class="btn-ghost">Home</a>
           {% else %}
             <a href="{{ url_for('portal.dashboard_cliente') }}" class="btn-ghost">Home</a>
           {% endif %}

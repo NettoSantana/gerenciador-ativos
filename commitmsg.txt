@@ -1,3 +1,4 @@
-﻿fix: home do admin/gerente aponta para painel gerencial
+﻿fix: cria rota /dashboard/gerente no blueprint dashboards/geral
 
-- Troca link Home (admin/gerente) de /dashboard-geral (TV) para /dashboard/gerente (Painel Gerencial)
+- Painel gerencial passa a existir e renderiza templates/dashboards/gerente.html
+- Envia contagens de clientes, ativos e preventivas para o template
