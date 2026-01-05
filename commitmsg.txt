@@ -1,4 +1,2 @@
-﻿fix: cria rota /tv como alias do modo TV
-
-- /tv e /tv/ agora abrem a mesma tela de /dashboard-geral
-- elimina 404 ao acessar /tv
+﻿fix: criar rota /tv como alias do painel TV
+- /tv agora renderiza o mesmo template de /dashboard-geral
