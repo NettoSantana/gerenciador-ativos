@@ -1,1 +1,1 @@
-﻿feat: cria partial _kpis.html para painel do ativo com consumo calculado no backend
+﻿fix: corrige rota Home para dashboard_geral existente
