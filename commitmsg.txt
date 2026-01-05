@@ -1,7 +1,4 @@
-﻿fix: login e rotas do painel gerencial (sem loop)
+﻿fix: cria rota /tv como alias do modo TV
 
-- Login interno agora vai para /dashboard/gerente (painel gerencial)
-- Respeita ?next= quando existir
-- Cria rota /dashboard/gerente no blueprint dashboards/geral
-- Mantém /dashboard-geral (TV) sem login
-- Base.html Home interno aponta via url_for para painel gerencial
+- /tv e /tv/ agora abrem a mesma tela de /dashboard-geral
+- elimina 404 ao acessar /tv
