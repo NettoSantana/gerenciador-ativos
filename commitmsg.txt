@@ -1,7 +1,7 @@
-﻿fix: /dashboard-geral vira painel gerencial e TV vai pra /tv
+﻿fix: login e rotas do painel gerencial (sem loop)
 
-- /dashboard-geral agora renderiza Painel Gerencial (login_required)
-- alias /dashboard/gerente apontando pro mesmo painel
-- tela da TV movida para /tv (sem login)
-- base.html Home (admin/gerente) aponta para /dashboard-geral
-- gerente.html botão Modo TV aponta para /tv
+- Login interno agora vai para /dashboard/gerente (painel gerencial)
+- Respeita ?next= quando existir
+- Cria rota /dashboard/gerente no blueprint dashboards/geral
+- Mantém /dashboard-geral (TV) sem login
+- Base.html Home interno aponta via url_for para painel gerencial
