@@ -1,6 +1,5 @@
-﻿feat(tv): painel TV sem base.html + consumo /api/dashboard-geral com auto-refresh
+﻿feat(tv): consumir api por url_for e preencher campos quando existirem
 
-- Remove header/menu do base na tela da TV
-- Busca dados via /api/dashboard-geral (no-store)
-- Status de atualização + relógio
-- Fullscreen com 1 clique (regra do browser)
+- API /api/dashboard-geral agora usa fallbacks de campos (cotista, lavagem, pendencias, bateria)
+- evita 'or' que escondia 0 e trata None corretamente
+- painel TV usa url_for para API e mostra 'Atualizado HH:MM'
