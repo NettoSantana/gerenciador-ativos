@@ -73,3 +73,9 @@ def dashboard_gerente():
 def dashboard_geral():
     # TV (sem login)
     return render_template("ativos/painel_tv.html")
+
+
+@dashboard_geral_bp.route("/tv")
+def tv():
+    # ALIAS da TV: permite abrir /tv sem dar 404
+    return render_template("ativos/painel_tv.html")
