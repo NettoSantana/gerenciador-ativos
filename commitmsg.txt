@@ -1,3 +1,4 @@
-﻿feat: cria rota /tv como alias do dashboard-geral (modo TV)
-- Mantém /dashboard-geral funcionando
-- /tv agora abre a mesma tela da TV (painel_tv.html)
+﻿feat: botão de tela cheia na TV
+
+- adiciona prompt/botão para entrar em fullscreen (com 1 clique)
+- esconde o botão quando estiver em tela cheia e reaparece ao sair
