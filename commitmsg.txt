@@ -1,2 +1,3 @@
-﻿fix: criar rota /tv como alias do painel TV
-- /tv agora renderiza o mesmo template de /dashboard-geral
+﻿feat: cria rota /tv como alias do dashboard-geral (modo TV)
+- Mantém /dashboard-geral funcionando
+- /tv agora abre a mesma tela da TV (painel_tv.html)
