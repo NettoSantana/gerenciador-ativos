@@ -1,273 +1,220 @@
-{% extends "base.html" %}
-{% block title %}Dashboard Geral — TV{% endblock %}
-
-{% block content %}
-<div class="tv-dashboard">
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard Geral — TV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
   <style>
-    /* ====== FULLSCREEN / TV ====== */
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #020617;
-    }
+    html, body { width:100%; height:100%; margin:0; padding:0; overflow:hidden; background:#020617; }
+    body { color:#e5e7eb; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 
-    /* ====== BASE TV ====== */
-    body {
-      background: #020617;
-    }
+    .tv { width:100vw; height:100vh; padding:24px 32px; box-sizing:border-box; }
+    .top { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px; }
+    .left { display:flex; align-items:center; gap:14px; }
+    .logo { height:44px; width:auto; object-fit:contain; opacity:.92; }
+    h1 { margin:0; font-size:28px; letter-spacing:.04em; }
+    .meta { display:flex; align-items:center; gap:14px; white-space:nowrap; }
+    .status { font-size:14px; color:#cbd5e1; opacity:.9; }
+    .clock { font-size:18px; color:#9ca3af; }
 
-    .tv-dashboard {
-      width: 100vw;
-      height: 100vh;
-      padding: 24px 32px;
-      box-sizing: border-box;
-      color: #e5e7eb;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    .table-wrap {
+      width:100%;
+      height:calc(100vh - 92px);
+      overflow:hidden;
+      border-radius:16px;
+      border:1px solid #1f2937;
+      background:#020617;
     }
-
-    .tv-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-    }
-
-    .tv-header h1 {
-      font-size: 28px;
-      margin: 0;
-      letter-spacing: 0.04em;
-    }
-
-    .tv-header .tv-clock {
-      font-size: 18px;
-      color: #9ca3af;
-    }
-
-    /* ====== TABELA ====== */
-    .tv-table-wrap {
-      width: 100%;
-      height: calc(100vh - 110px);
-      overflow: hidden;
-      border-radius: 16px;
-      border: 1px solid #1f2937;
-      background: #020617;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
+    table { width:100%; border-collapse:collapse; }
     thead th {
-      padding: 14px 12px;
-      text-align: left;
-      font-size: 14px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #9ca3af;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.25);
-      border-right: 1px solid rgba(255, 255, 255, 0.15);
+      padding:14px 12px;
+      text-align:left;
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#9ca3af;
+      border-bottom:2px solid rgba(255,255,255,.25);
+      border-right:1px solid rgba(255,255,255,.15);
     }
-
-    thead th:last-child {
-      border-right: none;
-    }
-
-    tbody tr {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    }
-
-    tbody tr:nth-child(odd) {
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    tbody tr:nth-child(even) {
-      background: rgba(255, 255, 255, 0.07);
-    }
-
+    thead th:last-child { border-right:none; }
+    tbody tr { border-bottom:1px solid rgba(255,255,255,.15); }
+    tbody tr:nth-child(odd) { background:rgba(255,255,255,.03); }
+    tbody tr:nth-child(even) { background:rgba(255,255,255,.07); }
     tbody td {
-      padding: 16px 12px;
-      font-size: 18px;
-      font-weight: 500;
-      color: #e5e7eb;
-      border-right: 1px solid rgba(255, 255, 255, 0.12);
+      padding:16px 12px;
+      font-size:18px;
+      font-weight:500;
+      color:#e5e7eb;
+      border-right:1px solid rgba(255,255,255,.12);
     }
+    tbody td:last-child { border-right:none; }
 
-    tbody td:last-child {
-      border-right: none;
+    .fs {
+      position:fixed; right:18px; bottom:18px; z-index:9999;
+      display:flex; gap:10px; align-items:center;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(2,6,23,.86);
+      backdrop-filter:blur(8px);
+      color:#e5e7eb;
     }
-
-    /* ====== BOTÃO FULLSCREEN ====== */
-    .fs-wrap {
-      position: fixed;
-      right: 18px;
-      bottom: 18px;
-      z-index: 9999;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(2, 6, 23, 0.86);
-      backdrop-filter: blur(8px);
-      color: #e5e7eb;
+    .fs small { font-size:14px; color:#cbd5e1; white-space:nowrap; }
+    .fs button {
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.22);
+      background:rgba(255,255,255,.10);
+      color:#fff;
+      padding:10px 12px;
+      border-radius:10px;
+      font-size:14px;
+      font-weight:600;
     }
-
-    .fs-text {
-      font-size: 14px;
-      color: #cbd5e1;
-      white-space: nowrap;
-    }
-
-    .fs-btn {
-      cursor: pointer;
-      border: 1px solid rgba(255,255,255,0.22);
-      background: rgba(255,255,255,0.10);
-      color: #fff;
-      padding: 10px 12px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .fs-btn:hover {
-      background: rgba(255,255,255,0.16);
-    }
-
-    .fs-hidden {
-      display: none !important;
-    }
+    .fs button:hover { background:rgba(255,255,255,.16); }
+    .hidden { display:none !important; }
   </style>
+</head>
 
-  <!-- ====== HEADER ====== -->
-  <div class="tv-header">
-    <h1>Dashboard Geral — Operação</h1>
-    <div class="tv-clock" id="tvClock">--:--</div>
+<body>
+  <div class="tv">
+    <div class="top">
+      <div class="left">
+        <img class="logo" src="{{ url_for('static', filename='logo.png') }}" alt="Electro Auto Náutica">
+        <h1>Dashboard Geral — Operação</h1>
+      </div>
+
+      <div class="meta">
+        <div class="status" id="tvStatus">Atualizando…</div>
+        <div class="clock" id="tvClock">--:--</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Embarcação</th>
+            <th>Cotista (dia)</th>
+            <th>Horas</th>
+            <th>Lavagem interna</th>
+            <th>Pendências</th>
+            <th>Bateria</th>
+          </tr>
+        </thead>
+        <tbody id="tvTableBody">
+          <tr><td colspan="6">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- ====== TABELA ====== -->
-  <div class="tv-table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Embarcação</th>
-          <th>Cotista (dia)</th>
-          <th>Horas</th>
-          <th>Lavagem interna</th>
-          <th>Pendências</th>
-          <th>Bateria</th>
-        </tr>
-      </thead>
-      <tbody id="tvTableBody">
-        <tr>
-          <td colspan="6">Carregando...</td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="fs" id="fsWrap">
+    <small>Clique para entrar em tela cheia</small>
+    <button id="fsBtn">📺 Tela cheia</button>
   </div>
 
-</div>
+  <script>
+    const API_URL = "/api/dashboard-geral";
+    const REFRESH_MS = 10000; // 10s
 
-<!-- ====== FULLSCREEN PROMPT (precisa de clique por regra do navegador) ====== -->
-<div class="fs-wrap" id="fsWrap">
-  <div class="fs-text">Clique para entrar em tela cheia</div>
-  <button class="fs-btn" id="fsBtn">📺 Tela cheia</button>
-</div>
-
-<script>
-  function atualizarRelogio(){
-    const el = document.getElementById("tvClock");
-    const agora = new Date();
-    const h = String(agora.getHours()).padStart(2, "0");
-    const m = String(agora.getMinutes()).padStart(2, "0");
-    el.textContent = `${h}:${m}`;
-  }
-
-  async function carregarDados(){
     const tbody = document.getElementById("tvTableBody");
-    tbody.innerHTML = "<tr><td colspan='6'>Carregando...</td></tr>";
+    const elClock = document.getElementById("tvClock");
+    const elStatus = document.getElementById("tvStatus");
+    const fsWrap = document.getElementById("fsWrap");
+    const fsBtn = document.getElementById("fsBtn");
 
-    try {
-      const resp = await fetch("/api/dashboard-geral");
-      const dados = await resp.json();
+    function fmt(v){
+      if (v === null || v === undefined) return "—";
+      const s = String(v).trim();
+      return s === "" ? "—" : s;
+    }
 
-      tbody.innerHTML = "";
+    function setStatus(text, isErr=false){
+      elStatus.textContent = text;
+      elStatus.style.color = isErr ? "rgba(255,120,120,.95)" : "#cbd5e1";
+    }
 
-      if (!dados.length) {
+    function tickClock(){
+      const d = new Date();
+      const h = String(d.getHours()).padStart(2, "0");
+      const m = String(d.getMinutes()).padStart(2, "0");
+      elClock.textContent = `${h}:${m}`;
+    }
+
+    function render(dados){
+      if (!Array.isArray(dados) || dados.length === 0){
         tbody.innerHTML = "<tr><td colspan='6'>Sem dados</td></tr>";
         return;
       }
 
-      dados.forEach(item => {
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-          <td>${item.embarcacao ?? "—"}</td>
-          <td>${item.cotista_dia ?? "—"}</td>
-          <td>${item.horas ?? "—"}</td>
-          <td>${item.lavagem_interna ?? "—"}</td>
-          <td>${item.pendencias ?? "—"}</td>
-          <td>${item.bateria ?? "—"}</td>
-        `;
-
-        tbody.appendChild(tr);
-      });
-
-    } catch (e) {
-      tbody.innerHTML = "<tr><td colspan='6'>Erro ao carregar dados</td></tr>";
+      tbody.innerHTML = dados.map(item => `
+        <tr>
+          <td>${fmt(item.embarcacao)}</td>
+          <td>${fmt(item.cotista_dia)}</td>
+          <td>${fmt(item.horas)}</td>
+          <td>${fmt(item.lavagem_interna)}</td>
+          <td>${fmt(item.pendencias)}</td>
+          <td>${fmt(item.bateria)}</td>
+        </tr>
+      `).join("");
     }
-  }
 
-  function isFullscreen(){
-    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-  }
+    async function carregarDados(){
+      try{
+        setStatus("Atualizando…");
+        const resp = await fetch(API_URL, { cache: "no-store" });
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
 
-  async function requestFs(){
-    const el = document.documentElement;
+        const dados = await resp.json();
+        render(dados);
 
-    try {
-      if (el.requestFullscreen) await el.requestFullscreen();
-      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-      else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
-      else if (el.msRequestFullscreen) el.msRequestFullscreen();
-    } catch (e) {
-      // se falhar, deixa o botão visível
+        const d = new Date();
+        const h = String(d.getHours()).padStart(2, "0");
+        const m = String(d.getMinutes()).padStart(2, "0");
+        setStatus(`Atualizado ${h}:${m}`);
+      }catch(e){
+        tbody.innerHTML = "<tr><td colspan='6'>Erro ao carregar dados</td></tr>";
+        setStatus("Falha ao atualizar (API)", true);
+      }
     }
-  }
 
-  function updateFsUi(){
-    const wrap = document.getElementById("fsWrap");
-    if (!wrap) return;
+    function isFullscreen(){
+      return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+    }
 
-    // quando entrou, some o prompt
-    if (isFullscreen()) wrap.classList.add("fs-hidden");
-    else wrap.classList.remove("fs-hidden");
-  }
+    async function requestFs(){
+      const el = document.documentElement;
+      try{
+        if (el.requestFullscreen) await el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+        else if (el.msRequestFullscreen) el.msRequestFullscreen();
+      }catch(e){}
+    }
 
-  // clique único -> fullscreen
-  document.getElementById("fsBtn").addEventListener("click", async () => {
-    await requestFs();
+    function updateFsUi(){
+      if (isFullscreen()) fsWrap.classList.add("hidden");
+      else fsWrap.classList.remove("hidden");
+    }
+
+    fsBtn.addEventListener("click", async () => {
+      await requestFs();
+      updateFsUi();
+    });
+
+    document.addEventListener("fullscreenchange", updateFsUi);
+    document.addEventListener("webkitfullscreenchange", updateFsUi);
+    document.addEventListener("mozfullscreenchange", updateFsUi);
+    document.addEventListener("MSFullscreenChange", updateFsUi);
+
+    tickClock();
+    carregarDados();
     updateFsUi();
-  });
 
-  // se sair do fullscreen (ESC), o botão volta
-  document.addEventListener("fullscreenchange", updateFsUi);
-  document.addEventListener("webkitfullscreenchange", updateFsUi);
-  document.addEventListener("mozfullscreenchange", updateFsUi);
-  document.addEventListener("MSFullscreenChange", updateFsUi);
-
-  atualizarRelogio();
-  carregarDados();
-
-  setInterval(atualizarRelogio, 10000);
-  setInterval(carregarDados, 30000); // atualiza dados a cada 30s
-
-  // atualiza UI de fullscreen no load
-  updateFsUi();
-</script>
-{% endblock %}
+    setInterval(tickClock, 1000);
+    setInterval(carregarDados, REFRESH_MS);
+  </script>
+</body>
+</html>
