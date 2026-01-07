@@ -1,2 +1,1 @@
-﻿feat: adiciona menu Almoxarifado no header (admin/gerente)
-- Link direto /almoxarifado para evitar quebrar template antes da rota existir
+﻿feat(almox): criar tela de almoxarifado e rota novo item
