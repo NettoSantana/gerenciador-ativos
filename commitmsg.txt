@@ -1,5 +1,1 @@
-﻿feat(almox): adicionar ações editar/excluir na lista mantendo busca local
-
-- inclui coluna Ações com botões Editar/Excluir por item
-- excluir via POST com confirmação
-- mantém filtro de busca via JS no topo
+﻿debug(auth): loga unauthorized e estado da sessão ao acessar /almoxarifado
