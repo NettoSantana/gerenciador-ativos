@@ -28,8 +28,10 @@
           <th style="padding:12px 14px;">Unidade</th>
           <th style="padding:12px 14px;">Estoque</th>
           <th style="padding:12px 14px;">Status</th>
+          <th style="padding:12px 14px; text-align:right;">Ações</th>
         </tr>
       </thead>
+
       <tbody id="almoxTable">
         {% if itens and itens|length > 0 %}
           {% for it in itens %}
@@ -45,11 +47,24 @@
                 <span class="chip" style="opacity:.7;">Inativo</span>
               {% endif %}
             </td>
+
+            <td style="padding:12px 14px; text-align:right; white-space:nowrap;">
+              <a href="{{ url_for('almoxarifado.editar', item_id=it.id) }}" class="btn-ghost">Editar</a>
+
+              <form
+                method="POST"
+                action="{{ url_for('almoxarifado.excluir', item_id=it.id) }}"
+                style="display:inline;"
+                onsubmit="return confirm('Excluir (inativar) o item: {{ it.nome }} ?');"
+              >
+                <button type="submit" class="btn-ghost" style="opacity:.85;">Excluir</button>
+              </form>
+            </td>
           </tr>
           {% endfor %}
         {% else %}
           <tr>
-            <td colspan="5" style="padding:16px 14px;">Nenhum item cadastrado.</td>
+            <td colspan="6" style="padding:16px 14px;">Nenhum item cadastrado.</td>
           </tr>
         {% endif %}
       </tbody>
