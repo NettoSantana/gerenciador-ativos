@@ -1,7 +1,7 @@
 import os
 import sqlite3
-from flask import Flask
-from flask_login import LoginManager
+from flask import Flask, request, session
+from flask_login import LoginManager, current_user
 from gerenciador_ativos.config import Config
 from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import Usuario
@@ -47,9 +47,7 @@ def ensure_sqlite_schema(db_path: str):
     colunas = [row[1] for row in cur.fetchall()]
 
     if "consumo_lph" not in colunas:
-        cur.execute(
-            "ALTER TABLE ativos ADD COLUMN consumo_lph REAL DEFAULT 0;"
-        )
+        cur.execute("ALTER TABLE ativos ADD COLUMN consumo_lph REAL DEFAULT 0;")
 
     conn.commit()
     conn.close()
@@ -90,7 +88,39 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
-        return Usuario.query.get(int(user_id))
+        try:
+            return Usuario.query.get(int(user_id))
+        except Exception:
+            return None
+
+    # 🔎 DEBUG: quando o Flask-Login barra acesso (ex: /almoxarifado/)
+    @login_manager.unauthorized_handler
+    def _unauthorized():
+        # logs aparecem no Railway
+        print("=== UNAUTHORIZED (Flask-Login) ===")
+        print("path:", request.path)
+        print("method:", request.method)
+        print("remote:", request.headers.get("X-Forwarded-For") or request.remote_addr)
+        print("proto:", request.headers.get("X-Forwarded-Proto"))
+        print("host:", request.host)
+        print("cookies:", "session" in request.cookies)
+        print("session_keys:", list(session.keys()))
+        print("session_user_id:", session.get("_user_id"))
+        print("current_user.is_authenticated:", getattr(current_user, "is_authenticated", None))
+        print("=== /UNAUTHORIZED ===")
+        return login_manager.unauthorized()
+
+    # 🔎 DEBUG: só loga quando tentar entrar no Almox
+    @app.before_request
+    def _debug_almox_requests():
+        if request.path.startswith("/almoxarifado"):
+            print("=== ALMOX REQUEST ===")
+            print("path:", request.path)
+            print("cookies:", "session" in request.cookies)
+            print("session_keys:", list(session.keys()))
+            print("session_user_id:", session.get("_user_id"))
+            print("current_user.is_authenticated:", getattr(current_user, "is_authenticated", None))
+            print("=== /ALMOX REQUEST ===")
 
     # --------------------------------------------------
     # INIT DB
