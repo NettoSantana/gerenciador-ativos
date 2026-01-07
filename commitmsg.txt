@@ -1,1 +1,1 @@
-﻿feat(almox): criar tela de almoxarifado e rota novo item
+﻿fix(almox): alinhar autenticação do almoxarifado com session para evitar redirect ao login
