@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Editar item — Almoxarifado{% endblock %}
+
+{% block content %}
+<div class="page" style="max-width:920px;">
+
+  <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <h1>Editar item</h1>
+    <a href="{{ url_for('almoxarifado.index') }}" class="btn-ghost">Voltar</a>
+  </div>
+
+  <div class="card">
+    <form method="POST" action="{{ url_for('almoxarifado.editar', item_id=item.id) }}">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <div>
+          <label style="display:block; margin-bottom:6px;">Nome *</label>
+          <input name="nome" class="input" value="{{ item.nome }}" required>
+        </div>
+
+        <div>
+          <label style="display:block; margin-bottom:6px;">Unidade *</label>
+          <input name="unidade" class="input" value="{{ item.unidade }}" required>
+        </div>
+
+        <div>
+          <label style="display:block; margin-bottom:6px;">Categoria</label>
+          <input name="categoria" class="input" value="{{ item.categoria or '' }}" placeholder="Ex: Lubrificantes (opcional)">
+        </div>
+
+        <div>
+          <label style="display:block; margin-bottom:6px;">Estoque</label>
+          <input name="estoque_atual" class="input" value="{{ item.estoque_atual or 0 }}" inputmode="decimal">
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+        <a href="{{ url_for('almoxarifado.index') }}" class="btn-ghost">Cancelar</a>
+        <button type="submit" class="btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}
