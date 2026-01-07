@@ -1,4 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash, session
+from flask_login import login_user, logout_user
 
 from gerenciador_ativos.auth import auth_bp
 from gerenciador_ativos.auth.service import autenticar_usuario
@@ -37,7 +38,10 @@ def login():
             flash("Usuário ou senha inválidos.", "danger")
             return render_template("auth/login.html", next=_safe_next_url())
 
-        # guarda dados na sessão
+        # 🔐 LOGIN REAL NO FLASK-LOGIN
+        login_user(usuario)
+
+        # dados extras na sessão (OK manter)
         session["user_id"] = usuario.id
         session["user_nome"] = usuario.nome
         session["user_tipo"] = usuario.tipo
@@ -45,18 +49,15 @@ def login():
 
         flash(f"Bem-vindo(a), {usuario.nome}!", "success")
 
-        # ✅ prioridade: voltar para o 'next' quando existir
         nxt = _safe_next_url()
         if nxt:
             return redirect(nxt)
 
-        # ✅ padrão: interno cai no painel gerencial (NÃO na TV)
         if usuario.is_interno():
             return redirect(url_for("dashboard_geral.dashboard_gerente"))
 
         return redirect(url_for("portal.dashboard_cliente"))
 
-    # GET
     return render_template("auth/login.html", next=_safe_next_url())
 
 
@@ -66,7 +67,8 @@ def login():
 
 @auth_bp.route("/logout")
 def logout():
-    session.clear()
+    logout_user()          # 🔐 limpa Flask-Login
+    session.clear()        # limpa seus dados extras
     flash("Você saiu do sistema.", "info")
     return redirect(url_for("auth.login"))
 
@@ -77,7 +79,6 @@ def logout():
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    """Cadastro simples para campanhas, com criação automática de cliente."""
     nome = (request.form.get("nome") or "").strip()
     email = (request.form.get("email") or "").strip().lower()
     senha = request.form.get("senha") or ""
