@@ -4,68 +4,145 @@
 {% block content %}
 <div class="page">
 
-  <h1>Novo item</h1>
+  <style>
+    .novo-almox-wrap{
+      max-width:960px;
+      margin:20px auto 0;
+    }
+    .novo-almox-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+    .novo-almox-header h1{
+      margin:0;
+      font-size:24px;
+    }
+    .novo-almox-sub{
+      font-size:13px;
+      color:#9ca3af;
+      margin-top:4px;
+    }
 
-  <div class="card" style="max-width:420px;">
+    .card-form-almox{
+      background:linear-gradient(180deg,#020617,#020617);
+      border-radius:16px;
+      border:1px solid #1f2937;
+      box-shadow:0 10px 30px rgba(15,23,42,.6);
+      padding:20px 22px;
+    }
 
-    <form method="POST" action="{{ url_for('almoxarifado.novo') }}">
+    .form-grid-almox{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:14px;
+    }
 
-      <div class="form-group">
-        <label>Nome *</label>
-        <input
-          type="text"
-          name="nome"
-          class="input"
-          placeholder="Ex: Óleo 2T"
-          required
-        >
+    .field-almox{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      font-size:13px;
+      color:#e5e7eb;
+    }
+
+    .field-almox label{
+      font-size:12px;
+      color:#9ca3af;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .field-almox input{
+      background:#020617;
+      border-radius:10px;
+      border:1px solid #1f2937;
+      padding:8px 10px;
+      color:#e5e7eb;
+      font-size:13px;
+      outline:none;
+      min-height:40px;
+    }
+
+    .field-almox input:focus{
+      border-color:#38bdf8;
+      box-shadow:0 0 0 1px rgba(56,189,248,.3);
+    }
+
+    .col-4x{grid-column:span 4;}
+    .col-6x{grid-column:span 6;}
+    .col-12x{grid-column:span 12;}
+
+    @media (max-width:900px){
+      .form-grid-almox{grid-template-columns:repeat(6,1fr);}
+      .col-4x,.col-6x,.col-12x{grid-column:span 6;}
+    }
+
+    .actions-almox{
+      margin-top:18px;
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+    }
+  </style>
+
+  <div class="novo-almox-wrap">
+
+    <div class="novo-almox-header">
+      <div>
+        <h1>Novo item</h1>
+        <div class="novo-almox-sub">
+          Cadastre um novo item para controle de estoque do almoxarifado.
+        </div>
       </div>
+      <a href="{{ url_for('almoxarifado.index') }}" class="btn-ghost">Voltar para lista</a>
+    </div>
 
-      <div class="form-group">
-        <label>Unidade *</label>
-        <input
-          type="text"
-          name="unidade"
-          class="input"
-          placeholder="Ex: litro, peça, metro, kg"
-          required
-        >
-      </div>
+    <div class="card-form-almox">
+      <form method="post">
 
-      <div class="form-group">
-        <label>Categoria</label>
-        <input
-          type="text"
-          name="categoria"
-          class="input"
-          placeholder="Ex: Lubrificantes (opcional)"
-        >
-      </div>
+        <div class="form-grid-almox">
 
-      <div class="form-group">
-        <label>Estoque inicial</label>
-        <input
-          type="number"
-          step="0.01"
-          name="estoque_atual"
-          class="input"
-          placeholder="0"
-          value="0"
-        >
-      </div>
+          <div class="field-almox col-6x">
+            <label for="nome">Nome do item</label>
+            <input id="nome" name="nome" type="text" placeholder="Ex.: Óleo 2T" required>
+          </div>
 
-      <div class="form-actions">
-        <a href="{{ url_for('almoxarifado.index') }}" class="btn-ghost">
-          Cancelar
-        </a>
-        <button type="submit" class="btn-primary">
-          Salvar
-        </button>
-      </div>
+          <div class="field-almox col-6x">
+            <label for="unidade">Unidade</label>
+            <input id="unidade" name="unidade" type="text" placeholder="Ex.: litro, peça, metro, kg" required>
+          </div>
 
-    </form>
+          <div class="field-almox col-6x">
+            <label for="categoria">Categoria</label>
+            <input id="categoria" name="categoria" type="text" placeholder="Ex.: Lubrificantes (opcional)">
+          </div>
+
+          <div class="field-almox col-6x">
+            <label for="estoque_atual">Estoque inicial</label>
+            <input
+              id="estoque_atual"
+              name="estoque_atual"
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="0"
+            >
+          </div>
+
+        </div>
+
+        <div class="actions-almox">
+          <a href="{{ url_for('almoxarifado.index') }}" class="btn-ghost">Cancelar</a>
+          <button type="submit" class="btn-primary">Salvar item</button>
+        </div>
+
+      </form>
+    </div>
 
   </div>
-
 </div>
 {% endblock %}
