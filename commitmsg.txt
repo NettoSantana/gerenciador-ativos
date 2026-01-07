@@ -1,5 +1,6 @@
-﻿feat(tv): consumir api por url_for e preencher campos quando existirem
+﻿fix(tv): consumir /api/ativos/<id>/dados e calcular lavagem interna (50h)
 
-- API /api/dashboard-geral agora usa fallbacks de campos (cotista, lavagem, pendencias, bateria)
-- evita 'or' que escondia 0 e trata None corretamente
-- painel TV usa url_for para API e mostra 'Atualizado HH:MM'
+- TV agora lê dados reais do ativo via endpoint existente
+- Exibe horas_motor como horas principais
+- Calcula contagem regressiva de lavagem interna a cada 50h (arredondado)
+- Mantém cotista e pendências como placeholder (—) por enquanto
