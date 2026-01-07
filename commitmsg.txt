@@ -1,6 +1,4 @@
-﻿fix(tv): consumir /api/ativos/<id>/dados e calcular lavagem interna (50h)
+﻿fix(tv): HORAS da TV agora usam horas_embarcacao
 
-- TV agora lê dados reais do ativo via endpoint existente
-- Exibe horas_motor como horas principais
-- Calcula contagem regressiva de lavagem interna a cada 50h (arredondado)
-- Mantém cotista e pendências como placeholder (—) por enquanto
+- Coluna HORAS passou de horas_motor para horas_embarcacao (total da embarcação)
+- Lavagem interna permanece baseada em horas_motor (regra de manutenção)
