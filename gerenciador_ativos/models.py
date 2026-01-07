@@ -1,12 +1,14 @@
-from gerenciador_ativos.extensions import db
-from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from gerenciador_ativos.extensions import db
 
 
 # --------------------------------------------------------
 # USUÁRIO DO SISTEMA
 # --------------------------------------------------------
-class Usuario(db.Model):
+class Usuario(UserMixin, db.Model):
     __tablename__ = "usuarios"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -20,14 +22,19 @@ class Usuario(db.Model):
 
     cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=True)
 
-    def set_password(self, senha):
+    def set_password(self, senha: str):
         self.senha_hash = generate_password_hash(senha)
 
-    def check_password(self, senha):
+    def check_password(self, senha: str) -> bool:
         return check_password_hash(self.senha_hash, senha)
 
-    def is_interno(self):
+    def is_interno(self) -> bool:
         return self.tipo in ["admin", "gerente"]
+
+    # ✅ Flask-Login usa is_active para permitir login
+    @property
+    def is_active(self) -> bool:
+        return bool(self.ativo)
 
     def __repr__(self):
         return f"<Usuario {self.email}>"
