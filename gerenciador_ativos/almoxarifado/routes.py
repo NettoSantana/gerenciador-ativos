@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required, current_user
+from functools import wraps
+
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 
 from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import AlmoxItem
@@ -10,6 +11,31 @@ almoxarifado_bp = Blueprint(
     __name__,
     url_prefix="/almoxarifado",
 )
+
+
+def _require_login(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        # seu sistema já usa session no base.html
+        if not session.get("user_nome"):
+            return redirect(url_for("auth.login"))
+        return fn(*args, **kwargs)
+    return wrapper
+
+
+def _require_internal(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not session.get("user_nome"):
+            return redirect(url_for("auth.login"))
+
+        tipo = session.get("user_tipo")
+        if tipo not in ["admin", "gerente"]:
+            flash("Acesso restrito.", "danger")
+            return redirect(url_for("portal.dashboard_cliente"))
+
+        return fn(*args, **kwargs)
+    return wrapper
 
 
 def _to_float(v, default=0.0):
@@ -25,7 +51,7 @@ def _to_float(v, default=0.0):
 
 
 @almoxarifado_bp.route("/", methods=["GET"])
-@login_required
+@_require_internal
 def index():
     itens = (
         AlmoxItem.query
@@ -36,7 +62,7 @@ def index():
 
 
 @almoxarifado_bp.route("/novo", methods=["GET", "POST"])
-@login_required
+@_require_internal
 def novo():
     if request.method == "POST":
         nome = (request.form.get("nome") or "").strip()
