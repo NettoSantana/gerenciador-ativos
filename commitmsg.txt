@@ -1,7 +1,5 @@
-﻿feat: adiciona modelos do almoxarifado (itens e movimentos)
+﻿feat: adiciona tela inicial do almoxarifado (lista de itens)
 
-- cria AlmoxItem (nome, categoria livre, unidade, estoque_atual)
-- cria AlmoxMovimento (ENTRADA/SAIDA) com constraints no SQLite:
-  - tipo válido (ENTRADA/SAIDA)
-  - quantidade > 0
-  - SAIDA exige ativo_id (destino obrigatório)
+- segue padrão visual das telas existentes
+- lista itens com categoria, unidade e saldo
+- ações preparadas para entrada e saída

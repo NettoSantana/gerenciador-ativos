@@ -24,6 +24,9 @@ from gerenciador_ativos.api.ativos import api_ativos_bp
 # 🔥 API DO DASHBOARD GERAL (TV)
 from gerenciador_ativos.api.dashboard.routes import dashboard_api_bp
 
+# 🧰 ALMOXARIFADO
+from gerenciador_ativos.almoxarifado.routes import almoxarifado_bp
+
 
 def ensure_sqlite_schema(db_path: str):
     if not os.path.exists(db_path):
@@ -121,6 +124,9 @@ def create_app():
     app.register_blueprint(monitoramento_bp)
     app.register_blueprint(api_ativos_dados_bp)
     app.register_blueprint(api_ativos_bp)
+
+    # 🧰 ALMOXARIFADO
+    app.register_blueprint(almoxarifado_bp)
 
     # 🔥 API DO DASHBOARD GERAL
     app.register_blueprint(dashboard_api_bp)
