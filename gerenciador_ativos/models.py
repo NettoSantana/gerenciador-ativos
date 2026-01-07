@@ -123,3 +123,78 @@ class ConsumoDiario(db.Model):
 
     def __repr__(self):
         return f"<ConsumoDiario ativo={self.ativo_id} data={self.data_referencia}>"
+
+
+# --------------------------------------------------------
+# ALMOXARIFADO — ITENS
+# --------------------------------------------------------
+class AlmoxItem(db.Model):
+    __tablename__ = "almox_itens"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    nome = db.Column(db.String(160), nullable=False, unique=True)
+    categoria = db.Column(db.String(120), nullable=True)  # texto livre (com placeholder na UI)
+    unidade = db.Column(db.String(30), nullable=False)    # ex: peça, litro, metro, kg
+
+    estoque_atual = db.Column(db.Float, default=0.0)
+
+    ativo = db.Column(db.Boolean, default=True)
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+
+    movimentos = db.relationship(
+        "AlmoxMovimento",
+        backref="item",
+        lazy=True,
+        cascade="all, delete-orphan",
+    )
+
+    def __repr__(self):
+        return f"<AlmoxItem {self.nome} ({self.unidade})>"
+
+
+# --------------------------------------------------------
+# ALMOXARIFADO — MOVIMENTOS (ENTRADA / SAÍDA)
+# --------------------------------------------------------
+class AlmoxMovimento(db.Model):
+    __tablename__ = "almox_movimentos"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    item_id = db.Column(db.Integer, db.ForeignKey("almox_itens.id"), nullable=False)
+
+    # ENTRADA | SAIDA (sem acento no banco pra não dar dor de cabeça)
+    tipo = db.Column(db.String(10), nullable=False)
+
+    quantidade = db.Column(db.Float, nullable=False)
+
+    data_movimento = db.Column(db.DateTime, default=datetime.utcnow)
+
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False)
+
+    # REGRA: por ora, SAÍDA é OBRIGATÓRIA ter ativo_id (destino)
+    ativo_id = db.Column(db.Integer, db.ForeignKey("ativos.id"), nullable=True)
+
+    observacao = db.Column(db.Text, nullable=True)
+
+    usuario = db.relationship("Usuario", backref="almox_movimentos")
+    ativo = db.relationship("Ativo", backref="almox_movimentos")
+
+    __table_args__ = (
+        db.CheckConstraint(
+            "tipo IN ('ENTRADA','SAIDA')",
+            name="ck_almox_tipo_valido",
+        ),
+        db.CheckConstraint(
+            "quantidade > 0",
+            name="ck_almox_quantidade_pos",
+        ),
+        db.CheckConstraint(
+            "tipo != 'SAIDA' OR ativo_id IS NOT NULL",
+            name="ck_almox_saida_exige_ativo",
+        ),
+        db.Index("ix_almox_mov_item_data", "item_id", "data_movimento"),
+    )
+
+    def __repr__(self):
+        return f"<AlmoxMovimento {self.tipo} item={self.item_id} qtd={self.quantidade}>"
