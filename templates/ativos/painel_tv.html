@@ -171,8 +171,13 @@
       }
 
       const embarcacao = fmt(ativo.nome);
-      const horas = fmtHoras(ativo.horas_motor);
+
+      // ✅ HORAS da TV = horas_embarcacao (total)
+      const horas = fmtHoras(ativo.horas_embarcacao);
+
+      // ✅ Lavagem interna continua baseada nas horas reais do motor
       const lavagem = calcLavagemFaltam(ativo.horas_motor);
+
       const bateria = fmtBateria(ativo.tensao_bateria);
 
       tbody.innerHTML = `
