@@ -1,3 +1,2 @@
-﻿feat: registra blueprint do almoxarifado
-
-- adiciona import e register_blueprint do almoxarifado_bp no create_app
+﻿feat: adiciona menu Almoxarifado no header (admin/gerente)
+- Link direto /almoxarifado para evitar quebrar template antes da rota existir
