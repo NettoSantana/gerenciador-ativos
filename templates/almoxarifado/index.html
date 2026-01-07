@@ -4,9 +4,19 @@
 {% block content %}
 <div class="page">
 
-  <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+  <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
     <h1>Almoxarifado</h1>
-    <a href="{{ url_for('almoxarifado.novo') }}" class="btn-primary">Novo item</a>
+
+    <div style="display:flex; gap:10px; align-items:center;">
+      <input
+        type="text"
+        id="searchInput"
+        class="input"
+        placeholder="Buscar item, categoria ou unidade"
+        style="min-width:260px;"
+      >
+      <a href="{{ url_for('almoxarifado.novo') }}" class="btn-primary">Novo item</a>
+    </div>
   </div>
 
   <div class="card" style="width:100%; max-width:100%; padding:0;">
@@ -20,7 +30,7 @@
           <th style="padding:12px 14px;">Status</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="almoxTable">
         {% if itens and itens|length > 0 %}
           {% for it in itens %}
           <tr>
@@ -47,4 +57,19 @@
   </div>
 
 </div>
+
+<script>
+  const searchInput = document.getElementById("searchInput");
+  const tableBody = document.getElementById("almoxTable");
+
+  searchInput.addEventListener("keyup", function () {
+    const filter = this.value.toLowerCase();
+    const rows = tableBody.getElementsByTagName("tr");
+
+    for (let i = 0; i < rows.length; i++) {
+      const text = rows[i].innerText.toLowerCase();
+      rows[i].style.display = text.includes(filter) ? "" : "none";
+    }
+  });
+</script>
 {% endblock %}
