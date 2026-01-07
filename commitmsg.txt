@@ -1,1 +1,1 @@
-﻿fix(auth): integra Flask-Login com session['user_id'] e remove handler que causava 500
+﻿debug(auth): loga unauthorized e estado da sessão ao acessar /almoxarifado
