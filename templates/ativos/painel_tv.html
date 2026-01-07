@@ -116,8 +116,11 @@
   </div>
 
   <script>
-    const API_URL = "/api/dashboard-geral";
+    // ✅ Fonte real (você confirmou no Network)
+    const API_URL = "/api/ativos/1/dados";
+
     const REFRESH_MS = 10000; // 10s
+    const LAVAGEM_INTERVAL_H = 50;
 
     const tbody = document.getElementById("tvTableBody");
     const elClock = document.getElementById("tvClock");
@@ -129,6 +132,24 @@
       if (v === null || v === undefined) return "—";
       const s = String(v).trim();
       return s === "" ? "—" : s;
+    }
+
+    function fmtHoras(n){
+      if (typeof n !== "number" || Number.isNaN(n)) return "—";
+      return Math.round(n) + "h";
+    }
+
+    function calcLavagemFaltam(horasMotor){
+      if (typeof horasMotor !== "number" || Number.isNaN(horasMotor)) return "—";
+      const mod = ((horasMotor % LAVAGEM_INTERVAL_H) + LAVAGEM_INTERVAL_H) % LAVAGEM_INTERVAL_H;
+      let faltam = LAVAGEM_INTERVAL_H - mod;
+      if (Math.abs(faltam - LAVAGEM_INTERVAL_H) < 1e-9) faltam = 0;
+      return "FALTAM " + Math.round(faltam) + "h";
+    }
+
+    function fmtBateria(v){
+      if (typeof v !== "number" || Number.isNaN(v)) return "—";
+      return v.toFixed(1) + "V";
     }
 
     function setStatus(text, isErr=false){
@@ -143,22 +164,27 @@
       elClock.textContent = `${h}:${m}`;
     }
 
-    function render(dados){
-      if (!Array.isArray(dados) || dados.length === 0){
+    function renderUm(ativo){
+      if (!ativo || typeof ativo !== "object"){
         tbody.innerHTML = "<tr><td colspan='6'>Sem dados</td></tr>";
         return;
       }
 
-      tbody.innerHTML = dados.map(item => `
+      const embarcacao = fmt(ativo.nome);
+      const horas = fmtHoras(ativo.horas_motor);
+      const lavagem = calcLavagemFaltam(ativo.horas_motor);
+      const bateria = fmtBateria(ativo.tensao_bateria);
+
+      tbody.innerHTML = `
         <tr>
-          <td>${fmt(item.embarcacao)}</td>
-          <td>${fmt(item.cotista_dia)}</td>
-          <td>${fmt(item.horas)}</td>
-          <td>${fmt(item.lavagem_interna)}</td>
-          <td>${fmt(item.pendencias)}</td>
-          <td>${fmt(item.bateria)}</td>
+          <td>${embarcacao}</td>
+          <td>—</td>
+          <td>${horas}</td>
+          <td>${lavagem}</td>
+          <td>—</td>
+          <td>${bateria}</td>
         </tr>
-      `).join("");
+      `;
     }
 
     async function carregarDados(){
@@ -167,8 +193,8 @@
         const resp = await fetch(API_URL, { cache: "no-store" });
         if (!resp.ok) throw new Error("HTTP " + resp.status);
 
-        const dados = await resp.json();
-        render(dados);
+        const ativo = await resp.json();
+        renderUm(ativo);
 
         const d = new Date();
         const h = String(d.getHours()).padStart(2, "0");
