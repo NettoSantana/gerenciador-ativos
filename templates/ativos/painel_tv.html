@@ -116,8 +116,9 @@
   </div>
 
   <script>
-    // ✅ Fonte real (você confirmou no Network)
-    const API_URL = "/api/ativos/1/dados";
+    // ✅ agora a TV busca a lista completa do backend do dashboard
+    // (esse endpoint você confirmou que já retorna TODOS os ativos ativos)
+    const API_URL = "/api/dashboard/geral";
 
     const REFRESH_MS = 10000; // 10s
     const LAVAGEM_INTERVAL_H = 50;
@@ -164,32 +165,34 @@
       elClock.textContent = `${h}:${m}`;
     }
 
-    function renderUm(ativo){
-      if (!ativo || typeof ativo !== "object"){
+    function renderLista(lista){
+      if (!Array.isArray(lista) || lista.length === 0){
         tbody.innerHTML = "<tr><td colspan='6'>Sem dados</td></tr>";
         return;
       }
 
-      const embarcacao = fmt(ativo.nome);
+      tbody.innerHTML = lista.map(ativo => {
+        const embarcacao = fmt(ativo.nome);
 
-      // ✅ HORAS da TV = horas_embarcacao (total)
-      const horas = fmtHoras(ativo.horas_embarcacao);
+        // ✅ HORAS da TV = horas_embarcacao (total)
+        const horas = fmtHoras(ativo.horas_embarcacao);
 
-      // ✅ Lavagem interna continua baseada nas horas reais do motor
-      const lavagem = calcLavagemFaltam(ativo.horas_motor);
+        // ✅ Lavagem interna baseada nas horas reais do motor
+        const lavagem = calcLavagemFaltam(ativo.horas_motor);
 
-      const bateria = fmtBateria(ativo.tensao_bateria);
+        const bateria = fmtBateria(ativo.tensao_bateria);
 
-      tbody.innerHTML = `
-        <tr>
-          <td>${embarcacao}</td>
-          <td>—</td>
-          <td>${horas}</td>
-          <td>${lavagem}</td>
-          <td>—</td>
-          <td>${bateria}</td>
-        </tr>
-      `;
+        return `
+          <tr>
+            <td>${embarcacao}</td>
+            <td>—</td>
+            <td>${horas}</td>
+            <td>${lavagem}</td>
+            <td>—</td>
+            <td>${bateria}</td>
+          </tr>
+        `;
+      }).join("");
     }
 
     async function carregarDados(){
@@ -198,8 +201,11 @@
         const resp = await fetch(API_URL, { cache: "no-store" });
         if (!resp.ok) throw new Error("HTTP " + resp.status);
 
-        const ativo = await resp.json();
-        renderUm(ativo);
+        const data = await resp.json();
+
+        // suporta tanto resposta direta como {"ativos":[...]}
+        const lista = Array.isArray(data) ? data : (data.ativos || []);
+        renderLista(lista);
 
         const d = new Date();
         const h = String(d.getHours()).padStart(2, "0");
