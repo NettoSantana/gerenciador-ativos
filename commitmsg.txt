@@ -1,5 +1,4 @@
-﻿ui: dropdown provedor de rastreamento + campo Tracker ID no cadastro de Ativo
+﻿model: adiciona tracker_id e tracking_provider em Ativo
 
-- Adiciona seletor Mobiltracker (Tracker ID) vs IMEI
-- Inclui campo tracker_id no form
-- Mantém compatibilidade com backend atual (auto-copia tracker_id para imei se necessário)
+- Suporta integração por tracker_id (Mobiltracker) e por IMEI (outros provedores)
+- Mantém ambos campos no model para uso por cliente/fornecedor
