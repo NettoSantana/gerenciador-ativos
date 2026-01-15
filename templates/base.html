@@ -88,7 +88,10 @@
             <a href="{{ url_for('clientes.lista') }}" class="btn-ghost">Clientes</a>
             <a href="{{ url_for('ativos.lista') }}" class="btn-ghost">Ativos</a>
 
-            <!-- ✅ NOVO: Almoxarifado (link direto para não quebrar caso rota ainda não exista) -->
+            <!-- ✅ NOVO: Operação (Cotista do Dia, etc.) -->
+            <a href="/operacao" class="btn-ghost">Operação</a>
+
+            <!-- ✅ Almoxarifado (link direto para não quebrar caso rota ainda não exista) -->
             <a href="/almoxarifado" class="btn-ghost">Almoxarifado</a>
           {% endif %}
 
