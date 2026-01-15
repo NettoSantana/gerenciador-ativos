@@ -1,1 +1,5 @@
-﻿fix(auth): adiciona UserMixin e is_active no model Usuario para Flask-Login
+﻿ui: dropdown provedor de rastreamento + campo Tracker ID no cadastro de Ativo
+
+- Adiciona seletor Mobiltracker (Tracker ID) vs IMEI
+- Inclui campo tracker_id no form
+- Mantém compatibilidade com backend atual (auto-copia tracker_id para imei se necessário)

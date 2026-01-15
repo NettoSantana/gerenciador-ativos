@@ -77,7 +77,18 @@ class Ativo(db.Model):
 
     nome = db.Column(db.String(120), nullable=False)
     categoria = db.Column(db.String(120), nullable=True)
+
+    # Identificadores do rastreador:
+    # - imei: usado por alguns provedores
+    # - tracker_id: usado pela Mobiltracker (ID interno que entra na API)
     imei = db.Column(db.String(50), nullable=True)
+    tracker_id = db.Column(db.String(50), nullable=True)
+
+    # Define qual identificador vale para este ativo:
+    # "mobiltracker" -> usa tracker_id
+    # "imei"         -> usa imei
+    tracking_provider = db.Column(db.String(30), default="mobiltracker")
+
     observacoes = db.Column(db.Text, nullable=True)
 
     # TELEMETRIA
