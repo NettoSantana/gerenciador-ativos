@@ -46,8 +46,17 @@ def ensure_sqlite_schema(db_path: str):
     cur.execute("PRAGMA table_info(ativos);")
     colunas = [row[1] for row in cur.fetchall()]
 
+    # já existia no seu projeto
     if "consumo_lph" not in colunas:
         cur.execute("ALTER TABLE ativos ADD COLUMN consumo_lph REAL DEFAULT 0;")
+
+    # ✅ novo: suporte Mobiltracker
+    if "tracker_id" not in colunas:
+        cur.execute("ALTER TABLE ativos ADD COLUMN tracker_id TEXT;")
+
+    # ✅ novo: define qual identificador usar por ativo ("mobiltracker" ou "imei")
+    if "tracking_provider" not in colunas:
+        cur.execute("ALTER TABLE ativos ADD COLUMN tracking_provider TEXT DEFAULT 'mobiltracker';")
 
     conn.commit()
     conn.close()
