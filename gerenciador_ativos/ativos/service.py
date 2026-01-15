@@ -2,13 +2,26 @@ from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import Ativo
 
 
-def criar_ativo(nome, categoria, imei, cliente_id, observacoes=None):
+def criar_ativo(
+    nome,
+    categoria,
+    cliente_id,
+    imei=None,
+    tracker_id=None,
+    tracking_provider="mobiltracker",
+    observacoes=None
+):
     ativo = Ativo(
         nome=nome,
         categoria=categoria,
-        imei=imei or None,
-        observacoes=observacoes,
         cliente_id=cliente_id,
+
+        # identificadores de rastreamento
+        imei=imei or None,
+        tracker_id=tracker_id or None,
+        tracking_provider=tracking_provider,
+
+        observacoes=observacoes,
         ativo=True
     )
 
@@ -17,12 +30,26 @@ def criar_ativo(nome, categoria, imei, cliente_id, observacoes=None):
     return ativo
 
 
-def atualizar_ativo(ativo, nome, categoria, imei, cliente_id, observacoes=None):
+def atualizar_ativo(
+    ativo,
+    nome,
+    categoria,
+    cliente_id,
+    imei=None,
+    tracker_id=None,
+    tracking_provider="mobiltracker",
+    observacoes=None
+):
     ativo.nome = nome
     ativo.categoria = categoria
-    ativo.imei = imei or None
-    ativo.observacoes = observacoes
     ativo.cliente_id = cliente_id
+
+    # identificadores de rastreamento
+    ativo.imei = imei or None
+    ativo.tracker_id = tracker_id or None
+    ativo.tracking_provider = tracking_provider
+
+    ativo.observacoes = observacoes
 
     db.session.commit()
     return ativo
