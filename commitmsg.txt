@@ -1,6 +1,5 @@
-﻿painel: corrigir endpoint de telemetria e suportar Mobiltracker (timestamp + tracker_id)
+﻿tv: dashboard geral agora lista todos os ativos
 
-- ENDPOINT_DADOS agora usa /api/monitoramento/<id>/dados
-- Badge alterna IMEI/Tracker ID conforme tracking_provider
-- 'Última' funciona com timestamp ISO (Mobiltracker) e servertime epoch (BrasilSat)
-- motor_ligado null não é exibido como desligado
+- Remove hardcode /api/ativos/1/dados
+- Busca lista completa em /api/dashboard/geral
+- Renderiza uma linha por ativo na TV
