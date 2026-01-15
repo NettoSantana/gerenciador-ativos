@@ -1,5 +1,4 @@
-﻿tv: dashboard geral agora lista todos os ativos
+﻿tv: corrigir endpoint do dashboard geral
 
-- Remove hardcode /api/ativos/1/dados
-- Busca lista completa em /api/dashboard/geral
-- Renderiza uma linha por ativo na TV
+- Ajusta API_URL para /api/dashboard-geral (rota real do backend)
+- Mantém renderização de lista de embarcações
