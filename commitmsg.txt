@@ -1,1 +1,1 @@
-﻿debug(auth): loga unauthorized e estado da sessão ao acessar /almoxarifado
+﻿fix(auth): adiciona UserMixin e is_active no model Usuario para Flask-Login

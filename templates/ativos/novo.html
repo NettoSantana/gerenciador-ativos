@@ -113,6 +113,14 @@
       color:#64748b;
       margin-top:4px;
     }
+    .hint-warn{
+      font-size:12px;
+      color:#f59e0b;
+      margin-top:4px;
+    }
+    .hidden{
+      display:none !important;
+    }
   </style>
 
   <div class="novo-ativo-wrap">
@@ -128,7 +136,7 @@
     </div>
 
     <div class="card-form-ativo">
-      <form method="post">
+      <form method="post" id="formNovoAtivo">
         <div class="form-grid-ativo">
 
           <!-- Cliente -->
@@ -165,10 +173,37 @@
             </select>
           </div>
 
-          <!-- IMEI -->
+          <!-- Provedor de rastreamento -->
           <div class="field-ativo col-4x">
+            <label for="tracking_provider">Provedor de rastreamento</label>
+            <select id="tracking_provider" name="tracking_provider" required>
+              <option value="mobiltracker" selected>Mobiltracker (usa Tracker ID)</option>
+              <option value="imei">Outro provedor (usa IMEI)</option>
+            </select>
+            <div class="hint-obs">
+              Isso define qual identificador você vai usar para buscar dados do rastreador.
+            </div>
+          </div>
+
+          <!-- Tracker ID (Mobiltracker) -->
+          <div class="field-ativo col-4x" id="wrap_tracker_id">
+            <label for="tracker_id">Tracker ID (Mobiltracker)</label>
+            <input id="tracker_id" name="tracker_id" type="text" placeholder="Ex.: 421857">
+            <div class="hint-obs">
+              É o ID da coluna “ID” no portal da Mobiltracker (o que entra na API /trackers/&lt;id&gt;/...).
+            </div>
+            <div class="hint-warn">
+              Obs: enquanto o backend ainda exige IMEI, se você preencher o Tracker ID e deixar IMEI vazio, eu copio o Tracker ID para o IMEI automaticamente.
+            </div>
+          </div>
+
+          <!-- IMEI -->
+          <div class="field-ativo col-4x" id="wrap_imei">
             <label for="imei">IMEI do rastreador</label>
             <input id="imei" name="imei" type="text" placeholder="Ex.: 355468593059041" required>
+            <div class="hint-obs">
+              Use IMEI quando o provedor do cliente trabalhar por IMEI. Para Mobiltracker, o ideal é usar Tracker ID.
+            </div>
           </div>
 
           <!-- Consumo médio -->
@@ -213,5 +248,35 @@
     </div>
 
   </div>
+
+  <script>
+    (function () {
+      const provider = document.getElementById("tracking_provider");
+      const wrapTracker = document.getElementById("wrap_tracker_id");
+      const wrapImei = document.getElementById("wrap_imei");
+      const trackerId = document.getElementById("tracker_id");
+      const imei = document.getElementById("imei");
+
+      function applyProviderUI() {
+        const isMobil = provider.value === "mobiltracker";
+        wrapTracker.classList.toggle("hidden", !isMobil);
+        // IMEI continua visível porque o backend atual ainda pede required.
+        // Depois que você me mandar os arquivos do model/service/routes, eu separo de verdade.
+        wrapImei.classList.toggle("hidden", false);
+      }
+
+      provider.addEventListener("change", applyProviderUI);
+
+      // Ajuda: se for Mobiltracker e IMEI estiver vazio, copia o Tracker ID para não travar o submit atual.
+      document.getElementById("formNovoAtivo").addEventListener("submit", function () {
+        const isMobil = provider.value === "mobiltracker";
+        if (isMobil && trackerId.value && !imei.value) {
+          imei.value = trackerId.value;
+        }
+      });
+
+      applyProviderUI();
+    })();
+  </script>
 </div>
 {% endblock %}
