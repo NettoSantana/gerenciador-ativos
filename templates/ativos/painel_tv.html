@@ -116,13 +116,10 @@
   </div>
 
   <script>
-    // ✅ agora a TV busca a lista completa do backend do dashboard
-    // (esse endpoint você confirmou que já retorna TODOS os ativos ativos)
-    const API_URL = "/api/dashboard/geral";
+    // ✅ endpoint real do seu backend
+    const API_URL = "/api/dashboard-geral";
 
     const REFRESH_MS = 10000; // 10s
-    const LAVAGEM_INTERVAL_H = 50;
-
     const tbody = document.getElementById("tvTableBody");
     const elClock = document.getElementById("tvClock");
     const elStatus = document.getElementById("tvStatus");
@@ -135,22 +132,16 @@
       return s === "" ? "—" : s;
     }
 
-    function fmtHoras(n){
-      if (typeof n !== "number" || Number.isNaN(n)) return "—";
-      return Math.round(n) + "h";
-    }
-
-    function calcLavagemFaltam(horasMotor){
-      if (typeof horasMotor !== "number" || Number.isNaN(horasMotor)) return "—";
-      const mod = ((horasMotor % LAVAGEM_INTERVAL_H) + LAVAGEM_INTERVAL_H) % LAVAGEM_INTERVAL_H;
-      let faltam = LAVAGEM_INTERVAL_H - mod;
-      if (Math.abs(faltam - LAVAGEM_INTERVAL_H) < 1e-9) faltam = 0;
-      return "FALTAM " + Math.round(faltam) + "h";
+    function fmtHoras(v){
+      // seu endpoint hoje manda "horas" como string/placeholder
+      // então aqui só garante que não quebra a renderização
+      return fmt(v);
     }
 
     function fmtBateria(v){
-      if (typeof v !== "number" || Number.isNaN(v)) return "—";
-      return v.toFixed(1) + "V";
+      // pode vir "—" ou número
+      if (typeof v === "number" && Number.isFinite(v)) return v.toFixed(1) + "V";
+      return fmt(v);
     }
 
     function setStatus(text, isErr=false){
@@ -171,25 +162,22 @@
         return;
       }
 
-      tbody.innerHTML = lista.map(ativo => {
-        const embarcacao = fmt(ativo.nome);
-
-        // ✅ HORAS da TV = horas_embarcacao (total)
-        const horas = fmtHoras(ativo.horas_embarcacao);
-
-        // ✅ Lavagem interna baseada nas horas reais do motor
-        const lavagem = calcLavagemFaltam(ativo.horas_motor);
-
-        const bateria = fmtBateria(ativo.tensao_bateria);
+      tbody.innerHTML = lista.map(row => {
+        const embarcacao = fmt(row.embarcacao);
+        const cotista = fmt(row.cotista_dia);
+        const horas = fmtHoras(row.horas);
+        const lavagem = fmt(row.lavagem_interna);
+        const pend = fmt(row.pendencias);
+        const bat = fmtBateria(row.bateria);
 
         return `
           <tr>
             <td>${embarcacao}</td>
-            <td>—</td>
+            <td>${cotista}</td>
             <td>${horas}</td>
             <td>${lavagem}</td>
-            <td>—</td>
-            <td>${bateria}</td>
+            <td>${pend}</td>
+            <td>${bat}</td>
           </tr>
         `;
       }).join("");
@@ -202,10 +190,7 @@
         if (!resp.ok) throw new Error("HTTP " + resp.status);
 
         const data = await resp.json();
-
-        // suporta tanto resposta direta como {"ativos":[...]}
-        const lista = Array.isArray(data) ? data : (data.ativos || []);
-        renderLista(lista);
+        renderLista(data);
 
         const d = new Date();
         const h = String(d.getHours()).padStart(2, "0");
