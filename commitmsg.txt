@@ -1,4 +1,4 @@
-﻿tv: corrigir endpoint do dashboard geral
+﻿ui: adiciona aba Operacao no menu (admin/gerente)
 
-- Ajusta API_URL para /api/dashboard-geral (rota real do backend)
-- Mantém renderização de lista de embarcações
+- Inclui link /operacao no topbar
+- Sem alterar backend ainda (rota sera criada no proximo passo)
