@@ -157,7 +157,7 @@
 
     <div class="pill-strip">
       <div class="pill-badge" id="badgeUltima">Última: --</div>
-      <div class="pill-badge">IMEI: <span id="badgeImei">--</span></div>
+      <div class="pill-badge"><span id="badgeIdentText">IMEI</span>: <span id="badgeImei">--</span></div>
     </div>
   </div>
 
@@ -195,7 +195,6 @@
       <div class="kpi-helper">Ver histórico detalhado</div>
     </a>
 
- 
     <div class="card-kpi col-4">
       <h2>Tensão bateria</h2>
       <div class="kpi-value" id="kpiTensao">0.00 V</div>
@@ -225,6 +224,7 @@
       <div class="kpi-value" id="kpiHorasParadas">0.00 h</div>
       <div class="kpi-helper">Motor OFF</div>
     </div>
+
     <div class="card-kpi col-4">
       <h2>Ignições</h2>
       <div class="kpi-value" id="kpiIgnicoes">0</div>
@@ -329,7 +329,10 @@
 <!-- ===================== SCRIPTS ===================== -->
 <script>
   const ATIVO_ID = {{ ativo.id }};
-  const ENDPOINT_DADOS = `/api/ativos/${ATIVO_ID}/dados`;
+
+  // ✅ endpoint correto (monitoramento) — atende IMEI (BrasilSat) e Tracker ID (Mobiltracker)
+  const ENDPOINT_DADOS = `/api/monitoramento/${ATIVO_ID}/dados`;
+
   const ENDPOINT_PREV = `/api/ativos/${ATIVO_ID}/preventiva`;
   const ENDPOINT_PLANO = `/api/ativos/${ATIVO_ID}/plano`;
   const ENDPOINT_OFFSET = `/api/ativos/${ATIVO_ID}/offset`;
@@ -350,6 +353,19 @@
     const n = toNumber(val, null);
     if (n === null) return fallbackText;
     return n.toFixed(digits);
+  }
+
+  // ✅ NOVO: suporta Mobiltracker (timestamp ISO) e BrasilSat (servertime epoch seg)
+  function parseTimestamp(d) {
+    if (d && d.timestamp) {
+      const dt = new Date(d.timestamp);
+      return isNaN(dt.getTime()) ? null : dt;
+    }
+    if (d && d.servertime) {
+      const dt = new Date(d.servertime * 1000);
+      return isNaN(dt.getTime()) ? null : dt;
+    }
+    return null;
   }
 
   btnPainel.onclick = () => {
@@ -410,22 +426,42 @@
       if (!r.ok) throw new Error("HTTP " + r.status);
       const d = await r.json();
 
-      document.getElementById("badgeImei").textContent = d.imei || "--";
-
-      if (d.servertime) {
-        const dt = new Date(d.servertime * 1000);
-        document.getElementById("badgeUltima").textContent = "Última: " + dt.toLocaleString("pt-BR", {hour12:false});
-
-        const agora = Date.now() / 1000;
-        const dif = agora - d.servertime;
-        const online = dif < 300;
-        document.getElementById("kpiMonitor").textContent = online ? "online" : "offline";
+      // ✅ NOVO: Badge mostra Tracker ID quando for Mobiltracker, senão IMEI
+      const identText = document.getElementById("badgeIdentText");
+      const identVal = document.getElementById("badgeImei");
+      if (d.tracking_provider === "mobiltracker") {
+        identText.textContent = "Tracker ID";
+        identVal.textContent = d.tracker_id || "--";
+      } else {
+        identText.textContent = "IMEI";
+        identVal.textContent = d.imei || "--";
       }
 
-      const motorOn = !!d.motor_ligado;
-      document.getElementById("kpiMotor").textContent = motorOn ? "Ligado" : "Desligado";
-      document.getElementById("dotMotor").className = "status-dot " + (motorOn ? "ok" : "bad");
-      document.getElementById("kpiMotorHint").textContent = motorOn ? "Ignição ON" : "Ignição OFF";
+      // ✅ NOVO: Última + online/offline suportando timestamp ISO e servertime epoch
+      const dt = parseTimestamp(d);
+      if (dt) {
+        document.getElementById("badgeUltima").textContent =
+          "Última: " + dt.toLocaleString("pt-BR", {hour12:false});
+
+        const difMs = Date.now() - dt.getTime();
+        const online = difMs < (5 * 60 * 1000);
+        document.getElementById("kpiMonitor").textContent = online ? "online" : "offline";
+      } else {
+        document.getElementById("badgeUltima").textContent = "Última: --";
+        document.getElementById("kpiMonitor").textContent = "--";
+      }
+
+      // ✅ NOVO: Mobiltracker não fornece motor_ligado (vem null) — não pintar como desligado
+      if (d.motor_ligado === null || d.motor_ligado === undefined) {
+        document.getElementById("kpiMotor").textContent = "--";
+        document.getElementById("dotMotor").className = "status-dot";
+        document.getElementById("kpiMotorHint").textContent = "--";
+      } else {
+        const motorOn = !!d.motor_ligado;
+        document.getElementById("kpiMotor").textContent = motorOn ? "Ligado" : "Desligado";
+        document.getElementById("dotMotor").className = "status-dot " + (motorOn ? "ok" : "bad");
+        document.getElementById("kpiMotorHint").textContent = motorOn ? "Ignição ON" : "Ignição OFF";
+      }
 
       const tensao = toNumber(d.tensao_bateria, 0);
       document.getElementById("kpiTensao").textContent = tensao.toFixed(2) + " V";
