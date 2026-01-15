@@ -1,5 +1,6 @@
-﻿routes: salva tracker_id e tracking_provider no cadastro/edição de Ativos
+﻿painel: corrigir endpoint de telemetria e suportar Mobiltracker (timestamp + tracker_id)
 
-- Lê tracking_provider e tracker_id do form
-- Chama criar_ativo/atualizar_ativo com a nova assinatura
-- Mantém suporte a IMEI para outros provedores
+- ENDPOINT_DADOS agora usa /api/monitoramento/<id>/dados
+- Badge alterna IMEI/Tracker ID conforme tracking_provider
+- 'Última' funciona com timestamp ISO (Mobiltracker) e servertime epoch (BrasilSat)
+- motor_ligado null não é exibido como desligado
