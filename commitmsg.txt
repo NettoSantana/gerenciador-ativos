@@ -1,5 +1,6 @@
-﻿service: suporta IMEI e Tracker ID no cadastro de Ativos
+﻿monitoramento: integra Mobiltracker por tracker_id
 
-- Salva tracker_id e tracking_provider corretamente
-- Mantém compatibilidade com IMEI para outros provedores
-- Remove dependência de cópia automática no frontend
+- Suporte a Mobiltracker e BrasilSat no mesmo endpoint
+- Decisão por tracking_provider no Ativo
+- Salva latitude/longitude no banco
+- Mantém compatibilidade com IMEI
