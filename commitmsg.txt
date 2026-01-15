@@ -1,6 +1,5 @@
-﻿monitoramento: integra Mobiltracker por tracker_id
+﻿routes: salva tracker_id e tracking_provider no cadastro/edição de Ativos
 
-- Suporte a Mobiltracker e BrasilSat no mesmo endpoint
-- Decisão por tracking_provider no Ativo
-- Salva latitude/longitude no banco
-- Mantém compatibilidade com IMEI
+- Lê tracking_provider e tracker_id do form
+- Chama criar_ativo/atualizar_ativo com a nova assinatura
+- Mantém suporte a IMEI para outros provedores
