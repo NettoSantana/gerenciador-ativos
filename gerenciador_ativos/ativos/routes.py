@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, request, redirect, url_for
-from gerenciador_ativos.extensions import db
 from gerenciador_ativos.models import Ativo, Cliente
 from gerenciador_ativos.ativos.service import criar_ativo, atualizar_ativo, excluir_ativo
 from gerenciador_ativos.ativos.utils import calcular_horas_motor
@@ -44,11 +43,27 @@ def novo():
     if request.method == "POST":
         nome = request.form.get("nome")
         categoria = request.form.get("categoria")
+
+        # Identificadores de rastreamento (novo)
+        tracking_provider = request.form.get("tracking_provider") or "mobiltracker"
+        tracker_id = request.form.get("tracker_id")
         imei = request.form.get("imei")
-        cliente_id = int(request.form.get("cliente_id"))
+
+        # Cliente
+        cliente_id_raw = request.form.get("cliente_id")
+        cliente_id = int(cliente_id_raw) if cliente_id_raw else None
+
         observacoes = request.form.get("observacoes")
 
-        criar_ativo(nome, categoria, imei, cliente_id, observacoes)
+        criar_ativo(
+            nome=nome,
+            categoria=categoria,
+            cliente_id=cliente_id,
+            imei=imei,
+            tracker_id=tracker_id,
+            tracking_provider=tracking_provider,
+            observacoes=observacoes,
+        )
         return redirect(url_for("ativos.lista"))
 
     return render_template("ativos/novo.html", clientes=clientes)
@@ -65,11 +80,28 @@ def editar(id):
     if request.method == "POST":
         nome = request.form.get("nome")
         categoria = request.form.get("categoria")
+
+        # Identificadores de rastreamento (novo)
+        tracking_provider = request.form.get("tracking_provider") or "mobiltracker"
+        tracker_id = request.form.get("tracker_id")
         imei = request.form.get("imei")
-        cliente_id = int(request.form.get("cliente_id"))
+
+        # Cliente
+        cliente_id_raw = request.form.get("cliente_id")
+        cliente_id = int(cliente_id_raw) if cliente_id_raw else None
+
         observacoes = request.form.get("observacoes")
 
-        atualizar_ativo(ativo, nome, categoria, imei, cliente_id, observacoes)
+        atualizar_ativo(
+            ativo=ativo,
+            nome=nome,
+            categoria=categoria,
+            cliente_id=cliente_id,
+            imei=imei,
+            tracker_id=tracker_id,
+            tracking_provider=tracking_provider,
+            observacoes=observacoes,
+        )
         return redirect(url_for("ativos.lista"))
 
     return render_template("ativos/editar.html", ativo=ativo, clientes=clientes)
