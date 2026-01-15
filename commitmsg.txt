@@ -1,4 +1,5 @@
-﻿db: adiciona colunas tracker_id e tracking_provider em ativos (SQLite)
+﻿service: suporta IMEI e Tracker ID no cadastro de Ativos
 
-- Evita erro 'no such column: ativos.tracker_id' no Railway
-- Migração leve via ensure_sqlite_schema() para bases existentes
+- Salva tracker_id e tracking_provider corretamente
+- Mantém compatibilidade com IMEI para outros provedores
+- Remove dependência de cópia automática no frontend
