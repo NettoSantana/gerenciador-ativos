@@ -1,4 +1,4 @@
-﻿model: adiciona tracker_id e tracking_provider em Ativo
+﻿db: adiciona colunas tracker_id e tracking_provider em ativos (SQLite)
 
-- Suporta integração por tracker_id (Mobiltracker) e por IMEI (outros provedores)
-- Mantém ambos campos no model para uso por cliente/fornecedor
+- Evita erro 'no such column: ativos.tracker_id' no Railway
+- Migração leve via ensure_sqlite_schema() para bases existentes
