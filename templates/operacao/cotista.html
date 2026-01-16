@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Operação{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div class="page-header">
+    <h1>Operação</h1>
+    <div style="color:#94a3b8;font-size:13px;margin-top:4px;">
+      Cotista do Dia — lançamento diário por embarcação
+    </div>
+  </div>
+
+  <!-- CARD: LANÇAR COTISTA DO DIA -->
+  <div class="card">
+    <form method="post" action="/operacao/cotista" class="form">
+
+      <!-- DATA -->
+      <div class="field">
+        <label>Data</label>
+        <input name="data" type="date" value="{{ dia }}" required>
+      </div>
+
+      <!-- EMBARCAÇÃO -->
+      <div class="field">
+        <label>Embarcação</label>
+        <select name="ativo_id" required>
+          <option value="">Selecione...</option>
+          {% for a in ativos %}
+            <option value="{{ a.id }}">{{ a.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- COTISTA DO DIA -->
+      <div class="field">
+        <label>Cotista do dia</label>
+        <input name="cotista" placeholder="Ex.: João / Maria / BoatLUX" required>
+      </div>
+
+      <!-- OBSERVAÇÃO -->
+      <div class="field">
+        <label>Observação (opcional)</label>
+        <input name="observacao" placeholder="Ex.: saiu cedo / retornou 17h / pendência...">
+      </div>
+
+      <button class="btn-primary">Salvar lançamento</button>
+    </form>
+  </div>
+
+  <!-- CARD: FILTRO + LISTA DO DIA -->
+  <div class="card" style="margin-top:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+      <h2 style="margin:0;font-size:16px;">Lançamentos do dia</h2>
+
+      <form method="get" action="/operacao" style="display:flex;gap:8px;align-items:center;">
+        <input type="date" name="data" value="{{ dia }}">
+        <button class="btn-ghost" type="submit">Ver</button>
+      </form>
+    </div>
+
+    {% if lancamentos and lancamentos|length > 0 %}
+      <table class="table" style="width:100%; margin-top:12px;">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:10px;">Embarcação</th>
+            <th style="text-align:left;padding:10px;">Cotista</th>
+            <th style="text-align:left;padding:10px;">Obs</th>
+            <th style="text-align:left;padding:10px;">Atualizado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for l in lancamentos %}
+            <tr>
+              <td style="padding:10px;">{{ l.ativo_nome }}</td>
+              <td style="padding:10px;">{{ l.cotista }}</td>
+              <td style="padding:10px;">{{ l.observacao if l.observacao else "—" }}</td>
+              <td style="padding:10px;">{{ l.atualizado_em }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div style="margin-top:12px;color:#94a3b8;">Nenhum lançamento para esta data.</div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
