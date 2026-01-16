@@ -1,3 +1,7 @@
+# Caminho: C:\Users\vlula\OneDrive\Área de Trabalho\Projetos Backup\gerenciador-ativos\server.py
+# Último recode: 2026-01-15 23:59 (America/Bahia)
+# Motivo: Corrigir exibição/salvamento de horário do cotista (UTC vs local) escolhendo interpretação mais próxima do "agora".
+
 import os
 import sqlite3
 from datetime import date, datetime
@@ -152,20 +156,57 @@ def create_app():
             return ZoneInfo("America/Bahia")
 
     def _now_local_str():
+        # grava "naive" porém em horário local (exibição ficará correta via heurística abaixo)
         return datetime.now(_tz()).strftime("%Y-%m-%d %H:%M:%S")
 
     def _to_local_display(dt_str: str):
         """
-        Registros antigos foram gravados com datetime('now') (UTC).
-        Aqui convertemos para o TZ local apenas para exibição.
-        Se não bater o formato, devolve como veio.
+        Corrige a exibição do atualizado_em.
+
+        Problema:
+        - Registros antigos foram gravados em UTC via sqlite datetime('now')
+        - Registros novos passaram a ser gravados em horário local (string "naive")
+
+        Solução:
+        - Se vier string ISO com timezone, respeita e converte para local.
+        - Se vier "YYYY-MM-DD HH:MM:SS" (naive), testa duas interpretações:
+          (A) dt como LOCAL
+          (B) dt como UTC e convertido pra LOCAL
+          Escolhe a que fica mais próxima do "agora" local.
         """
         if not dt_str:
             return dt_str
+
+        local_tz = _tz()
+        now_local = datetime.now(local_tz)
+
+        # 1) Se já vier ISO com timezone (futuro), respeita
         try:
-            dt_utc = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=ZoneInfo("UTC"))
-            dt_local = dt_utc.astimezone(_tz())
-            return dt_local.strftime("%Y-%m-%d %H:%M:%S")
+            # aceita "2026-01-15T23:54:00-03:00" etc.
+            if "T" in dt_str and ("+" in dt_str or dt_str.endswith("Z") or "-" in dt_str[10:]):
+                s = dt_str.replace("Z", "+00:00")
+                dt_any = datetime.fromisoformat(s)
+                if dt_any.tzinfo is None:
+                    dt_any = dt_any.replace(tzinfo=local_tz)
+                return dt_any.astimezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            pass
+
+        # 2) Formato naive padrão do seu banco
+        try:
+            naive = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+
+            # A) interpretar como local
+            dt_local = naive.replace(tzinfo=local_tz)
+
+            # B) interpretar como UTC e converter para local
+            dt_utc_to_local = naive.replace(tzinfo=ZoneInfo("UTC")).astimezone(local_tz)
+
+            diff_a = abs((now_local - dt_local).total_seconds())
+            diff_b = abs((now_local - dt_utc_to_local).total_seconds())
+
+            chosen = dt_local if diff_a <= diff_b else dt_utc_to_local
+            return chosen.strftime("%Y-%m-%d %H:%M:%S")
         except Exception:
             return dt_str
 
@@ -199,7 +240,6 @@ def create_app():
                 "ativo_nome": ativo_nome.get(r[1], f"Ativo #{r[1]}"),
                 "cotista": r[2],
                 "observacao": r[3],
-                # ✅ exibir em horário local (corrigindo legado UTC)
                 "atualizado_em": _to_local_display(r[4]),
             }
             for r in rows
@@ -244,7 +284,7 @@ def create_app():
 
         return redirect(f"/operacao?data={dia}")
 
-    # ✅ NOVO: EXCLUIR COTISTA DO DIA (X)
+    # ✅ EXCLUIR COTISTA DO DIA (X)
     @app.route("/operacao/cotista/excluir", methods=["POST"])
     def operacao_excluir_cotista():
         if not current_user.is_authenticated:
