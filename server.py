@@ -1,6 +1,8 @@
 import os
 import sqlite3
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
+
 from flask import Flask, request, session, redirect, url_for, render_template
 from flask_login import LoginManager, current_user
 from gerenciador_ativos.config import Config
@@ -142,6 +144,31 @@ def create_app():
     def _db_conn():
         return sqlite3.connect(DB_PATH)
 
+    def _tz():
+        tz_name = os.environ.get("TZ", "America/Bahia")
+        try:
+            return ZoneInfo(tz_name)
+        except Exception:
+            return ZoneInfo("America/Bahia")
+
+    def _now_local_str():
+        return datetime.now(_tz()).strftime("%Y-%m-%d %H:%M:%S")
+
+    def _to_local_display(dt_str: str):
+        """
+        Registros antigos foram gravados com datetime('now') (UTC).
+        Aqui convertemos para o TZ local apenas para exibição.
+        Se não bater o formato, devolve como veio.
+        """
+        if not dt_str:
+            return dt_str
+        try:
+            dt_utc = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=ZoneInfo("UTC"))
+            dt_local = dt_utc.astimezone(_tz())
+            return dt_local.strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            return dt_str
+
     @app.route("/operacao", methods=["GET"])
     def operacao_home():
         if not current_user.is_authenticated:
@@ -172,7 +199,8 @@ def create_app():
                 "ativo_nome": ativo_nome.get(r[1], f"Ativo #{r[1]}"),
                 "cotista": r[2],
                 "observacao": r[3],
-                "atualizado_em": r[4],
+                # ✅ exibir em horário local (corrigindo legado UTC)
+                "atualizado_em": _to_local_display(r[4]),
             }
             for r in rows
         ]
@@ -199,16 +227,18 @@ def create_app():
         if not dia or not ativo_id or not cotista:
             return redirect(f"/operacao?data={dia or date.today().isoformat()}")
 
+        atualizado_em = _now_local_str()
+
         conn = _db_conn()
         cur = conn.cursor()
         cur.execute("""
             INSERT INTO cotista_dia (data, ativo_id, cotista, observacao, atualizado_em)
-            VALUES (?, ?, ?, ?, datetime('now'))
+            VALUES (?, ?, ?, ?, ?)
             ON CONFLICT(data, ativo_id) DO UPDATE SET
               cotista=excluded.cotista,
               observacao=excluded.observacao,
-              atualizado_em=datetime('now');
-        """, (dia, int(ativo_id), cotista, observacao))
+              atualizado_em=excluded.atualizado_em;
+        """, (dia, int(ativo_id), cotista, observacao, atualizado_em))
         conn.commit()
         conn.close()
 
