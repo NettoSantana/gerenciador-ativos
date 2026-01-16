@@ -1,5 +1,4 @@
-﻿dashboard: usar data local (TZ Brasil) para cotista_dia e aceitar ?data=
+﻿operacao: corrigir horario de atualizado_em (UTC -> local)
 
-- Corrige problema UTC x Brasil (cotista nao aparecia apos 21h/22h)
-- Default dia = datetime.now(America/Bahia).date()
-- Permite override via /api/dashboard-geral?data=YYYY-MM-DD
+- Grava atualizado_em em horario local (America/Bahia via TZ)
+- Converte exibicao de registros legados (gravados em UTC via datetime('now'))
