@@ -1,5 +1,5 @@
-﻿operacao: cria tela e persistencia de Cotista do Dia
+﻿operacao: cria template cotista.html com layout padrao do sistema
 
-- Adiciona /operacao (GET) com formulario e lista do dia
-- Adiciona /operacao/cotista (POST) com upsert por (data, ativo_id)
-- Cria tabela sqlite cotista_dia no ensure_sqlite_schema
+- Novo template em templates/operacao/cotista.html
+- Usa mesmas classes do 'Novo Usuario' (page/header/card/form/field)
+- Form posta em /operacao/cotista e lista lancamentos do dia
