@@ -1,4 +1,5 @@
-﻿operacao: corrigir horario de atualizado_em (UTC -> local)
+﻿operacao: adiciona botao de exclusao (x) por lancamento do dia
 
-- Grava atualizado_em em horario local (America/Bahia via TZ)
-- Converte exibicao de registros legados (gravados em UTC via datetime('now'))
+- Inclui coluna 'Acao' com botao ✕ na tabela
+- Envia POST para /operacao/cotista/excluir com data e ativo_id
+- Mantem confirmacao simples para evitar exclusao acidental
