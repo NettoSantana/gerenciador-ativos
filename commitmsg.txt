@@ -1,5 +1,4 @@
-﻿operacao: adicionar rota para excluir cotista do dia
+﻿operacao: corrigir exibicao de atualizado_em (naive UTC vs local)
 
-- Implementa POST /operacao/cotista/excluir
-- Remove registro por (data, ativo_id) na tabela cotista_dia
-- Retorna para /operacao?data=...
+- Para timestamps sem timezone: escolhe interpretacao (local vs UTC->local) mais proxima do agora
+- Mantem compatibilidade com registros antigos (sqlite datetime('now')) e novos (local)
