@@ -1,4 +1,5 @@
-﻿ui: adiciona aba Operacao no menu (admin/gerente)
+﻿operacao: cria tela e persistencia de Cotista do Dia
 
-- Inclui link /operacao no topbar
-- Sem alterar backend ainda (rota sera criada no proximo passo)
+- Adiciona /operacao (GET) com formulario e lista do dia
+- Adiciona /operacao/cotista (POST) com upsert por (data, ativo_id)
+- Cria tabela sqlite cotista_dia no ensure_sqlite_schema
