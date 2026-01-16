@@ -1,5 +1,5 @@
-﻿operacao: remove HTML inline do server e renderiza template cotista.html
+﻿dashboard: preencher cotista_dia no endpoint /api/dashboard-geral
 
-- Troca render_template_string por render_template
-- Usa templates/operacao/cotista.html
-- Mantem toda a logica de busca e upsert de cotista_dia
+- Busca cotistas do dia na tabela sqlite cotista_dia
+- Mapeia por ativo_id e injeta no JSON retornado para a TV
+- Mantem placeholders dos demais campos
