@@ -1,5 +1,5 @@
-﻿dashboard: preencher cotista_dia no endpoint /api/dashboard-geral
+﻿dashboard: usar data local (TZ Brasil) para cotista_dia e aceitar ?data=
 
-- Busca cotistas do dia na tabela sqlite cotista_dia
-- Mapeia por ativo_id e injeta no JSON retornado para a TV
-- Mantem placeholders dos demais campos
+- Corrige problema UTC x Brasil (cotista nao aparecia apos 21h/22h)
+- Default dia = datetime.now(America/Bahia).date()
+- Permite override via /api/dashboard-geral?data=YYYY-MM-DD
