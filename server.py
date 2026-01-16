@@ -1,10 +1,11 @@
 import os
 import sqlite3
-from flask import Flask, request, session
+from datetime import date
+from flask import Flask, request, session, redirect, url_for, render_template_string
 from flask_login import LoginManager, current_user
 from gerenciador_ativos.config import Config
 from gerenciador_ativos.extensions import db
-from gerenciador_ativos.models import Usuario
+from gerenciador_ativos.models import Usuario, Ativo
 
 # importa modelos de preventiva para registrar no metadata
 from gerenciador_ativos import preventiva_models  # noqa
@@ -57,6 +58,19 @@ def ensure_sqlite_schema(db_path: str):
     # ✅ novo: define qual identificador usar por ativo ("mobiltracker" ou "imei")
     if "tracking_provider" not in colunas:
         cur.execute("ALTER TABLE ativos ADD COLUMN tracking_provider TEXT DEFAULT 'mobiltracker';")
+
+    # ✅ NOVO: tabela operacional para "Cotista do Dia"
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS cotista_dia (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            data TEXT NOT NULL,
+            ativo_id INTEGER NOT NULL,
+            cotista TEXT NOT NULL,
+            observacao TEXT,
+            atualizado_em TEXT NOT NULL,
+            UNIQUE(data, ativo_id)
+        );
+    """)
 
     conn.commit()
     conn.close()
@@ -119,17 +133,172 @@ def create_app():
         print("=== /UNAUTHORIZED ===")
         return login_manager.unauthorized()
 
-    # 🔎 DEBUG: só loga quando tentar entrar no Almox
-    @app.before_request
-    def _debug_almox_requests():
-        if request.path.startswith("/almoxarifado"):
-            print("=== ALMOX REQUEST ===")
-            print("path:", request.path)
-            print("cookies:", "session" in request.cookies)
-            print("session_keys:", list(session.keys()))
-            print("session_user_id:", session.get("_user_id"))
-            print("current_user.is_authenticated:", getattr(current_user, "is_authenticated", None))
-            print("=== /ALMOX REQUEST ===")
+    # --------------------------------------------------
+    # OPERAÇÃO: COTISTA DO DIA (tela simples, funcional)
+    # --------------------------------------------------
+    def _operacao_permitida():
+        # mantém o padrão do seu menu: só admin/gerente
+        return session.get("user_tipo") in ["admin", "gerente"]
+
+    def _db_conn():
+        return sqlite3.connect(DB_PATH)
+
+    @app.route("/operacao", methods=["GET"])
+    def operacao_home():
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+        if not _operacao_permitida():
+            return redirect(url_for("dashboard_geral.dashboard_gerente"))
+
+        dia = request.args.get("data") or date.today().isoformat()
+
+        with app.app_context():
+            ativos = Ativo.query.filter_by(ativo=True).order_by(Ativo.nome.asc()).all()
+
+        # carrega lançamentos do dia
+        conn = _db_conn()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT c.data, c.ativo_id, c.cotista, IFNULL(c.observacao, ''), c.atualizado_em
+            FROM cotista_dia c
+            WHERE c.data = ?
+            ORDER BY c.atualizado_em DESC;
+        """, (dia,))
+        rows = cur.fetchall()
+        conn.close()
+
+        # map ativo_id -> nome (pra renderizar bonito)
+        ativo_nome = {a.id: a.nome for a in ativos}
+        lançamentos = [
+            {
+                "data": r[0],
+                "ativo_id": r[1],
+                "ativo_nome": ativo_nome.get(r[1], f"Ativo #{r[1]}"),
+                "cotista": r[2],
+                "observacao": r[3],
+                "atualizado_em": r[4],
+            }
+            for r in rows
+        ]
+
+        html = """
+        {% extends "base.html" %}
+        {% block title %}Operação{% endblock %}
+        {% block content %}
+        <div class="page" style="max-width:1100px;margin:0 auto;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div>
+              <h1 style="margin:0;">Operação</h1>
+              <div style="color:#94a3b8;font-size:13px;margin-top:4px;">
+                Cotista do Dia — lançamento diário por embarcação
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px;padding:18px;border-radius:16px;">
+            <form method="post" action="/operacao/cotista" style="display:grid;grid-template-columns:repeat(12,1fr);gap:12px;">
+              <div style="grid-column:span 3;">
+                <label style="display:block;color:#94a3b8;font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Data</label>
+                <input name="data" value="{{ dia }}" type="date" class="input" style="width:100%;" required>
+              </div>
+
+              <div style="grid-column:span 5;">
+                <label style="display:block;color:#94a3b8;font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Embarcação</label>
+                <select name="ativo_id" class="input" style="width:100%;" required>
+                  <option value="">Selecione…</option>
+                  {% for a in ativos %}
+                    <option value="{{ a.id }}">{{ a.nome }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div style="grid-column:span 4;">
+                <label style="display:block;color:#94a3b8;font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Cotista do dia</label>
+                <input name="cotista" placeholder="Ex.: João / Maria / BoatLUX" class="input" style="width:100%;" required>
+              </div>
+
+              <div style="grid-column:span 12;">
+                <label style="display:block;color:#94a3b8;font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Observação (opcional)</label>
+                <input name="observacao" placeholder="Ex.: saiu cedo / retornou 17h / pendência..." class="input" style="width:100%;">
+              </div>
+
+              <div style="grid-column:span 12;display:flex;gap:10px;justify-content:flex-end;">
+                <button class="btn-primary" type="submit">Salvar lançamento</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card" style="margin-top:16px;padding:18px;border-radius:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+              <h2 style="margin:0;font-size:16px;color:#38bdf8;text-transform:uppercase;">Lançamentos do dia</h2>
+
+              <form method="get" action="/operacao" style="display:flex;gap:8px;align-items:center;">
+                <input type="date" name="data" value="{{ dia }}" class="input">
+                <button class="btn-ghost" type="submit">Ver</button>
+              </form>
+            </div>
+
+            {% if lancamentos|length == 0 %}
+              <div style="margin-top:12px;color:#94a3b8;">Nenhum lançamento para esta data.</div>
+            {% else %}
+              <table class="table" style="width:100%;margin-top:12px;">
+                <thead>
+                  <tr>
+                    <th style="text-align:left;padding:10px;">Embarcação</th>
+                    <th style="text-align:left;padding:10px;">Cotista</th>
+                    <th style="text-align:left;padding:10px;">Obs</th>
+                    <th style="text-align:left;padding:10px;">Atualizado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for l in lancamentos %}
+                    <tr>
+                      <td style="padding:10px;">{{ l.ativo_nome }}</td>
+                      <td style="padding:10px;">{{ l.cotista }}</td>
+                      <td style="padding:10px;">{{ l.observacao or "—" }}</td>
+                      <td style="padding:10px;">{{ l.atualizado_em }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            {% endif %}
+          </div>
+
+        </div>
+        {% endblock %}
+        """
+        return render_template_string(html, ativos=ativos, dia=dia, lancamentos=lançamentos)
+
+    @app.route("/operacao/cotista", methods=["POST"])
+    def operacao_salvar_cotista():
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+        if not _operacao_permitida():
+            return redirect(url_for("dashboard_geral.dashboard_gerente"))
+
+        dia = (request.form.get("data") or "").strip()
+        ativo_id = (request.form.get("ativo_id") or "").strip()
+        cotista = (request.form.get("cotista") or "").strip()
+        observacao = (request.form.get("observacao") or "").strip()
+
+        if not dia or not ativo_id or not cotista:
+            return redirect(f"/operacao?data={dia or date.today().isoformat()}")
+
+        # UPSERT (data + ativo_id)
+        conn = _db_conn()
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO cotista_dia (data, ativo_id, cotista, observacao, atualizado_em)
+            VALUES (?, ?, ?, ?, datetime('now'))
+            ON CONFLICT(data, ativo_id) DO UPDATE SET
+              cotista=excluded.cotista,
+              observacao=excluded.observacao,
+              atualizado_em=datetime('now');
+        """, (dia, int(ativo_id), cotista, observacao))
+        conn.commit()
+        conn.close()
+
+        return redirect(f"/operacao?data={dia}")
 
     # --------------------------------------------------
     # INIT DB
