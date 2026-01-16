@@ -244,6 +244,31 @@ def create_app():
 
         return redirect(f"/operacao?data={dia}")
 
+    # ✅ NOVO: EXCLUIR COTISTA DO DIA (X)
+    @app.route("/operacao/cotista/excluir", methods=["POST"])
+    def operacao_excluir_cotista():
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+        if not _operacao_permitida():
+            return redirect(url_for("dashboard_geral.dashboard_gerente"))
+
+        dia = (request.form.get("data") or "").strip()
+        ativo_id = (request.form.get("ativo_id") or "").strip()
+
+        if not dia or not ativo_id:
+            return redirect(f"/operacao?data={dia or date.today().isoformat()}")
+
+        conn = _db_conn()
+        cur = conn.cursor()
+        cur.execute("""
+            DELETE FROM cotista_dia
+            WHERE data = ? AND ativo_id = ?;
+        """, (dia, int(ativo_id)))
+        conn.commit()
+        conn.close()
+
+        return redirect(f"/operacao?data={dia}")
+
     # --------------------------------------------------
     # INIT DB
     # --------------------------------------------------
