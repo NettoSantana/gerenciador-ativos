@@ -1,7 +1,7 @@
 import os
 import sqlite3
 from datetime import date
-from flask import Flask, request, session, redirect, url_for, render_template_string
+from flask import Flask, request, session, redirect, url_for, render_template
 from flask_login import LoginManager, current_user
 from gerenciador_ativos.config import Config
 from gerenciador_ativos.extensions import db
@@ -59,7 +59,7 @@ def ensure_sqlite_schema(db_path: str):
     if "tracking_provider" not in colunas:
         cur.execute("ALTER TABLE ativos ADD COLUMN tracking_provider TEXT DEFAULT 'mobiltracker';")
 
-    # ✅ NOVO: tabela operacional para "Cotista do Dia"
+    # ✅ tabela operacional para "Cotista do Dia"
     cur.execute("""
         CREATE TABLE IF NOT EXISTS cotista_dia (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -134,10 +134,9 @@ def create_app():
         return login_manager.unauthorized()
 
     # --------------------------------------------------
-    # OPERAÇÃO: COTISTA DO DIA (tela simples, funcional)
+    # OPERAÇÃO: COTISTA DO DIA (agora via template)
     # --------------------------------------------------
     def _operacao_permitida():
-        # mantém o padrão do seu menu: só admin/gerente
         return session.get("user_tipo") in ["admin", "gerente"]
 
     def _db_conn():
@@ -152,10 +151,8 @@ def create_app():
 
         dia = request.args.get("data") or date.today().isoformat()
 
-        with app.app_context():
-            ativos = Ativo.query.filter_by(ativo=True).order_by(Ativo.nome.asc()).all()
+        ativos = Ativo.query.filter_by(ativo=True).order_by(Ativo.nome.asc()).all()
 
-        # carrega lançamentos do dia
         conn = _db_conn()
         cur = conn.cursor()
         cur.execute("""
@@ -167,9 +164,8 @@ def create_app():
         rows = cur.fetchall()
         conn.close()
 
-        # map ativo_id -> nome (pra renderizar bonito)
         ativo_nome = {a.id: a.nome for a in ativos}
-        lançamentos = [
+        lancamentos = [
             {
                 "data": r[0],
                 "ativo_id": r[1],
@@ -181,93 +177,12 @@ def create_app():
             for r in rows
         ]
 
-        html = """
-        {% extends "base.html" %}
-        {% block title %}Operação{% endblock %}
-        {% block content %}
-        <div class="page" style="max-width:1100px;margin:0 auto;">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-            <div>
-              <h1 style="margin:0;">Operação</h1>
-              <div style="color:#94a3b8;font-size:13px;margin-top:4px;">
-                Cotista do Dia — lançamento diário por embarcação
-              </div>
-            </div>
-          </div>
-
-          <div class="card" style="margin-top:16px;padding:18px;border-radius:16px;">
-            <form method="post" action="/operacao/cotista" style="display:grid;grid-template-columns:repeat(12,1fr);gap:12px;">
-              <div style="grid-column:span 3;">
-                <label style="display:block;color:#94a3b8;font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Data</label>
-                <input name="data" value="{{ dia }}" type="date" class="input" style="width:100%;" required>
-              </div>
-
-              <div style="grid-column:span 5;">
-                <label style="display:block;color:#94a3b8;font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Embarcação</label>
-                <select name="ativo_id" class="input" style="width:100%;" required>
-                  <option value="">Selecione…</option>
-                  {% for a in ativos %}
-                    <option value="{{ a.id }}">{{ a.nome }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-
-              <div style="grid-column:span 4;">
-                <label style="display:block;color:#94a3b8;font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Cotista do dia</label>
-                <input name="cotista" placeholder="Ex.: João / Maria / BoatLUX" class="input" style="width:100%;" required>
-              </div>
-
-              <div style="grid-column:span 12;">
-                <label style="display:block;color:#94a3b8;font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Observação (opcional)</label>
-                <input name="observacao" placeholder="Ex.: saiu cedo / retornou 17h / pendência..." class="input" style="width:100%;">
-              </div>
-
-              <div style="grid-column:span 12;display:flex;gap:10px;justify-content:flex-end;">
-                <button class="btn-primary" type="submit">Salvar lançamento</button>
-              </div>
-            </form>
-          </div>
-
-          <div class="card" style="margin-top:16px;padding:18px;border-radius:16px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-              <h2 style="margin:0;font-size:16px;color:#38bdf8;text-transform:uppercase;">Lançamentos do dia</h2>
-
-              <form method="get" action="/operacao" style="display:flex;gap:8px;align-items:center;">
-                <input type="date" name="data" value="{{ dia }}" class="input">
-                <button class="btn-ghost" type="submit">Ver</button>
-              </form>
-            </div>
-
-            {% if lancamentos|length == 0 %}
-              <div style="margin-top:12px;color:#94a3b8;">Nenhum lançamento para esta data.</div>
-            {% else %}
-              <table class="table" style="width:100%;margin-top:12px;">
-                <thead>
-                  <tr>
-                    <th style="text-align:left;padding:10px;">Embarcação</th>
-                    <th style="text-align:left;padding:10px;">Cotista</th>
-                    <th style="text-align:left;padding:10px;">Obs</th>
-                    <th style="text-align:left;padding:10px;">Atualizado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for l in lancamentos %}
-                    <tr>
-                      <td style="padding:10px;">{{ l.ativo_nome }}</td>
-                      <td style="padding:10px;">{{ l.cotista }}</td>
-                      <td style="padding:10px;">{{ l.observacao or "—" }}</td>
-                      <td style="padding:10px;">{{ l.atualizado_em }}</td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            {% endif %}
-          </div>
-
-        </div>
-        {% endblock %}
-        """
-        return render_template_string(html, ativos=ativos, dia=dia, lancamentos=lançamentos)
+        return render_template(
+            "operacao/cotista.html",
+            ativos=ativos,
+            dia=dia,
+            lancamentos=lancamentos
+        )
 
     @app.route("/operacao/cotista", methods=["POST"])
     def operacao_salvar_cotista():
@@ -284,7 +199,6 @@ def create_app():
         if not dia or not ativo_id or not cotista:
             return redirect(f"/operacao?data={dia or date.today().isoformat()}")
 
-        # UPSERT (data + ativo_id)
         conn = _db_conn()
         cur = conn.cursor()
         cur.execute("""
