@@ -1,5 +1,5 @@
-﻿operacao: adiciona botao de exclusao (x) por lancamento do dia
+﻿operacao: adicionar rota para excluir cotista do dia
 
-- Inclui coluna 'Acao' com botao ✕ na tabela
-- Envia POST para /operacao/cotista/excluir com data e ativo_id
-- Mantem confirmacao simples para evitar exclusao acidental
+- Implementa POST /operacao/cotista/excluir
+- Remove registro por (data, ativo_id) na tabela cotista_dia
+- Retorna para /operacao?data=...
