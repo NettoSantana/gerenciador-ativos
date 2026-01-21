@@ -1,4 +1,1 @@
-﻿operacao: corrigir exibicao de atualizado_em (naive UTC vs local)
-
-- Para timestamps sem timezone: escolhe interpretacao (local vs UTC->local) mais proxima do agora
-- Mantem compatibilidade com registros antigos (sqlite datetime('now')) e novos (local)
+﻿chore: script para baixar status-descriptions (AuthDevice) e salvar JSON bruto sem limite de depth
