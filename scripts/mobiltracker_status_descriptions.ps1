@@ -1,6 +1,6 @@
 # Caminho: C:\Users\vlula\OneDrive\Área de Trabalho\Projetos Backup\gerenciador-ativos\scripts\mobiltracker_status_descriptions.ps1
-# Último recode: 2026-01-21 19:20 (America/Maceio)
-# Motivo: Baixar JSONs do Mobiltracker, aplicar patch para status faltantes (ex.: BAT=100, CUT=OFF, MOVEMENT=STOPPED/UNDEFINED) e gerar relatório de mapeamentos ausentes.
+# Último recode: 2026-01-21 19:55 (America/Maceio)
+# Motivo: Corrigir erros de parse (aspas/blocos) e manter patch + relatório de mapeamentos ausentes (BAT=100, CUT=OFF, MOVEMENT=STOPPED/UNDEFINED).
 
 param(
   [Parameter(Mandatory = $true)]
