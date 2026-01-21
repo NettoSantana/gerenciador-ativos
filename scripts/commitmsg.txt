@@ -1,5 +1,5 @@
-﻿recode: patch mobiltracker status descriptions + report de faltantes
+﻿fix(scripts): corrige parse do PowerShell e mantém patch de status + relatório
 
-- gera status-descriptions.merged.json (BAT=100, CUT OFF, MOVEMENT STOPPED/UNDEFINED)
-- valida trackers-status vs descriptions e salva missing-status-mappings.json
-- -OpenNotepad opcional para abrir os JSONs gerados
+- normaliza headers/aspas e fecha blocos corretamente
+- mantém patch: MOVEMENT STOPPED/UNDEFINED, CUT OFF, BAT 100 (range até 100)
+- gera status-descriptions.merged.json e missing-status-mappings.json
