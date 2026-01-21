@@ -1,0 +1,5 @@
+﻿recode: patch mobiltracker status descriptions + report de faltantes
+
+- gera status-descriptions.merged.json (BAT=100, CUT OFF, MOVEMENT STOPPED/UNDEFINED)
+- valida trackers-status vs descriptions e salva missing-status-mappings.json
+- -OpenNotepad opcional para abrir os JSONs gerados
