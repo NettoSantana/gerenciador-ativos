@@ -1,6 +1,6 @@
 # Caminho: C:\Users\vlula\OneDrive\Área de Trabalho\Projetos Backup\gerenciador-ativos\scripts\mobiltracker_status_descriptions.ps1
-# Último recode: 2026-01-21 19:55 (America/Maceio)
-# Motivo: Corrigir erros de parse (aspas/blocos) e manter patch + relatório de mapeamentos ausentes (BAT=100, CUT=OFF, MOVEMENT=STOPPED/UNDEFINED).
+# Último recode: 2026-01-21 20:05 (America/Maceio)
+# Motivo: Corrigir erro de parse e padronizar autenticação (AuthDevice) para baixar status-descriptions, trackers/status e last-location, gerar patch e relatório de mapeamentos.
 
 param(
   [Parameter(Mandatory = $true)]
@@ -12,6 +12,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
 
 function Ensure-Dir([string]$Path) {
   if ([string]::IsNullOrWhiteSpace($Path)) { return }
@@ -28,9 +29,7 @@ function Safe-WriteJson([object]$Obj, [string]$Path, [int]$Depth = 50) {
 function Apply-StatusPatch([pscustomobject]$sd) {
   if (-not $sd) { return $sd }
 
-  # ----------------------------
-  # MOVEMENT: faltavam STOPPED e UNDEFINED (aparece em trackers/status)
-  # ----------------------------
+  # MOVEMENT: adicionar STOPPED e UNDEFINED (aparece em trackers/status)
   if ($sd.PSObject.Properties.Name -contains "MOVEMENT") {
     $mv = $sd.MOVEMENT
     if (-not $mv.values) {
@@ -41,7 +40,7 @@ function Apply-StatusPatch([pscustomobject]$sd) {
       $mv.values | Add-Member -MemberType NoteProperty -Name "STOPPED" -Value ([pscustomobject]@{
         summary     = "Parado"
         severity    = "success"
-        description = "Seu rastreador está parado"
+        description = "Seu rastreador esta parado"
         icon        = $null
         unit        = $null
       }) -Force
@@ -49,18 +48,16 @@ function Apply-StatusPatch([pscustomobject]$sd) {
 
     if (-not ($mv.values.PSObject.Properties.Name -contains "UNDEFINED")) {
       $mv.values | Add-Member -MemberType NoteProperty -Name "UNDEFINED" -Value ([pscustomobject]@{
-        summary     = "Movimento indefinido"
+        summary     = "Indefinido"
         severity    = "warning"
-        description = "Não foi possível determinar o estado de movimento"
+        description = "Nao foi possivel determinar o estado de movimento"
         icon        = $null
         unit        = $null
       }) -Force
     }
   }
 
-  # ----------------------------
-  # CUT: faltava OFF (aparece em trackers/status)
-  # ----------------------------
+  # CUT: adicionar OFF (aparece em trackers/status)
   if ($sd.PSObject.Properties.Name -contains "CUT") {
     $cut = $sd.CUT
     if (-not $cut.values) {
@@ -71,21 +68,19 @@ function Apply-StatusPatch([pscustomobject]$sd) {
       $cut.values | Add-Member -MemberType NoteProperty -Name "OFF" -Value ([pscustomobject]@{
         summary     = "Desbloqueado"
         severity    = "success"
-        description = "Veículo desbloqueado"
+        description = "Veiculo desbloqueado"
         icon        = $null
         unit        = $null
       }) -Force
     }
 
+    # booleanos (quando vier False)
     if (-not ($cut.values.PSObject.Properties.Name -contains "False")) {
-      # alguns devices/integrações podem trazer booleano
       $cut.values | Add-Member -MemberType NoteProperty -Name "False" -Value $cut.values.OFF -Force
     }
   }
 
-  # ----------------------------
-  # BAT: aparece 100 nos rastreadores e não existia key 100, nem range até 100
-  # ----------------------------
+  # BAT: adicionar key 100 e estender range 80..99 -> 80..100
   if ($sd.PSObject.Properties.Name -contains "BAT") {
     $bat = $sd.BAT
     if (-not $bat.values) {
@@ -103,7 +98,6 @@ function Apply-StatusPatch([pscustomobject]$sd) {
     }
 
     if ($bat.rangesDescriptions) {
-      # Ajusta o último range para incluir 100 (se existir o range 80..99)
       foreach ($r in $bat.rangesDescriptions) {
         if ($r.minValue -eq 80 -and $r.maxValue -eq 99) {
           $r.maxValue = 100
@@ -118,12 +112,12 @@ function Apply-StatusPatch([pscustomobject]$sd) {
 function Get-ValueKeyCandidates([string]$val) {
   $cands = New-Object System.Collections.Generic.HashSet[string]
   if (-not [string]::IsNullOrWhiteSpace($val)) {
-    $cands.Add($val) | Out-Null
-    $cands.Add($val.ToUpperInvariant()) | Out-Null
-    $cands.Add($val.ToLowerInvariant()) | Out-Null
+    [void]$cands.Add($val)
+    [void]$cands.Add($val.ToUpperInvariant())
+    [void]$cands.Add($val.ToLowerInvariant())
 
-    if ($val -eq "true") { $cands.Add("True") | Out-Null; $cands.Add("TRUE") | Out-Null }
-    if ($val -eq "false") { $cands.Add("False") | Out-Null; $cands.Add("FALSE") | Out-Null }
+    if ($val -eq "true")  { [void]$cands.Add("True");  [void]$cands.Add("TRUE") }
+    if ($val -eq "false") { [void]$cands.Add("False"); [void]$cands.Add("FALSE") }
   }
   return $cands
 }
@@ -137,41 +131,33 @@ function Resolve-StatusMissing([pscustomobject]$sd, [object[]]$trackersStatus) {
       $val  = [string]$s.status
 
       if (-not ($sd.PSObject.Properties.Name -contains $name)) {
-        $missing += [pscustomobject]@{
-          name   = $name
-          status = $val
-          reason = "categoria não existe no status-descriptions"
-        }
+        $missing += [pscustomobject]@{ name=$name; status=$val; reason="categoria nao existe no status-descriptions" }
         continue
       }
 
-      $cat = $sd.$name
+      $cat  = $sd.$name
       $type = [string]$cat.type
 
-      # NUMBER com ranges: considera OK se valor cair em algum range
+      # NUMBER com ranges: ok se cair em algum range
       if ($type -eq "NUMBER" -and $cat.rangesDescriptions) {
         $num = $null
         if ([double]::TryParse($val, [ref]$num)) {
           $ok = $false
           foreach ($r in $cat.rangesDescriptions) {
-            if ($num -ge [double]$r.minValue -and $num -le [double]$r.maxValue) {
-              $ok = $true
-              break
-            }
+            if ($num -ge [double]$r.minValue -and $num -le [double]$r.maxValue) { $ok = $true; break }
           }
           if (-not $ok) {
             $missing += [pscustomobject]@{ name=$name; status=$val; reason="fora dos rangesDescriptions" }
           }
         } else {
-          $missing += [pscustomobject]@{ name=$name; status=$val; reason="não é número (type=NUMBER)" }
+          $missing += [pscustomobject]@{ name=$name; status=$val; reason="nao e numero (type=NUMBER)" }
         }
         continue
       }
 
       # LITERAL (ou NUMBER sem ranges): precisa existir key em values
-      $hasValues = $cat.values -ne $null
-      if (-not $hasValues) {
-        $missing += [pscustomobject]@{ name=$name; status=$val; reason="sem values (e sem ranges aplicáveis)" }
+      if (-not $cat.values) {
+        $missing += [pscustomobject]@{ name=$name; status=$val; reason="sem values (e sem ranges aplicaveis)" }
         continue
       }
 
@@ -184,7 +170,7 @@ function Resolve-StatusMissing([pscustomobject]$sd, [object[]]$trackersStatus) {
       }
 
       if (-not $found) {
-        $missing += [pscustomobject]@{ name=$name; status=$val; reason="não existe key em values" }
+        $missing += [pscustomobject]@{ name=$name; status=$val; reason="nao existe key em values" }
       }
     }
   }
@@ -193,67 +179,52 @@ function Resolve-StatusMissing([pscustomobject]$sd, [object[]]$trackersStatus) {
 }
 
 # ============================================================
-# 1) Preparar diretório de saída
+# 1) Preparar diretorio de saida
 # ============================================================
 Ensure-Dir $OutDir
 
 # ============================================================
 # 2) Headers e URLs
+#    OBS: Mobiltracker usa Authorization: AuthDevice <CHAVE>
 # ============================================================
 $token = $env:MOBILTRACKER_KEY
-if (-not $token) { throw "Defina o token antes: `$env:MOBILTRACKER_KEY = '...'`" }
+if (-not $token) { throw 'Defina o token antes: $env:MOBILTRACKER_KEY = "..."' }
 
 $headers = @{
   Accept        = "application/json"
-  Authorization = "Bearer $token"
+  Authorization = "AuthDevice $token"
 }
 
 $statusDescUrl = "https://api.mobiltracker.com.br/status-descriptions"
 $trackersUrl   = "https://api.mobiltracker.com.br/trackers/status"
 $lastLocUrl    = "https://api.mobiltracker.com.br/trackers/$TrackerId/last-location"
 
-$statusDescFile = Join-Path $OutDir "status-descriptions.json"
-$trackersFile   = Join-Path $OutDir "trackers-status.json"
-$lastLocFile    = Join-Path $OutDir ("tracker-$TrackerId-last-location.json")
-
+$statusDescFile  = Join-Path $OutDir "status-descriptions.json"
+$trackersFile    = Join-Path $OutDir "trackers-status.json"
+$lastLocFile     = Join-Path $OutDir ("tracker-$TrackerId-last-location.json")
 $patchedDescFile = Join-Path $OutDir "status-descriptions.merged.json"
 $missingFile     = Join-Path $OutDir "missing-status-mappings.json"
 
 # ============================================================
 # 3) GET: status-descriptions
 # ============================================================
-try {
-  $sdRaw = Invoke-RestMethod -Uri $statusDescUrl -Headers $headers -Method Get
-  Safe-WriteJson $sdRaw $statusDescFile 50
-  Write-Host "OK: baixou status-descriptions -> $statusDescFile"
-} catch {
-  Write-Host "ERRO no GET: $statusDescUrl" -ForegroundColor Red
-  throw
-}
+$sdRaw = Invoke-RestMethod -Uri $statusDescUrl -Headers $headers -Method Get
+Safe-WriteJson $sdRaw $statusDescFile 50
+Write-Host "OK: baixou status-descriptions -> $statusDescFile"
 
 # ============================================================
 # 4) GET: trackers/status
 # ============================================================
-try {
-  $tsRaw = Invoke-RestMethod -Uri $trackersUrl -Headers $headers -Method Get
-  Safe-WriteJson $tsRaw $trackersFile 50
-  Write-Host "OK: baixou trackers-status -> $trackersFile"
-} catch {
-  Write-Host "ERRO no GET: $trackersUrl" -ForegroundColor Red
-  throw
-}
+$tsRaw = Invoke-RestMethod -Uri $trackersUrl -Headers $headers -Method Get
+Safe-WriteJson $tsRaw $trackersFile 50
+Write-Host "OK: baixou trackers-status -> $trackersFile"
 
 # ============================================================
-# 5) GET: last-location
+# 5) GET: last-location (do tracker informado)
 # ============================================================
-try {
-  $llRaw = Invoke-RestMethod -Uri $lastLocUrl -Headers $headers -Method Get
-  Safe-WriteJson $llRaw $lastLocFile 50
-  Write-Host "OK: baixou last-location -> $lastLocFile"
-} catch {
-  Write-Host "ERRO no GET: $lastLocUrl" -ForegroundColor Red
-  throw
-}
+$llRaw = Invoke-RestMethod -Uri $lastLocUrl -Headers $headers -Method Get
+Safe-WriteJson $llRaw $lastLocFile 50
+Write-Host "OK: baixou last-location -> $lastLocFile"
 
 # ============================================================
 # 6) Patch + Missing report
@@ -265,23 +236,22 @@ Write-Host "OK: gerou status-descriptions.merged -> $patchedDescFile"
 
 $ts = Get-Content -LiteralPath $trackersFile -Raw | ConvertFrom-Json
 $tsValue = @()
-if ($ts -and $ts.PSObject.Properties.Name -contains "value") {
+if ($ts -and ($ts.PSObject.Properties.Name -contains "value")) {
   $tsValue = @($ts.value)
 }
 
 if ($tsValue.Count -gt 0) {
   $missing = Resolve-StatusMissing $sd $tsValue
-
   Safe-WriteJson $missing $missingFile 10
 
   if ($missing.Count -gt 0) {
-    Write-Host ("ATENÇÃO: faltam {0} mapeamentos (ver arquivo): {1}" -f $missing.Count, $missingFile) -ForegroundColor Yellow
+    Write-Host ("ATENCAO: faltam {0} mapeamentos (ver arquivo): {1}" -f $missing.Count, $missingFile) -ForegroundColor Yellow
     $missing | Format-Table -AutoSize | Out-String | Write-Host
   } else {
     Write-Host "OK: nenhum mapeamento faltando (com o merged)."
   }
 } else {
-  Write-Host "AVISO: trackers-status não tem .value para validar mapeamentos." -ForegroundColor Yellow
+  Write-Host "AVISO: trackers-status nao tem .value para validar mapeamentos." -ForegroundColor Yellow
 }
 
 # ============================================================
