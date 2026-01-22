@@ -1,5 +1,5 @@
-﻿fix(scripts): corrige parse do PowerShell e mantém patch de status + relatório
+﻿fix(scripts): corrige parse do mobiltracker_status_descriptions e padroniza AuthDevice
 
-- normaliza headers/aspas e fecha blocos corretamente
-- mantém patch: MOVEMENT STOPPED/UNDEFINED, CUT OFF, BAT 100 (range até 100)
-- gera status-descriptions.merged.json e missing-status-mappings.json
+- regrava script limpo para eliminar erro de aspas/chaves no PowerShell
+- usa Authorization: AuthDevice <token> (padrao que funcionou nos testes)
+- mantem patch de MOVEMENT/CUT/BAT e gera relatorio missing-status-mappings
